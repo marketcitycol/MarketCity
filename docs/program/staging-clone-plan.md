@@ -31,7 +31,11 @@ Una de estas dos opciones (no se piden contraseñas por chat):
 - Webhooks salientes, Meta Pixel, Jetpack, Search Console, notificaciones push y WhatsApp: desconectados.
 - Licencias de tema y plugins: no se reactivan en el clon con la clave de producción si la licencia lo prohíbe; se anota cada caso.
 
-## 4. Datos personales (decisión pendiente del propietario)
+## 4. Datos personales — DECISIÓN 2026-11-13: opción B (datos reales)
+
+**Registro:** el propietario eligió "Clon con datos reales" el 2026-11-13 (tarjeta de decisión en el hilo del proyecto). Esto sustituye, solo para este clon, `tratamiento_de_datos_personales_reales: false`. Controles obligatorios: acceso solo del propietario y del agente, cifrado en reposo, sin exportar datos personales fuera del clon, sin capturas ni notas con datos personales (los entregables solo usan agregados), log de accesos, y borrado del clon al cerrar la Fase 0.
+
+Opciones evaluadas:
 
 La configuración del programa tiene `tratamiento_de_datos_personales_reales: false`. Un clon "tal cual" incluye datos reales de clientes y vendedores (nombres, correos, teléfonos, direcciones, CC/NIT, pedidos). Opciones:
 

@@ -5,7 +5,7 @@ Cada supuesto es reversible y se usa solo para avanzar en el descubrimiento. Nin
 | ID | Supuesto | Base | Impacto si es falso | Cómo validarlo | Propietario | Fecha objetivo |
 |---|---|---|---|---|---|---|
 | S-01 | El sitio corre en WordPress + WooCommerce + WCFM + tema Wolmart. | I-001…I-003 | Cambia el plan de extracción de datos | Lista de plugins (A-03) | Responsable técnico (POR DEFINIR) | Al obtener acceso |
-| S-02 | MarketCity es el comercio registrado ante los PSP y liquida a los vendedores. | Política (E-007), "MarketCityPay" | Cambia todo el modelo de ledger y cumplimiento | Contratos PSP (Q-004) | Propietario de producto | Fase 0 |
+| S-02 | MarketCity es el comercio registrado ante los PSP y liquida a los vendedores (reforzado 2026-11-13: el propietario confirma pago al vendedor 10 días hábiles después de la venta, lo que indica que el dinero pasa por MarketCity; titularidad de contratos aún sin confirmar). | Política (E-007), "MarketCityPay" | Cambia todo el modelo de ledger y cumplimiento | Contratos PSP (Q-004) | Propietario de producto | Fase 0 |
 | S-03 | La mayor parte del GMV proviene de inventario propio de MarketCity. | Catálogo (E-003) | Cambia prioridad Seller Center vs. comercio propio | Reporte GMV por vendedor | Propietario de producto | Fase 0 |
 | S-04 | No existe código legado versionado fuera del servidor. | Repo vacío (E-028) | Si existe, debe incorporarse | Preguntar (Q-002) | Propietario | Fase 0 |
 | S-05 | El repositorio `marketcitycol/MarketCity` será el repositorio destino del programa. | Configuración del proyecto | Se movería la documentación | Confirmar (Q-002) | Propietario | Fase 0 |

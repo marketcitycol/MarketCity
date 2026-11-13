@@ -11,8 +11,9 @@
 ```yaml
 programa:
   nombre: MarketCity
-  propietario_producto: POR DEFINIR
-  responsable_tecnico: POR DEFINIR
+  propietario_producto: equipo propietario de MarketCity  # Q-001, 2026-11-13
+  responsable_tecnico: equipo propietario de MarketCity
+  dri_mision: agente de ingeniería (Claude)
   repositorio_destino: github.com/marketcitycol/MarketCity  # SUPUESTO S-05
   pais_inicial: Colombia
 autorizacion:
@@ -24,8 +25,11 @@ autorizacion:
 ## Última evidencia
 Auditoría pública de 24 superficies de marketcity.co el 2026-11-12 (E-001…E-028).
 
+## Novedades 2026-11-13
+Respuestas del propietario: Q-001 (cerrada), Q-005 (parcial: liquidación a 10 días hábiles), Q-012 (cerrada: clonar todo). Plan de clon en `staging-clone-plan.md`. Falta Q-004 y el acceso para el clon (Q-025).
+
 ## Próxima acción
-Obtener respuestas a Q-001, Q-004, Q-005, Q-012 y los accesos P0 de `access-request.md`; luego ejecutar el inventario técnico privado (§7.3) en sesión de solo lectura.
+Recibir la copia o el acceso de Q-025, montar el clon según `staging-clone-plan.md` y desde él completar el inventario técnico privado (§7.3), checkout, Seller Center y backoffice. Pendientes: Q-004 y los accesos P0 de `access-request.md`; luego ejecutar el inventario técnico privado (§7.3) en sesión de solo lectura.
 
 ## Árbol documental
 
@@ -38,5 +42,6 @@ docs/
               business-metrics-baseline, evidence-index
   product/    capability-matrix
   security/   initial-threat-model
-  program/    status, assumptions, questions, risks, access-request, discovery-gate
+  program/    status, assumptions, questions, risks, access-request, discovery-gate,
+              staging-clone-plan
 ```

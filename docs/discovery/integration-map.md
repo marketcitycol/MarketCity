@@ -35,7 +35,7 @@ flowchart LR
   WC -->|redirect/iframe ?| PSP{Bold / Addi / Sistecrédito}
   PSP -->|confirmación ? webhook/retorno| WC
   PSP -->|desembolso ? a MarketCity| MC[(Cuenta MarketCity)]
-  MC -->|liquidación ? manual/WCFM| V[Vendedor]
+  MC -->|liquidación: 10 días hábiles tras la venta (propietario, 2026-11-13); mecanismo ?| V[Vendedor]
   WC -->|comisión ? WCFM| LEDGER[(Comisiones WCFM)]
 ```
 

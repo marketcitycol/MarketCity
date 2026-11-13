@@ -1,0 +1,92 @@
+# Discovery clone of the current marketcity.co (WordPress/WooCommerce).
+# Phase 0 instrument only: NOT the new platform and NOT production.
+#
+# Isolation by design: WordPress, the database and Mailpit live on an
+# `internal` network with no route to the internet, so payments, webhooks,
+# pixels, license checks and e-mails cannot leave the clone. Only the nginx
+# proxy is also on the default network, to publish the site on localhost.
+name: mc-legacy-clone
+
+services:
+  db:
+    image: mirror.gcr.io/library/mariadb:11.8   # same major version as production (MariaDB 11.8)
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-marketcity_clone}
+      MARIADB_USER: ${DB_USER:-clone}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks: [clone-internal]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 30
+
+  wordpress:
+    image: mirror.gcr.io/library/wordpress:6.8-php8.2-apache
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${DB_NAME:-marketcity_clone}
+      WORDPRESS_DB_USER: ${DB_USER:-clone}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: ${TABLE_PREFIX:-wp_}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'staging');
+        define('DISABLE_WP_CRON', true);
+        define('WP_HTTP_BLOCK_EXTERNAL', true);
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+        define('DISALLOW_FILE_MODS', true);
+        define('JETPACK_STAGING_MODE', true);
+        define('WP_HOME', '${CLONE_URL:-http://localhost:8080}');
+        define('WP_SITEURL', '${CLONE_URL:-http://localhost:8080}');
+    volumes:
+      - ./data/site/wp-content:/var/www/html/wp-content
+      - ./mu-plugins/clone-guard.php:/var/www/html/wp-content/mu-plugins/000-clone-guard.php:ro
+    networks: [clone-internal]
+
+  mailpit:
+    image: mirror.gcr.io/axllent/mailpit:v1.27
+    restart: unless-stopped
+    networks: [clone-internal]
+
+  proxy:
+    image: mirror.gcr.io/library/nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on: [wordpress, mailpit]
+    ports:
+      - "127.0.0.1:${CLONE_PORT:-8080}:80"      # site (localhost only)
+      - "127.0.0.1:${MAIL_PORT:-8025}:8025"     # captured e-mails
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/htpasswd:/etc/nginx/htpasswd:ro
+    networks: [clone-internal, clone-edge]
+
+  wpcli:
+    image: mirror.gcr.io/library/wordpress:cli-2.12-php8.2
+    profiles: [tools]
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${DB_NAME:-marketcity_clone}
+      WORDPRESS_DB_USER: ${DB_USER:-clone}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: ${TABLE_PREFIX:-wp_}
+    volumes_from: [wordpress]
+    volumes:
+      - ./data/import:/import:ro
+      - ./data/reports:/reports
+      - ./mariadb-client.cnf:/etc/my.cnf.d/zz-clone.cnf:ro
+    networks: [clone-internal]
+
+networks:
+  clone-internal:
+    internal: true
+  clone-edge: {}
+
+volumes:
+  db-data: {}

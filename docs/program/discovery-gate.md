@@ -13,7 +13,7 @@
 | 3 | Flujos de dinero, datos, inventario y pedidos dibujados o marcados como bloqueo | CUMPLIDO (como bloqueo explícito) | integration-map §2–§4 | Confirmación con contratos y acceso |
 | 4 | Fuentes privadas, accesos y contactos necesarios conocidos | CUMPLIDO | access-request §2–§3 | Entrega de los accesos |
 | 5 | Riesgos críticos y supuestos materiales con propietario y plan | CUMPLIDO | risks.md, assumptions.md; propietario = equipo MarketCity (Q-001) | — |
-| 6 | Línea base o plan concreto para obtenerla | CUMPLIDO (plan) | business-metrics-baseline, seo-performance-baseline §3 | Datos |
+| 6 | Línea base o plan concreto para obtenerla | CUMPLIDO (línea base parcial de pedidos, usuarios y medios de pago desde la base, E-031) | business-metrics-baseline, seo-performance-baseline §3 | Datos |
 | 7 | Licencias y dependencias no transferibles identificadas o pendientes | CUMPLIDO (identificadas/pendientes) | plugin-capability-matrix | Confirmación de licencias (A-02) |
 | 8 | Informe diferencia hechos, inferencias y preguntas | CUMPLIDO | evidence-index (HECHO / I-xxx), questions.md | — |
 | 9 | No se modificó producción | CUMPLIDO | Solo GET anónimos; sin formularios, carrito, login ni /admin | — |

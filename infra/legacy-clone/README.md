@@ -46,4 +46,6 @@ El backup debe incluir `wp-content/` (plugins, temas, uploads, mu-plugins) y un 
 | Inventario | 13 reportes agregados generados |
 | `destroy.sh` | Sin contenedores, volúmenes ni `data/` restantes |
 
+**Uso real (2026-11-13):** la base de producción (654 MB, 218 tablas) se importó en 1 min 19 s con MariaDB 11.8, la misma versión de producción; MariaDB 10.11 no sirve porque el volcado usa intercalaciones `uca1400`. Se neutralizaron 11 integraciones.
+
 Limitación conocida: el volumen de la base de datos no va cifrado por Docker. Si el equipo donde corre el clon no tiene cifrado de disco (BitLocker o FileVault), hay que activarlo antes de importar datos reales.

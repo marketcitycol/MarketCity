@@ -9,7 +9,7 @@ name: mc-legacy-clone
 
 services:
   db:
-    image: mirror.gcr.io/library/mariadb:10.11
+    image: mirror.gcr.io/library/mariadb:11.8   # same major version as production (MariaDB 11.8)
     restart: unless-stopped
     environment:
       MARIADB_DATABASE: ${DB_NAME:-marketcity_clone}

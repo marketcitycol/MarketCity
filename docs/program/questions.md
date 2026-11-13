@@ -24,4 +24,6 @@ Impacto: **B** bloquea compuerta de Fase 0, **A** alto (cambia dinero/datos/lega
 | Q-018 | ¿El Meta Pixel se carga antes de que el usuario acepte cookies? ¿Hay Conversions API? | A | Analytics / Privacy | T-06 | 2026-11-26 |
 | Q-019 | ¿Hay obligaciones de facturación electrónica DIAN hoy? ¿Qué software factura y quién (MarketCity o cada vendedor)? | A | Finanzas | Integraciones, legal | 2026-11-26 |
 | Q-020 | ¿Ventana de migración, presupuesto y región de nube preferida? | M | Propietario | Fase 1 (no Fase 0) | Fase 1 |
-| Q-025 | ¿Cómo se entrega la copia para el clon: acceso de solo lectura al hosting (SFTP/panel), o un backup completo (archivos + base de datos) descargable? | B | Propietario | Clon (staging-clone-plan) | 2026-11-19 |
+| Q-025 | (PARCIAL 2026-11-13: base de datos recibida; falta `wp-content` y `.htaccess`) ¿Cómo se entrega la copia para el clon: acceso de solo lectura al hosting (SFTP/panel), o un backup completo (archivos + base de datos) descargable? | B | Propietario | Clon (staging-clone-plan) | 2026-11-19 |
+| Q-026 | ¿Por qué se cancelan 38 % de los pedidos (49 de 129)? ¿Rechazo de crédito, falta de stock, pedidos de prueba, cliente no contesta? | A | Propietario / Ops | Métricas de conversión | 2026-11-26 |
+| Q-027 | ¿Cuáles de los 70 snippets activos marcados "vista previa" están realmente en uso en producción y cuáles se pueden apagar? | M | Propietario | Inventario de código | 2026-11-26 |

@@ -20,3 +20,6 @@ Severidad = impacto × probabilidad (C crítica, A alta, M media, B baja). Propi
 | R-014 | Contenido interno del tema (`wolmart_template`) y categorías vacías indexados. | E-008, E-017 | B | SEO | Incluir en limpieza del mapa de URLs. |
 | R-015 | Facturación electrónica DIAN desconocida. | — | A | Finanzas | Q-019. |
 | R-016 | Observación limitada a texto extraído; sin HTML crudo, cabeceras ni hashes por restricción del entorno. | E-026, E-027 | M | DRI misión | Recaptura con rastreador aprobado (Q-015). |
+| R-019 | Lógica de negocio fuera de control de versiones: 15 plugins propios y 70 snippets activos guardados en la base de datos, varios marcados "vista previa" con alcance global. | E-031 | A | Responsable técnico | Versionar el código propio en este repositorio (copia de solo lectura) y revisar snippets (Q-027). |
+| R-020 | 989 tareas programadas fallidas en Action Scheduler: integraciones o notificaciones que fallan sin aviso. | E-031 | M | Responsable técnico | Analizar por tipo de tarea en el clon. |
+| R-021 | Base inflada: 70 % es analítica de visitas de WCFM (458 MB). Respaldos y restauraciones más lentos. | E-031 | M | Responsable técnico | Excluir de la migración; evaluar purga en producción (requiere aprobación). |

@@ -26,4 +26,6 @@
 | Tráfico orgánico | clics, impresiones, URLs indexadas | Search Console | — | — | POR DEFINIR | Acceso GSC |
 | Satisfacción | NPS/CSAT | No existe | — | Hallazgo: no instrumentado | POR DEFINIR | Definir en Fase 1 |
 
+**Actualización 2026-11-13 (E-031):** pedidos totales 129 (2021-2026), 65 en 2026; 98 usuarios; 6 vendedores WCFM; Addi en 50 pedidos y contraentrega en 27; 38 % de pedidos cancelados. Suma de totales en estados completed/processing/on-hold 2026: 3,86 M COP (no confirmado como pagado). Detalle en `private-inventory-db.md`.
+
 **Hallazgo:** existe una página interna `/estadisticas-ecommerce/` (E-014, E-018) que podría contener parte de estos indicadores; consultarla solo con autorización del propietario (A-08).

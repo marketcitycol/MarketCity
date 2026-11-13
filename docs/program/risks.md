@@ -20,3 +20,5 @@ Severidad = impacto × probabilidad (C crítica, A alta, M media, B baja). Propi
 | R-014 | Contenido interno del tema (`wolmart_template`) y categorías vacías indexados. | E-008, E-017 | B | SEO | Incluir en limpieza del mapa de URLs. |
 | R-015 | Facturación electrónica DIAN desconocida. | — | A | Finanzas | Q-019. |
 | R-016 | Observación limitada a texto extraído; sin HTML crudo, cabeceras ni hashes por restricción del entorno. | E-026, E-027 | M | DRI misión | Recaptura con rastreador aprobado (Q-015). |
+| R-017 | Fragmentación de portafolio: tres bases de código (WooCommerce, MarketCity.go, Turbo) con identidad, pagos y ledger propios; riesgo de duplicar esfuerzo y datos de clientes. | E-029, E-030 | A | Propietario | Q-021; decisión de portafolio en Fase 1. |
+| R-018 | Respaldos de MarketCity.go definidos pero apagados; si está en producción, no hay copia de la base. | E-029 | A (si está en producción) | Responsable técnico | Q-022; activar `backup.yml` con secretos (requiere aprobación del propietario). |

@@ -36,8 +36,6 @@
 | E-026 | 2026-11-12 | API PageSpeed Insights | HECHO (limitación) | Solicitud rechazada desde el entorno; no hay medición de Core Web Vitals. | Alta |
 | E-027 | 2026-11-12 | curl directo a marketcity.co | HECHO (limitación) | Proxy del entorno devolvió 403 al túnel; no se capturaron cabeceras HTTP, TLS ni HTML crudo. | Alta |
 | E-028 | 2026-11-12 | github.com/marketcitycol/MarketCity | HECHO | Repositorio sin commits ni ramas. No contiene código legado. | Alta |
-| E-029 | 2026-11-13 | github.com/marketcitycol/marketcity-go (rama por defecto, clon de solo lectura) | HECHO | Marketplace de entregas (API Express + PostgreSQL, web React, app Flutter `co.marketcity.marketcity_go`), pagos Wompi, ledger, comisión 15 %. Sin secretos productivos detectados. Ver `related-repositories.md`. | Alta |
-| E-030 | 2026-11-13 | github.com/marketcitycol/marketcity-turbo (rama por defecto, clon de solo lectura) | HECHO | SaaS multitenant de última milla (NestJS, RLS, outbox, ledger, plugin WooCommerce), 10 ADR aceptadas el 2026-11-07 incl. AWS ECS. Sin secretos productivos detectados. | Alta |
 
 ## Inferencias derivadas (no son hechos)
 
@@ -50,5 +48,4 @@
 | I-005 | Jetpack (Photon/i0.wp.com) sirve imágenes. | E-001, E-003 | Alta |
 | I-006 | Existe un plugin propio `marketcity-envios`; puede haber más código propio. | E-006 | Alta |
 | I-007 | Hay hardening del REST API (plugin de seguridad o snippet). | E-013 | Media |
-| I-009…I-012 | Ver `related-repositories.md` §4 (reutilización de Turbo, portafolio de tres productos, identidad de la app Android, dos pasarelas). | E-029, E-030 | Media/Baja |
 | I-008 | La operación de soporte, onboarding y seguimiento depende de WhatsApp y de personas, sin sistema de casos. | E-004, E-011 | Media |

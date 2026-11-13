@@ -5,7 +5,7 @@ Impacto: **B** bloquea compuerta de Fase 0, **A** alto (cambia dinero/datos/lega
 | ID | Pregunta | Impacto | Para quién | Bloquea | Fecha objetivo |
 |---|---|---|---|---|---|
 | Q-001 | ¿Quién es el propietario de producto, el responsable técnico y el DRI de esta misión? | B | Propietario | Asignar propietarios a capacidades y riesgos | 2026-11-19 |
-| Q-002 | (PARCIAL 2026-11-13: existen `marketcity-go` y `marketcity-turbo`, pero no contienen el código del sitio WordPress) ¿Existe código propio (plugin `marketcity-envios`, child theme, snippets, app Android) en algún otro repositorio o solo en el servidor? ¿Este repo es el destino oficial? | B | Responsable técnico | Inventario técnico | 2026-11-19 |
+| Q-002 | ¿Existe código propio (plugin `marketcity-envios`, child theme, snippets, app Android) en algún otro repositorio o solo en el servidor? ¿Este repo es el destino oficial? | B | Responsable técnico | Inventario técnico | 2026-11-19 |
 | Q-003 | ¿Proveedor de hosting, plan, acceso SSH/SFTP/panel y quién lo administra? | B | Responsable técnico | A-01, A-05 | 2026-11-19 |
 | Q-004 | ¿A nombre de quién están los contratos y cuentas de comercio de Bold, Addi, Sistecrédito, PSE/Nequi/Daviplata? ¿Qué es "MarketCityPay"? | B | Propietario / Finanzas | Flujo de dinero | 2026-11-19 |
 | Q-005 | ¿El dinero de una venta de un vendedor tercero llega a MarketCity? ¿Cómo y cada cuánto se liquida, con qué comisión y retenciones? | B | Finanzas | Flujo de dinero, ledger | 2026-11-19 |
@@ -24,7 +24,3 @@ Impacto: **B** bloquea compuerta de Fase 0, **A** alto (cambia dinero/datos/lega
 | Q-018 | ¿El Meta Pixel se carga antes de que el usuario acepte cookies? ¿Hay Conversions API? | A | Analytics / Privacy | T-06 | 2026-11-26 |
 | Q-019 | ¿Hay obligaciones de facturación electrónica DIAN hoy? ¿Qué software factura y quién (MarketCity o cada vendedor)? | A | Finanzas | Integraciones, legal | 2026-11-26 |
 | Q-020 | ¿Ventana de migración, presupuesto y región de nube preferida? | M | Propietario | Fase 1 (no Fase 0) | Fase 1 |
-| Q-021 | ¿Cuál es la relación de portafolio entre el nuevo MarketCity, MarketCity.go, Turbo y "MarketCity-Pay"? ¿Comparten identidad, pagos, catálogo o ledger, o son productos separados? | A | Propietario | Alcance de Fase 1 | 2026-11-26 |
-| Q-022 | ¿MarketCity.go está en producción con usuarios reales? ¿En qué URL y desde cuándo? | M | Propietario | Inventario de sistemas | 2026-11-26 |
-| Q-023 | ¿La app Android de `/eliminar-mi-cuenta/` es la de MarketCity.go (`co.marketcity.marketcity_go`) u otra? | M | Propietario | J-12, R-010 | 2026-11-26 |
-| Q-024 | ¿Pasarela principal: Bold (sitio actual) o Wompi (MarketCity.go)? ¿Hay contrato con ambas? | A | Finanzas | Flujo de dinero | 2026-11-26 |

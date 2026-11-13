@@ -24,9 +24,6 @@ autorizacion:
 ## Última evidencia
 Auditoría pública de 24 superficies de marketcity.co el 2026-11-12 (E-001…E-028).
 
-## Novedades 2026-11-13
-Revisión de solo lectura de `marketcity-go` y `marketcity-turbo` (E-029, E-030; `docs/discovery/related-repositories.md`). Nuevas preguntas Q-021…Q-024 y riesgos R-017, R-018. La compuerta sigue NO_APROBADA.
-
 ## Próxima acción
 Obtener respuestas a Q-001, Q-004, Q-005, Q-012 y los accesos P0 de `access-request.md`; luego ejecutar el inventario técnico privado (§7.3) en sesión de solo lectura.
 
@@ -38,7 +35,7 @@ docs/
   discovery/  as-is-system-map, route-and-state-inventory, journey-catalog,
               integration-map, data-dictionary, data-quality-profile,
               plugin-capability-matrix, seo-performance-baseline,
-              business-metrics-baseline, evidence-index, related-repositories
+              business-metrics-baseline, evidence-index
   product/    capability-matrix
   security/   initial-threat-model
   program/    status, assumptions, questions, risks, access-request, discovery-gate

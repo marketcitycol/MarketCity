@@ -26,7 +26,3 @@ Solo componentes con indicio público. El inventario real (nombre, versión, lic
 4. Contratos de PSP/BNPL: credenciales y cuenta de comercio pueden estar a nombre de una persona o de la sociedad (Q-004).
 5. Cuenta de Play Console de la app Android (Q-014).
 6. Dominio, DNS y correo: titularidad desconocida (Q-007).
-
-## Activos propios fuera del sitio (2026-11-13)
-- `marketcity-turbo/plugins/woocommerce-marketcity-turbo`: plugin propio de WooCommerce (cotización y creación de entregas). No consta que esté instalado en marketcity.co.
-- `marketcity-go`: plataforma propia con capacidades reutilizables (pagos Wompi con webhooks, ledger, importación desde WooCommerce, app Flutter). Ver `related-repositories.md`.

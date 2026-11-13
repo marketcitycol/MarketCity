@@ -11,7 +11,7 @@
 | 1 | Superficies públicas relevantes con evidencia fechada | CUMPLIDO PARCIAL | 24 superficies, E-001…E-024 | Vista móvil, HTML crudo, cabeceras y hashes (Q-015) |
 | 2 | Capacidades críticas con propietario, prioridad y disposición | PARCIAL | 39 capacidades con prioridad y disposición | Propietarios nominales (Q-001) |
 | 3 | Flujos de dinero, datos, inventario y pedidos dibujados o marcados como bloqueo | CUMPLIDO (como bloqueo explícito) | integration-map §2–§4 | Confirmación con contratos y acceso |
-| 4 | Fuentes privadas, accesos y contactos necesarios conocidos | CUMPLIDO | access-request §2–§3; repos relacionados revisados (E-029, E-030) | Entrega de los accesos |
+| 4 | Fuentes privadas, accesos y contactos necesarios conocidos | CUMPLIDO | access-request §2–§3 | Entrega de los accesos |
 | 5 | Riesgos críticos y supuestos materiales con propietario y plan | PARCIAL | risks.md, assumptions.md | Propietarios nominales |
 | 6 | Línea base o plan concreto para obtenerla | CUMPLIDO (plan) | business-metrics-baseline, seo-performance-baseline §3 | Datos |
 | 7 | Licencias y dependencias no transferibles identificadas o pendientes | CUMPLIDO (identificadas/pendientes) | plugin-capability-matrix | Confirmación de licencias (A-02) |

@@ -37,6 +37,7 @@
 | E-027 | 2026-11-12 | curl directo a marketcity.co | HECHO (limitación) | Proxy del entorno devolvió 403 al túnel; no se capturaron cabeceras HTTP, TLS ni HTML crudo. | Alta |
 | E-028 | 2026-11-12 | github.com/marketcitycol/MarketCity | HECHO | Repositorio sin commits ni ramas. No contiene código legado. | Alta |
 | E-031 | 2026-11-13 | Volcado de la base de producción `u832298070_kr99y` (entregado por el propietario; 7z SHA-256 `06e8f3821fbb9f32b0aa18fb7bd27b08e497de0800f3661f092840ae1fd95b98`) importado en el clon aislado | HECHO | WooCommerce 11.3.0 sin HPOS, 51 plugins activos (15 propios), 70 snippets activos, 129 pedidos 2021-2026, 98 usuarios, 6 vendedores, tabla de analítica WCFM de 458 MB. Detalle agregado en `private-inventory-db.md`. | Alta |
+| E-032 | 2026-11-15 | `wp-content` completo de producción (3 volúmenes 7-Zip entregados por el propietario; SHA-256 de cada volumen en el registro del clon), `.htaccess` raíz y captura del listado de `public_html` | HECHO | WordPress 7.0.4; 86 plugins en disco (51 activos); 14 plugins propios activos (~20 000 líneas); 70 snippets activos (~2 MB, 34 \"vista previa\" activables con `?mc_preview=1`); 31 opciones con llaves de producción y 19 llaves REST; carpetas `seller` y `sellercenter` fuera de WordPress no entregadas. Detalle en `private-inventory-code.md`. | Alta |
 
 ## Inferencias derivadas (no son hechos)
 

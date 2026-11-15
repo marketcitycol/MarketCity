@@ -2,6 +2,8 @@
 
 Solo componentes con indicio público. El inventario real (nombre, versión, licencia, estado activo, autor) requiere `wp-admin → Plugins` o `wp plugin list` de solo lectura (access-request, superficie A-03).
 
+> **Actualización 2026-11-15 (E-032):** con el código en mano, los componentes de esta tabla pasan de INFERENCIA a HECHO. Código propio y snippets detallados en `private-inventory-code.md`.
+
 | Componente | Estado | Evidencia | Capacidades que aporta | Licencia / transferibilidad | Disposición preliminar |
 |---|---|---|---|---|---|
 | WordPress core | HECHO | E-002, E-013 | CMS, usuarios, sitemaps, REST | GPL | REIMPLEMENTAR (CMS propio o headless) |

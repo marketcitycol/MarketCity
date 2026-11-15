@@ -31,6 +31,9 @@ Respuestas del propietario: Q-001 (cerrada), Q-005 (parcial: liquidación a 10 d
 ## Novedades 2026-11-13 (tarde)
 Base de datos de producción recibida e importada en el clon aislado; inventario agregado en `docs/discovery/private-inventory-db.md` (E-031). Falta `wp-content` y `.htaccess` para levantar el sitio completo.
 
+## Novedades 2026-11-15
+`wp-content` completo recibido: el clon ya levanta el sitio entero con WordPress 7.0.4 (misma versión que producción) y las integraciones neutralizadas, incluidas 31 llaves sueltas en la base. Inventario de código en `docs/discovery/private-inventory-code.md` (E-032): 14 plugins propios activos (~20 000 líneas) y 70 snippets (~2 MB). Riesgos nuevos R-022…R-025. Faltan las carpetas `seller` y `sellercenter` (Q-028).
+
 ## Próxima acción
 Recibir la copia o el acceso de Q-025, montar el clon según `staging-clone-plan.md` y desde él completar el inventario técnico privado (§7.3), checkout, Seller Center y backoffice. Pendientes: Q-004 y los accesos P0 de `access-request.md`; luego ejecutar el inventario técnico privado (§7.3) en sesión de solo lectura.
 

@@ -16,6 +16,24 @@ foreach ($GLOBALS["wpdb"]->get_col("SELECT option_name FROM {$GLOBALS["wpdb"]->o
   }
   if ($touched) { update_option($name, $v); $changed[] = $name; }
 }
+// Standalone options that hold credentials (seen in the real dump: Mercado Pago, Bold, Facebook,
+// Tidio, Weglot, Firebase service account inside mcn_settings, Hostinger tokens, etc.).
+$skip = "/(endpoint|generate_password|_valid_token|using_application_passwords|db_version|google_maps)/i";
+foreach ($GLOBALS["wpdb"]->get_col("SELECT option_name FROM {$GLOBALS["wpdb"]->options} WHERE option_name NOT LIKE \"\\_transient%\" AND option_name NOT LIKE \"\\_site\\_transient%\" AND option_name NOT LIKE \"woocommerce\\_%\\_settings\" AND option_name REGEXP \"(secret|token|api_key|apikey|password|service_account|secretos|credential|jwt)\"") as $name) {
+  if (preg_match($skip, $name)) continue;
+  $v = get_option($name);
+  if (is_string($v) && strlen($v) > 3) { update_option($name, "REDACTED_BY_CLONE"); $changed[] = $name; }
+  elseif (is_array($v)) { update_option($name, ["redacted_by_clone" => true]); $changed[] = $name; }
+}
+// Settings arrays of in-house plugins that embed credentials.
+foreach (["mcn_settings"] as $name) {
+  $v = get_option($name);
+  if (!is_array($v)) continue;
+  foreach ($v as $k => $val) {
+    if (is_string($val) && $val !== "" && preg_match("/(key|secret|token|password|service_account|server_key|credential)/i", $k)) { $v[$k] = "REDACTED_BY_CLONE"; }
+  }
+  update_option($name, $v); $changed[] = $name;
+}
 // Never indexable, staging mode.
 update_option("blog_public", "0");
 echo "Options neutralized: " . count($changed) . PHP_EOL . implode(PHP_EOL, $changed) . PHP_EOL;

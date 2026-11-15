@@ -3,7 +3,7 @@
 - **Fecha:** 2026-11-13
 - **Fuente:** volcado phpMyAdmin de la base `u832298070_kr99y` entregado por el propietario (13-11-2026 13:23 UTC), archivo 7z de 30,6 MB → SQL de 654 MB, 218 tablas. SHA-256 del 7z: `06e8f382…5b98` (completo en el registro del clon). Servidor de origen: MariaDB 11.8.9; phpMyAdmin corriendo sobre PHP 7.2.34.
 - **Método:** importado en el clon aislado (`infra/legacy-clone`, red sin salida a internet), URLs reescritas a localhost, 11 integraciones de pago/logística neutralizadas. **Este documento contiene solo agregados**: ningún nombre, correo, teléfono, dirección, documento ni detalle de pedido individual.
-- **Pendiente:** `wp-content` (código de plugins y tema) para levantar el sitio completo.
+- **Código:** `wp-content` recibido el 2026-11-15; ver `private-inventory-code.md`.
 
 ## 1. Plataforma (HECHO)
 

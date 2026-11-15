@@ -48,4 +48,6 @@ El backup debe incluir `wp-content/` (plugins, temas, uploads, mu-plugins) y un 
 
 **Uso real (2026-11-13):** la base de producción (654 MB, 218 tablas) se importó en 1 min 19 s con MariaDB 11.8, la misma versión de producción; MariaDB 10.11 no sirve porque el volcado usa intercalaciones `uca1400`. Se neutralizaron 11 integraciones.
 
+**Sitio completo (2026-11-15):** con `wp-content` de producción el clon necesitó WordPress 7.0 (imagen `wordpress:7.0-php8.3-apache`) porque la base es de la revisión 61833. Si cambias la imagen, borra el contenedor con `docker compose rm -sfv wordpress` para que no quede el núcleo viejo en el volumen anónimo. `neutralize.sh` ahora también reemplaza las llaves guardadas como opciones sueltas (42 opciones en total). El drop-in `object-cache.php` de LiteSpeed se renombra a mano porque el clon no tiene Redis.
+
 Limitación conocida: el volumen de la base de datos no va cifrado por Docker. Si el equipo donde corre el clon no tiene cifrado de disco (BitLocker o FileVault), hay que activarlo antes de importar datos reales.

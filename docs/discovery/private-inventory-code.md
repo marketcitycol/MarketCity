@@ -70,6 +70,6 @@ No se encontraron `eval`, código ofuscado ni llaves escritas en el código prop
 
 De las 989 fallidas: 885 son limpieza de `image-optimization` (ruido), **65 son la sincronización de estado de productos con Google Merchant** (Google Listings & Ads), 33 `fetch_patterns`, 2 latidos de Facebook y **1 entrega de webhook de WooCommerce** (2026-11-11).
 
-## 7. Lo que falta del servidor
+## 7. Fuera de WordPress (E-033)
 
-La captura de `public_html` muestra carpetas **`seller`** (2024-12-05) y **`sellercenter`** (2024-05-03) fuera de WordPress, además de `.htaccess.bk` y `llms.txt` (86 KB). Una carpeta física tiene prioridad sobre las rutas de WordPress, así que `marketcity.co/seller/` en producción podría servir esa carpeta y no la página de WordPress. Se pidieron (Q-028).
+Las carpetas `seller` y `sellercenter` de `public_html` solo tienen `default.php`, la página por defecto de Hostinger (las dos son idénticas). Como una carpeta física tiene prioridad sobre WordPress, **hoy `marketcity.co/seller/` y `marketcity.co/sellercenter/` muestran "¡Ya todo está listo!" de Hostinger** en vez de llevar al Seller Center (verificado con GET público). Probablemente quedaron de subdominios creados en 2024. `.htaccess.bk` es el bloque estándar de WordPress; `llms.txt` es un índice estático de octubre de 2025 con entradas demo y páginas viejas (R-027). No hay más código fuera de WordPress.

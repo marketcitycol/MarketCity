@@ -20,7 +20,7 @@
 
 ## Condiciones para aprobar
 1. ~~Nombrar propietarios (Q-001)~~ Cumplido 2026-11-13.
-2. Confirmar flujo de dinero con contratos y reportes (Q-004 pendiente; Q-005 parcial: liquidación a 10 días hábiles; A-09, A-10).
+2. Confirmar flujo de dinero con contratos y reportes (Q-004 parcial: cuentas a nombre del fundador y representante legal, falta Q-030; Q-005 parcial: liquidación a 10 días hábiles; A-09, A-10).
 3. Inventario técnico privado mínimo: A-01, A-02, A-04, A-05. (A-04 cumplido 2026-11-15: código de `wp-content` versionado en el clon e inventariado, E-032; faltan `seller`/`sellercenter`, Q-028.)
 4. Observar checkout, Seller Center y backoffice en el clon autorizado (copia completa recibida 2026-11-15; el sitio ya corre en el clon; falta recorrer los tres flujos).
 5. Recapturar evidencia pública con HTML + cabeceras + hash y medir rendimiento (Q-015).

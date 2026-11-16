@@ -1,0 +1,29 @@
+@extends('layouts.shop', ['title' => 'Mi cuenta'])
+
+@section('content')
+<div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-2xl font-bold">Hola, {{ $user->name }}</h1><p class="text-sm text-slate-500">{{ $user->email }}</p></div>
+    <form method="post" action="{{ route('logout') }}">@csrf<button class="btn-ghost">Cerrar sesión</button></form>
+</div>
+<h2 class="mt-8 font-semibold">Mis pedidos</h2>
+@if ($orders->isEmpty())
+    <div class="card mt-3 p-8 text-center text-sm text-slate-500">Aún no tienes pedidos. <a href="{{ route('shop') }}" class="text-brand-600 hover:underline">Ir a la tienda</a></div>
+@else
+<div class="card mt-3 overflow-x-auto">
+    <table class="table-std">
+        <thead><tr><th>Pedido</th><th>Fecha</th><th>Pago</th><th>Estado</th><th class="text-right">Total</th></tr></thead>
+        <tbody>
+        @foreach ($orders as $o)
+            <tr>
+                <td><a href="{{ route('orders.show', [$o, 't' => $o->access_token]) }}" class="font-medium text-brand-600 hover:underline">{{ $o->number }}</a></td>
+                <td>{{ fecha($o->created_at, 'd/m/Y') }}</td>
+                <td>{{ $o->paymentStatusLabel() }}</td>
+                <td>{{ $o->sellerOrders->map->statusLabel()->unique()->join(', ') }}</td>
+                <td class="text-right">{{ cop($o->total) }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+@endsection

@@ -40,8 +40,9 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // Directo dentro de la carpeta pública: en hosting compartido no hace falta crear enlaces simbólicos.
+            'root' => public_path('uploads'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -74,7 +75,6 @@ return [
     */
 
     'links' => [
-        public_path('storage') => storage_path('app/public'),
     ],
 
 ];

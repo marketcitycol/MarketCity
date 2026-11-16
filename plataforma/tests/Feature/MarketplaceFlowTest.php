@@ -144,4 +144,27 @@ class MarketplaceFlowTest extends TestCase
         }
         $this->assertCount(18, $h);
     }
+
+    public function test_woocommerce_csv_import_is_repeatable(): void
+    {
+        $store = \App\Models\Store::first();
+        $importer = app(\App\Services\WooCommerceCsvImporter::class);
+        $stats = $importer->import(base_path('tests/fixtures/woocommerce-export.csv'), $store);
+        $this->assertSame(2, $stats['created']);
+        $this->assertSame(3, $stats['skipped']);
+
+        $simple = Product::where('legacy_id', 501)->first();
+        $this->assertSame(45000, $simple->price);
+        $this->assertSame(60000, $simple->regular_price);
+        $this->assertSame(7, $simple->stock);
+        $this->assertSame('Audio', $simple->category->name);
+
+        $variable = Product::where('legacy_id', 502)->first();
+        $this->assertSame(25000, $variable->price);
+        $this->assertSame(7, $variable->stock);
+
+        $again = $importer->import(base_path('tests/fixtures/woocommerce-export.csv'), $store);
+        $this->assertSame(0, $again['created']);
+        $this->assertSame(2, $again['updated']);
+    }
 }

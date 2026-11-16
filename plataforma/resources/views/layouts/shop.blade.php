@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ isset($title) ? $title.' · ' : '' }}MarketCity</title>
     <meta name="description" content="@yield('description', 'MarketCity: el marketplace de Colombia. Compra a muchos vendedores en un solo pedido y paga como prefieras.')">
+    @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
     @hasSection('canonical')<link rel="canonical" href="@yield('canonical')">@endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+    @if (config('marketcity.demo'))
     <div class="bg-brand-900 px-4 py-1.5 text-center text-xs text-brand-100">
-        Versión 1 de prueba de la plataforma propia · datos ficticios · no se cobra dinero real
+        Versión 1 de prueba de la plataforma propia · no se cobra dinero real
     </div>
+    @endif
     <header class="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
             <a href="{{ route('home') }}" class="shrink-0 text-xl font-extrabold tracking-tight text-brand-700">Market<span class="text-accent-500">City</span></a>

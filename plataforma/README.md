@@ -1,7 +1,7 @@
 # MarketCity · Plataforma propia (versión 1)
 
 Primera versión del marketplace propio de MarketCity, que reemplazará progresivamente a WordPress + WooCommerce + WCFM.
-Código en PHP 8.3 con Laravel 13. Datos de prueba: **no contiene datos reales** de clientes, vendedores ni del titular.
+Código en PHP (8.2 o mayor) con Laravel 12. Datos de prueba: **no contiene datos reales** de clientes, vendedores ni del titular.
 
 ## Qué hace
 
@@ -18,7 +18,7 @@ Código en PHP 8.3 con Laravel 13. Datos de prueba: **no contiene datos reales**
 
 ## Abrirla en su computador
 
-Requisitos: PHP 8.3+ (con `pdo_sqlite`), Composer y Node 20+.
+Requisitos: PHP 8.2+ (con `pdo_sqlite`), Composer y Node 20+.
 
 ```bash
 cd plataforma

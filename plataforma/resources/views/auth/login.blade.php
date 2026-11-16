@@ -11,7 +11,7 @@
         <button class="btn-primary w-full">Ingresar</button>
         <p class="text-center text-sm text-slate-500">¿No tienes cuenta? <a href="{{ route('register') }}" class="text-brand-600 hover:underline">Regístrate</a></p>
     </form>
-    @if (app()->environment('local'))
+    @if (config('marketcity.show_demo_accounts'))
     <div class="mt-4 rounded-lg border border-dashed border-slate-300 p-4 text-xs text-slate-500">
         <p class="font-semibold">Cuentas de prueba (contraseña <code>marketcity</code>)</p>
         <p>Backoffice: admin@marketcity.test · Vendedor: vendedor1@marketcity.test · Cliente: cliente@marketcity.test</p>

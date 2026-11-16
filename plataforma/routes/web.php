@@ -70,6 +70,8 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');
     Route::get('/liquidaciones', [Admin\SettlementController::class, 'index'])->name('settlements');
     Route::post('/liquidaciones/{sellerOrder}', [Admin\SettlementController::class, 'settle'])->name('settlements.settle');
+    Route::get('/importar', [Admin\ImportController::class, 'show'])->name('import');
+    Route::post('/importar', [Admin\ImportController::class, 'store'])->name('import.store');
     Route::get('/configuracion', [Admin\SettingsController::class, 'index'])->name('settings');
     Route::put('/configuracion', [Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');

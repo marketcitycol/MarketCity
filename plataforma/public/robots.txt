@@ -1,2 +1,6 @@
 User-agent: *
-Disallow:
+Disallow: /seller-center
+Disallow: /backoffice
+Disallow: /carrito
+Disallow: /checkout
+Disallow: /pedido/

@@ -62,7 +62,7 @@ class MarketplaceFlowTest extends TestCase
         $this->assertSame($stockB - 2, $b->fresh()->stock);
 
         $soA = $order->sellerOrders->firstWhere('store_id', $a->store_id);
-        $this->assertSame((int) round(499900 * 0.15) + 900, $soA->commission_amount);
+        $this->assertSame((int) round(499900 * 0.15), $soA->commission_amount);
         $this->assertSame(499900 - $soA->commission_amount, $soA->seller_net);
 
         $this->post("/pedido/{$order->number}/pago-de-prueba?t={$order->access_token}", ['decision' => 'approve'])->assertRedirect();
@@ -166,5 +166,33 @@ class MarketplaceFlowTest extends TestCase
         $again = $importer->import(base_path('tests/fixtures/woocommerce-export.csv'), $store);
         $this->assertSame(0, $again['created']);
         $this->assertSame(2, $again['updated']);
+    }
+
+    public function test_negotiated_commission_and_payment_methods_per_store(): void
+    {
+        $sport = \App\Models\Store::where('slug', 'ruta-sport')->first(); // 12 %, solo pago en línea
+        $p = $sport->products()->first();
+        $this->post('/carrito', ['product_id' => $p->id]);
+
+        $this->get('/checkout')->assertSee('Pago de prueba')->assertDontSee('Pago contraentrega');
+        $this->post('/checkout', $this->checkoutData(['payment_method' => 'contraentrega']))->assertSessionHasErrors('payment_method');
+
+        $this->post('/checkout', $this->checkoutData());
+        $so = SellerOrder::first();
+        $this->assertSame((int) round($p->price * 0.12), $so->commission_amount);
+        $this->assertSame('negociada con el comercio', $so->commission_rule['source']);
+    }
+
+    public function test_admin_sets_store_terms(): void
+    {
+        $store = \App\Models\Store::where('slug', 'tecnoandes')->first();
+        $admin = User::where('role', 'admin')->first();
+        $this->actingAs($admin)->get("/backoffice/vendedores/{$store->slug}")->assertOk();
+        $this->actingAs($admin)->put("/backoffice/vendedores/{$store->slug}", [
+            'commission_percent' => '10', 'commission_fixed' => '', 'payments_mode' => 'custom', 'payment_methods' => ['contraentrega'],
+        ])->assertRedirect('/backoffice/vendedores');
+        $store->refresh();
+        $this->assertEquals(10, $store->commission_percent);
+        $this->assertSame(['contraentrega'], $store->allowedPaymentMethods());
     }
 }

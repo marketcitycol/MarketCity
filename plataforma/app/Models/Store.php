@@ -11,7 +11,7 @@ class Store extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'department', 'city', 'address', 'phone', 'document_type', 'document_number', 'free_shipping', 'shipping_fee', 'pickup_enabled', 'pickup_fee', 'status'];
+    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'department', 'city', 'address', 'phone', 'document_type', 'document_number', 'free_shipping', 'shipping_fee', 'pickup_enabled', 'pickup_fee', 'status', 'commission_percent', 'commission_fixed', 'payment_methods'];
 
     protected function casts(): array
     {
@@ -36,6 +36,17 @@ class Store extends Model
     public function sellerOrders(): HasMany
     {
         return $this->hasMany(SellerOrder::class);
+    }
+
+    /** Medios de pago permitidos para esta tienda; null = todos los activos en la plataforma. */
+    public function allowedPaymentMethods(): ?array
+    {
+        return $this->payment_methods === null ? null : array_values(array_filter(explode(',', $this->payment_methods)));
+    }
+
+    public function hasCustomCommission(): bool
+    {
+        return $this->commission_percent !== null || $this->commission_fixed !== null;
     }
 
     public function isActive(): bool

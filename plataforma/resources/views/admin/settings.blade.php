@@ -6,14 +6,12 @@
 <div class="mt-5 grid gap-6 xl:grid-cols-2">
 <section class="card p-5">
     <h2 class="font-semibold">Comisión, liquidación y pagos</h2>
-    <div class="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-        <strong>Supuesto pendiente (Q-031):</strong> en WCFM la regla 15 % + 900 COP figura "para el vendedor". Aquí se aplica como lo que <strong>cobra MarketCity</strong> sobre el valor de los productos de cada tienda. Cuando lo confirmes se ajusta; cada pedido guarda la regla con la que se calculó.
-    </div>
+    <p class="mt-1 text-sm text-slate-500">Valores generales. Lo negociado con cada comercio (comisión y medios de pago) se ajusta en <a href="{{ route('admin.stores') }}" class="text-brand-600 hover:underline">Vendedores</a>. Cada pedido guarda la regla con la que se calculó.</p>
     <form method="post" action="{{ route('admin.settings.update') }}" class="mt-4 space-y-4">
         @csrf @method('put')
         <div class="grid gap-4 sm:grid-cols-2">
             <div><label class="label" for="commission_percent">Comisión (%)</label><input class="input" type="number" step="0.1" id="commission_percent" name="commission_percent" value="{{ $s('commission_percent', 15) }}"></div>
-            <div><label class="label" for="commission_fixed">Fijo por pedido de cada tienda (COP)</label><input class="input" type="number" id="commission_fixed" name="commission_fixed" value="{{ $s('commission_fixed', 900) }}"></div>
+            <div><label class="label" for="commission_fixed">Valor fijo adicional por pedido (COP, opcional)</label><input class="input" type="number" id="commission_fixed" name="commission_fixed" value="{{ $s('commission_fixed', 0) }}"></div>
             <div><label class="label" for="settlement_business_days">Días hábiles para liquidar</label><input class="input" type="number" id="settlement_business_days" name="settlement_business_days" value="{{ $s('settlement_business_days', 10) }}"></div>
             <div><label class="label" for="installments">Cuotas de referencia en catálogo</label><input class="input" type="number" id="installments" name="installments" value="{{ $s('installments', 4) }}"></div>
             <div><label class="label" for="terms_version">Versión vigente de términos</label><input class="input" id="terms_version" name="terms_version" value="{{ $s('terms_version', '2026-11') }}"></div>

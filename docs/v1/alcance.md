@@ -45,7 +45,7 @@ Tener un marketplace propio que el propietario pueda abrir y probar de punta a p
 
 | ID | Tipo | Detalle | Cómo se maneja |
 |---|---|---|---|
-| V1-S1 | SUPUESTO (Q-031) | La regla 15 % + 900 COP es lo que **cobra** MarketCity, sobre el valor de los productos de cada tienda; el envío va al vendedor. | Configurable en backoffice; cada subpedido guarda la regla aplicada. |
+| V1-S1 | HECHO (Q-031, propietario 2026-11-16) | MarketCity cobra **15 %** por venta, sin valor fijo, ajustable por comercio según lo negociado; también los medios de pago se activan o desactivan por comercio. Se aplica sobre el valor de los productos; el envío va al vendedor (SUPUESTO). | Backoffice → Vendedores → Condiciones; cada subpedido guarda la regla aplicada. |
 | V1-S2 | SUPUESTO (Q-005) | Los 10 días hábiles se cuentan desde la confirmación del pago, sin contar festivos de Colombia. | Configurable. |
 | V1-S3 | SUPUESTO | Pila Laravel + MySQL (en hosting) / SQLite (local). | Decisión del propietario pendiente; ver ADR-0001. |
 | V1-R1 | RIESGO (A-01, A-02, A-05) | Sin copias de seguridad, licencias ni restauración confirmadas, no se puede planear el corte. | La v1 no toca producción. |

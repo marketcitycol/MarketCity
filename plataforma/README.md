@@ -13,7 +13,7 @@ Código en PHP (8.2 o mayor) con Laravel 12. Datos de prueba: **no contiene dato
 | Pedido | Un pedido se divide en un subpedido por tienda. Estados Recibido → Validado → Despachado → Entregado (o Cancelado). Guía con transportadora (Coordinadora, Servientrega, TCC, Envía, Interrapidísimo). Seguimiento con número y correo. Historial auditable. |
 | Seller Center | Inicio con indicadores, productos (crear, editar, foto, stock, pausar), pedidos de su tienda, liquidaciones, datos y envíos de la tienda. Registro de vendedores con aprobación. |
 | Backoffice | Resumen (GMV, comisión, por liquidar), pedidos, vendedores (aprobar/suspender), productos (pausar), liquidaciones (registrar transferencia), configuración (comisión, días hábiles, medios de pago, titular del comercio). |
-| Dinero | Comisión configurable (hoy 15 % + 900 COP, ver supuesto Q-031) guardada en cada subpedido. Liquidación a 10 días hábiles con festivos colombianos calculados. |
+| Dinero | Comisión de MarketCity: 15 % general, ajustable por comercio, guardada en cada subpedido. Medios de pago activables por comercio. Liquidación a 10 días hábiles con festivos colombianos calculados. |
 | Titular | El titular del comercio (hoy persona natural) es un dato, no código: se agrega la sociedad y se activa; los pedidos viejos conservan su titular. |
 
 ## Abrirla en su computador

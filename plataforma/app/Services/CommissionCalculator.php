@@ -3,31 +3,33 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use App\Models\Store;
 
 /**
- * Calcula la comisión de MarketCity sobre un subpedido.
+ * Calcula la comisión que cobra MarketCity sobre un subpedido.
  *
- * SUPUESTO (pendiente Q-031): en WCFM la regla 15 % + 900 COP está marcada "para el vendedor".
- * Mientras el propietario no lo confirme, la versión 1 la toma como lo que COBRA MarketCity,
- * sobre el subtotal de productos (el envío va al vendedor, como en WCFM).
- * Porcentaje, fijo y base se cambian en Backoffice → Configuración sin tocar código.
+ * Regla del propietario (2026-11-16): 15 % por venta, sin valor fijo, ajustable por comercio
+ * según lo negociado. Se aplica sobre el valor de los productos; el envío va al vendedor.
+ * Cada subpedido guarda la regla con la que se calculó.
  */
 class CommissionCalculator
 {
-    public function rule(): array
+    public function rule(?Store $store = null): array
     {
+        $custom = $store?->hasCustomCommission();
+
         return [
-            'percent' => (float) Setting::get('commission_percent', 15),
-            'fixed' => (int) Setting::get('commission_fixed', 900),
+            'percent' => (float) ($store?->commission_percent ?? Setting::get('commission_percent', 15)),
+            'fixed' => (int) ($store?->commission_fixed ?? Setting::get('commission_fixed', 0)),
             'base' => 'subtotal_productos',
-            'source' => 'SUPUESTO Q-031',
+            'source' => $custom ? 'negociada con el comercio' : 'general',
         ];
     }
 
     /** @return array{commission:int, seller_net:int, rule:array} */
-    public function forSellerOrder(int $subtotal, int $shipping): array
+    public function forSellerOrder(int $subtotal, int $shipping, ?Store $store = null): array
     {
-        $rule = $this->rule();
+        $rule = $this->rule($store);
         $commission = (int) round($subtotal * $rule['percent'] / 100) + $rule['fixed'];
         $commission = min($commission, $subtotal);
 

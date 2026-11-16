@@ -70,7 +70,7 @@ class OrderService
                     $method = 'envio';
                 }
                 $shipping = Cart::shippingCost($store, $method);
-                $money = $this->commissions->forSellerOrder($group['subtotal'], $shipping);
+                $money = $this->commissions->forSellerOrder($group['subtotal'], $shipping, $store);
 
                 $sellerOrder = $order->sellerOrders()->create([
                     'store_id' => $store->id,

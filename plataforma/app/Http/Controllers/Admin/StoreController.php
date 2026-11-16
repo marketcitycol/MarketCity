@@ -17,6 +17,35 @@ class StoreController extends Controller
         ]);
     }
 
+    public function edit(Store $store, \App\Services\Payments\PaymentRegistry $payments)
+    {
+        return view('admin.store-edit', ['store' => $store, 'gateways' => $payments->all(), 'general' => app(\App\Services\CommissionCalculator::class)->rule()]);
+    }
+
+    /** Condiciones negociadas con el comercio. Vacío = usar los valores generales. */
+    public function update(Request $request, Store $store, \App\Services\Payments\PaymentRegistry $payments)
+    {
+        $data = $request->validate([
+            'commission_percent' => 'nullable|numeric|min:0|max:100',
+            'commission_fixed' => 'nullable|integer|min:0|max:1000000',
+            'payments_mode' => ['required', Rule::in(['all', 'custom'])],
+            'payment_methods' => 'nullable|array',
+            'payment_methods.*' => [Rule::in(array_keys($payments->all()))],
+        ]);
+
+        if ($data['payments_mode'] === 'custom' && empty($data['payment_methods'])) {
+            return back()->withInput()->with('error', 'Elige al menos un medio de pago o deja "todos los activos".');
+        }
+
+        $store->update([
+            'commission_percent' => $data['commission_percent'] ?? null,
+            'commission_fixed' => $data['commission_fixed'] ?? null,
+            'payment_methods' => $data['payments_mode'] === 'custom' ? implode(',', $data['payment_methods']) : null,
+        ]);
+
+        return redirect()->route('admin.stores')->with('success', "Condiciones de «{$store->name}» guardadas. Aplican a pedidos nuevos.");
+    }
+
     public function status(Request $request, Store $store)
     {
         $data = $request->validate(['status' => ['required', Rule::in(['active', 'suspended', 'pending'])]]);

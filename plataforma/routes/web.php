@@ -65,6 +65,8 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/subpedidos/{sellerOrder}/estado', [Admin\OrderController::class, 'advance'])->name('orders.advance');
     Route::post('/subpedidos/{sellerOrder}/cancelar', [Admin\OrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/vendedores', [Admin\StoreController::class, 'index'])->name('stores');
+    Route::get('/vendedores/{store}', [Admin\StoreController::class, 'edit'])->name('stores.edit');
+    Route::put('/vendedores/{store}', [Admin\StoreController::class, 'update'])->name('stores.update');
     Route::post('/vendedores/{store}/estado', [Admin\StoreController::class, 'status'])->name('stores.status');
     Route::get('/productos', [Admin\StoreController::class, 'products'])->name('products');
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');

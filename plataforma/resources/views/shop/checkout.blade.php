@@ -40,6 +40,9 @@
         <section class="card p-5">
             <h2 class="font-semibold">3. Medio de pago</h2>
             <div class="mt-4 space-y-2">
+                @if (empty($gateways))
+                    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Las tiendas de tu carrito no tienen un medio de pago en común. Compra sus productos en pedidos separados.</p>
+                @endif
                 @foreach ($gateways as $key => $g)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
                         <input type="radio" name="payment_method" value="{{ $key }}" class="mt-1" @checked(old('payment_method', array_key_first($gateways)) === $key)>

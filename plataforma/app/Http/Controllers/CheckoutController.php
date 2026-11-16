@@ -22,13 +22,14 @@ class CheckoutController extends Controller
         return view('shop.checkout', [
             'groups' => $this->cart->groups(),
             'cart' => $this->cart,
-            'gateways' => $this->payments->enabled(),
+            'gateways' => $this->payments->forStores($this->cart->groups()->pluck('store')),
             'user' => $request->user(),
         ]);
     }
 
     public function place(Request $request, OrderService $orders)
     {
+        $allowed = array_keys($this->payments->forStores($this->cart->groups()->pluck('store')));
         $data = $request->validate([
             'first_name' => 'required|string|max:80',
             'last_name' => 'required|string|max:80',
@@ -41,7 +42,7 @@ class CheckoutController extends Controller
             'address' => 'required|string|max:150',
             'address_2' => 'nullable|string|max:150',
             'notes' => 'nullable|string|max:500',
-            'payment_method' => ['required', Rule::in(array_keys($this->payments->enabled()))],
+            'payment_method' => ['required', Rule::in($allowed)],
             'terms' => 'accepted',
             'marketing_optin' => 'nullable|boolean',
             'shipping' => 'nullable|array',
@@ -49,6 +50,7 @@ class CheckoutController extends Controller
             'terms.accepted' => 'Debes aceptar los términos y la política de tratamiento de datos.',
             'document_number.regex' => 'Revisa el número de documento.',
             'phone.regex' => 'Revisa el número de celular.',
+            'payment_method.in' => 'Ese medio de pago no está disponible para las tiendas de tu carrito.',
         ]);
 
         if (isset($data['shipping'])) {

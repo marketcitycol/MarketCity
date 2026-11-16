@@ -23,6 +23,24 @@ class PaymentRegistry
         return array_intersect_key($this->gateways, array_flip($enabled));
     }
 
+    /**
+     * Medios que se pueden usar en un carrito: los activos en la plataforma que TODAS sus tiendas aceptan.
+     *
+     * @param  iterable<\App\Models\Store>  $stores
+     * @return array<string, PaymentGateway>
+     */
+    public function forStores(iterable $stores): array
+    {
+        $available = $this->enabled();
+        foreach ($stores as $store) {
+            if (($allowed = $store->allowedPaymentMethods()) !== null) {
+                $available = array_intersect_key($available, array_flip($allowed));
+            }
+        }
+
+        return $available;
+    }
+
     public function all(): array
     {
         return $this->gateways;

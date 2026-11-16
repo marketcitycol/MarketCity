@@ -6,7 +6,7 @@
 
 <div class="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
     @include('partials.stat', ['label' => 'Ventas pagadas (GMV)', 'value' => cop($stats['gmv']), 'hint' => $stats['pagados'].' de '.$stats['pedidos'].' pedidos pagados'])
-    @include('partials.stat', ['label' => 'Comisión MarketCity', 'value' => cop($stats['comision']), 'hint' => 'Regla en revisión (Q-031)'])
+    @include('partials.stat', ['label' => 'Comisión MarketCity', 'value' => cop($stats['comision']), 'hint' => 'General 15 %, ajustable por comercio'])
     @include('partials.stat', ['label' => 'Por liquidar a vendedores', 'value' => cop($stats['por_liquidar']), 'hint' => $stats['vencidas'] ? $stats['vencidas'].' vencidas hoy' : 'Ninguna vencida', 'class' => $stats['vencidas'] ? 'text-amber-600' : ''])
     @include('partials.stat', ['label' => 'Tiendas activas', 'value' => $stats['tiendas'], 'hint' => $stats['solicitudes'].' solicitudes · '.$stats['productos'].' productos'])
 </div>

@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
     {
         $settings = [
             'commission_percent' => '15',
-            'commission_fixed' => '900',
+            'commission_fixed' => '0',
             'settlement_business_days' => '10',
             'payment_methods' => 'sandbox,contraentrega',
             'terms_version' => '2026-11',
@@ -76,6 +76,9 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active',
             ]);
         }
+        // Ejemplo de condiciones negociadas: comisión del 12 % y solo pago en línea.
+        $storeModels['Ruta Sport']->update(['commission_percent' => 12, 'payment_methods' => 'sandbox']);
+
         // Una solicitud pendiente para probar la aprobación en el backoffice.
         $u = User::create(['name' => 'Vendedor Nuevo', 'email' => 'vendedor5@marketcity.test', 'password' => 'marketcity', 'role' => 'seller']);
         Store::create(['user_id' => $u->id, 'name' => 'Boutique Nueva', 'slug' => 'boutique-nueva', 'department' => 'Santander', 'city' => 'Bucaramanga', 'status' => 'pending']);

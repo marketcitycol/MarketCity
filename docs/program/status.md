@@ -38,7 +38,10 @@ Base de datos de producción recibida e importada en el clon aislado; inventario
 Q-028 y Q-029 cerradas; Q-004 parcial (titular: fundador y representante legal; se pregunta si es persona natural o sociedad, Q-030). Las URL `/seller/` y `/sellercenter/` de producción muestran la página por defecto de Hostinger (R-025). MarketCityPay es producto propio del propietario.
 
 ## Próxima acción
-Recibir la copia o el acceso de Q-025, montar el clon según `staging-clone-plan.md` y desde él completar el inventario técnico privado (§7.3), checkout, Seller Center y backoffice. Pendientes: Q-004 y los accesos P0 de `access-request.md`; luego ejecutar el inventario técnico privado (§7.3) en sesión de solo lectura.
+Fase 0: queda pendiente Q-031 (comisión WCFM) y los accesos P0 que no dependen del clon (A-01, A-02, A-05: copias de seguridad y restauración). Con eso, re-evaluar la compuerta. En paralelo, recapturar evidencia pública con HTML y cabeceras (Q-015).
+
+## Novedades 2026-11-16
+Recorrido de checkout, Seller Center y backoffice en el clon (`docs/discovery/clone-walkthrough.md`, E-034). WCFM: comisión 15 % + 900 COP marcada "para el vendedor" (Q-031), retiros manuales por transferencia o efectivo. Redirección `/sellercenter/` aplicada en producción por el propietario.
 
 ## Árbol documental
 

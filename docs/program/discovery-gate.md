@@ -1,7 +1,7 @@
 # Compuerta de Fase 0 — evaluación
 
 - **Misión:** MC-DISC-001
-- **Fecha de evaluación:** 2026-11-12 (actualizada 2026-11-15)
+- **Fecha de evaluación:** 2026-11-12 (actualizada 2026-11-16)
 - **Evaluador:** agente de ingeniería (DRI provisional hasta Q-001)
 - **Veredicto:** **NO_APROBADA** (avance parcial; misión EN_CURSO)
 - **Próxima revisión:** al recibir respuestas a Q-001, Q-004, Q-005, Q-012 y los accesos A-01…A-07, A-09…A-11 (fecha objetivo 2026-11-26).
@@ -22,5 +22,5 @@
 1. ~~Nombrar propietarios (Q-001)~~ Cumplido 2026-11-13.
 2. Confirmar flujo de dinero con contratos y reportes (Q-004 cerrada: todas las cuentas a nombre del fundador como persona natural, R-026; Q-005 parcial: liquidación a 10 días hábiles; A-09, A-10).
 3. Inventario técnico privado mínimo: A-01, A-02, A-04, A-05. (A-04 cumplido 2026-11-15: código de `wp-content` versionado en el clon e inventariado, E-032; faltan `seller`/`sellercenter`, Q-028.)
-4. Observar checkout, Seller Center y backoffice en el clon autorizado (copia completa recibida 2026-11-15; el sitio ya corre en el clon; falta recorrer los tres flujos).
+4. ~~Observar checkout, Seller Center y backoffice en el clon autorizado~~ Cumplido 2026-11-16 (E-034, `clone-walkthrough.md`).
 5. Recapturar evidencia pública con HTML + cabeceras + hash y medir rendimiento (Q-015).

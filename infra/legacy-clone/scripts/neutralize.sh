@@ -10,7 +10,7 @@ foreach ($GLOBALS["wpdb"]->get_col("SELECT option_name FROM {$GLOBALS["wpdb"]->o
   $v = get_option($name);
   if (!is_array($v)) continue;
   $touched = false;
-  if (isset($v["enabled"]) && $v["enabled"] === "yes" && preg_match("/(gateway|payment|addi|sistecredito|bold|wompi|pse|nequi|daviplata|mercadopago|payu|epayco)/i", $name . " " . ($v["title"] ?? ""))) { $v["enabled"] = "no"; $touched = true; }
+  if (isset($v["enabled"]) && $v["enabled"] === "yes" && preg_match("/(gateway|payment|addi|sistecredito|bold|wompi|pse|nequi|daviplata|mercadopago|mercado|payu|epayco)/i", $name . " " . ($v["title"] ?? ""))) { $v["enabled"] = "no"; $touched = true; }
   foreach ($v as $k => $val) {
     if (is_string($val) && $val !== "" && preg_match("/(key|secret|token|password|client_id|merchant|signature|webhook)/i", $k)) { $v[$k] = "REDACTED_BY_CLONE"; $touched = true; }
   }
@@ -38,4 +38,6 @@ foreach (["mcn_settings"] as $name) {
 update_option("blog_public", "0");
 echo "Options neutralized: " . count($changed) . PHP_EOL . implode(PHP_EOL, $changed) . PHP_EOL;
 ' | tee -a data/reports/neutralize.txt
+# Google Listings & Ads blocks wp-admin for ~9 s and then renders a blank page when Google is unreachable.
+wp plugin deactivate google-listings-and-ads >/dev/null 2>&1 && log "Deactivated google-listings-and-ads (needs internet; blanks wp-admin in the clone)"
 log "Scheduled events kept but WP-Cron is disabled (DISABLE_WP_CRON). Review with: wp cron event list"

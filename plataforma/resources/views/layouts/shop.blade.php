@@ -77,7 +77,7 @@
                 </ul>
             </div>
         </div>
-        <p class="border-t border-slate-100 px-4 py-4 text-center text-xs text-slate-400">* Cuotas de referencia: el valor final depende del medio de pago y su aprobación. Precios en pesos colombianos con IVA incluido.</p>
+        <p class="border-t border-slate-100 px-4 py-4 text-center text-xs text-slate-500">* Cuotas de referencia: el valor final depende del medio de pago y su aprobación. Precios en pesos colombianos con IVA incluido.</p>
     </footer>
 </body>
 </html>

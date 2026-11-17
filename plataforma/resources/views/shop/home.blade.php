@@ -17,8 +17,8 @@
     <h2 class="text-lg font-bold">Categorías</h2>
     <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
         @foreach (\App\Models\Category::orderBy('position')->get() as $c)
-            <a href="{{ route('category', $c) }}" class="card flex items-center gap-3 p-3 text-sm font-medium hover:border-brand-500 hover:text-brand-700">
-                <span class="text-2xl" aria-hidden="true">{{ $c->icon }}</span>{{ $c->name }}
+            <a href="{{ route('category', $c) }}" class="card flex min-w-0 items-center gap-3 p-3 text-sm font-medium hover:border-brand-500 hover:text-brand-700">
+                <span class="text-2xl" aria-hidden="true">{{ $c->icon }}</span><span class="min-w-0 [overflow-wrap:anywhere]">{{ $c->name }}</span>
             </a>
         @endforeach
     </div>

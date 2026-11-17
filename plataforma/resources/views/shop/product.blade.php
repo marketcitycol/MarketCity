@@ -31,7 +31,7 @@
 
         <div class="mt-5">
             @if ($product->isOnSale())
-                <p class="text-sm text-slate-400"><span class="line-through">{{ cop($product->regular_price) }}</span> <span class="badge bg-red-100 text-red-700">-{{ $product->discountPercent() }}%</span></p>
+                <p class="text-sm text-slate-500"><span class="line-through">{{ cop($product->regular_price) }}</span> <span class="badge bg-red-100 text-red-700">-{{ $product->discountPercent() }}%</span></p>
             @endif
             <p class="text-3xl font-extrabold">{{ cop($product->price) }}</p>
             <p class="mt-1 text-sm text-brand-700">o hasta {{ $inst }} cuotas de <strong>{{ cop(ceil($product->price / $inst)) }}</strong>*</p>

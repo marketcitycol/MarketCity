@@ -53,17 +53,22 @@
 - Duraciones: 150 / 200 / 250 ms.
 - Capas: header 50, barra inferior móvil 60, hoja 80, toast 90.
 
-## 5. Estado de v1 frente a la marca (brecha)
+## 5. Estado de v1 frente a la marca
 
-| Aspecto | v1 hoy | Objetivo |
+| Aspecto | Antes (2026-11-16) | Ahora (2026-11-17, PR #4) |
 |---|---|---|
-| Color principal | Índigo genérico de Tailwind (`#4338CA`) | `#0A4BFF` |
-| Acento | Ámbar `#FBBF24` | Amarillo `#FCD116` y morado de crédito `#5B43C0` |
-| Fuente | Fuente del sistema | Poppins autoalojada |
-| Logo | Texto | Logo oficial (D-05) |
+| Color principal | Índigo genérico (`#4338CA`) | `#0A4BFF` (escala `brand-50…900`) |
+| Acento | Ámbar `#FBBF24` | Amarillo `#FCD116` |
+| Cuotas / crédito | Azul | Morado de crédito `#5B43C0` en tarjetas |
+| Descuento | Rojo genérico | `#C23D0B` (5,3:1 con blanco) |
+| Fuente | Del sistema | Poppins 400–700, autoalojada (`@fontsource/poppins`, OFL), solo subconjunto latino |
+| Texto secundario | `slate-400` (2,6:1, no cumple AA) | `slate-500` (4,8:1) |
+| Logo | Texto | Sigue en texto hasta D-05 |
+
+Verificado con capturas locales a 375 px y 1280 px: Poppins cargada y sin desborde horizontal (se corrigió una tarjeta de categoría que desbordaba 4 px con la fuente nueva).
 
 ## 6. Próximos pasos (Fase E)
-1. Llevar estos tokens a `plataforma/resources/css/app.css` (`@theme`) y versionarlos como `design-tokens.json`.
+1. ~~Llevar estos tokens a `app.css`~~ (hecho). Versionarlos también como `design-tokens.json` para la app móvil.
 2. Ajustar botones, tarjetas de producto, badges de cuota/oferta y encabezado.
 3. Revisar contraste AA de cada par texto/fondo (ej.: blanco sobre `#0A4BFF` = 6,1:1 ✓; blanco sobre `#FF5A1F` = 3,1:1 ✗ → usar `#C23D0B` (5,3:1) para texto; blanco sobre `#5B43C0` = 7,0:1 ✓).
 4. Capturas de referencia legado vs. v1 en 375 px y 1280 px y regresión visual.

@@ -21,7 +21,7 @@
                 @foreach (\App\Models\SellerOrder::FLOW as $i => $st)
                     <li>
                         <div class="h-1.5 rounded-full {{ $i <= $pos ? 'bg-brand-600' : 'bg-slate-200' }}"></div>
-                        <p class="mt-1 {{ $i <= $pos ? 'font-semibold text-brand-700' : 'text-slate-400' }}">{{ \App\Models\SellerOrder::STATUSES[$st] }}</p>
+                        <p class="mt-1 {{ $i <= $pos ? 'font-semibold text-brand-700' : 'text-slate-500' }}">{{ \App\Models\SellerOrder::STATUSES[$st] }}</p>
                     </li>
                 @endforeach
             </ol>
@@ -39,7 +39,7 @@
     <section class="card mt-5 p-5 text-sm">
         <p class="font-semibold">Historial</p>
         <ul class="mt-2 space-y-1 text-slate-600">
-            @foreach ($order->events as $e)<li><span class="text-slate-400">{{ fecha($e->created_at) }}</span> · {{ $e->message }}</li>@endforeach
+            @foreach ($order->events as $e)<li><span class="text-slate-500">{{ fecha($e->created_at) }}</span> · {{ $e->message }}</li>@endforeach
         </ul>
     </section>
 </div>

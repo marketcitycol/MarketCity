@@ -1,18 +1,35 @@
 @import 'tailwindcss';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../views';
 
+
+/*
+ * Tokens de marca MarketCity (docs/marketcity-audit/04-identidad-visual.md).
+ * Tomados de las variables --mc-* del sitio actual; "brand" unifica los 5 azules que conviven hoy.
+ */
 @theme {
-    --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    --color-brand-50: #eef2ff;
-    --color-brand-100: #e0e7ff;
-    --color-brand-500: #4f46e5;
-    --color-brand-600: #4338ca;
-    --color-brand-700: #3730a3;
-    --color-brand-900: #1e1b4b;
-    --color-accent-400: #fbbf24;
-    --color-accent-500: #f59e0b;
+    --font-sans: 'Poppins', 'Segoe UI', system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --color-brand-50: #eef3ff;
+    --color-brand-100: #dce6ff;
+    --color-brand-500: #0a4bff;
+    --color-brand-600: #0a4bff;
+    --color-brand-700: #0838c4;
+    --color-brand-900: #0b2a6f;
+    --color-accent-400: #fcd116;
+    --color-accent-500: #e6bb00;
+    --color-credit-50: #f1eefc;
+    --color-credit-600: #5b43c0;
+    --color-offer-50: #fff1eb;
+    --color-offer-600: #c23d0b;
+    --color-success-50: #e8f6ee;
+    --color-success-700: #0e7a3d;
+    --radius-lg: 0.75rem;
+    --radius-xl: 0.75rem;
 }
 
 @layer components {

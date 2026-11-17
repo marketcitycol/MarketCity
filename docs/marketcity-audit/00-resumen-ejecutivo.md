@@ -10,7 +10,7 @@
 
 | Tema | Hallazgo | Evidencia |
 |---|---|---|
-| Stack real | WordPress 7.0.4 + WooCommerce 11.3.0 + WCFM (marketplace y membresía) + tema Wolmart 1.10.0 con hijo vacío + Elementor 4.4. 51 plugins activos, 14 plugins propios (~20 000 líneas) y 70 snippets (~2 MB) guardados en la base. | AUD-E-001, Fase 0 E-031/E-032 |
+| Stack real | WordPress 7.1.4 + WooCommerce 11.3.0 + WCFM (marketplace y membresía) + tema Wolmart 1.10.0 con hijo vacío + Elementor 4.4. 51 plugins activos, 14 plugins propios (~20 000 líneas) y 70 snippets (~2 MB) guardados en la base. | AUD-E-001, Fase 0 E-031/E-032 |
 | Servidor | Hostinger (cabeceras `platform: hostinger`, `server: hcdn`), LiteSpeed Cache, PHP 8.2, MariaDB 11.8.9. | AUD-E-001 |
 | Volumen | 644 productos públicos (0 variables), 15 categorías públicas, 98 usuarios, 6 vendedores, **129 pedidos en 5 años** (38 % cancelados). | AUD-E-004, Fase 0 E-031 |
 | Pagos | 11 medios configurados; los usados: Addi (39 %), contraentrega, MarketCity Pay, transferencia, Sistecrédito, Bold, Wava, Wompi, Mercado Pago. | Fase 0 E-031, AUD-E-003 |
@@ -42,7 +42,7 @@ Marketplace propio en Laravel 13, publicado en v1.marketcity.co con aviso de pru
 | Fase | Estado | Depende de |
 |---|---|---|
 | A. Línea base | EN CURSO (falta Lighthouse/CWV de laboratorio desde red sin restricción, Q-015) | — |
-| B. Admin actual | BLOQUEADA: necesita que el propietario inicie sesión en marketcity.co/admin en el navegador de Claude | Acceso B-01 |
+| B. Admin actual | **HECHA para el rol administrador** (2026-11-17): 39 menús, 191 enlaces, 155 pantallas leídas + 13 de WCFM. Falta repetir con un vendedor (rol `wcfm_vendor`) | Sesión de un vendedor de prueba |
 | C. Frontend por actor | PARCIAL (inventario de rutas en `02-inventario-frontend.csv`) | — |
 | D. Plugins y datos | PARCIAL ALTA (Fase 0) | — |
 | E. Identidad visual | INICIADA: tokens reales extraídos (`04-identidad-visual.md`); v1 aún usa paleta genérica | — |
@@ -51,3 +51,22 @@ Marketplace propio en Laravel 13, publicado en v1.marketcity.co con aviso de pru
 
 ## Decisiones pendientes del propietario (resumen)
 Ver `11-riesgos-bloqueos-decisiones.md`. Las que cambian arquitectura: D-01 base de datos de v1 (SQLite → MySQL de Hostinger), D-02 modelo de cobro (MarketCity cobra y liquida vs. split del proveedor), D-03 alcance de MarketCityPay, D-04 qué histórico migrar.
+
+## Fase B — hallazgos del panel administrador (2026-11-17)
+
+Lectura con la sesión del propietario, solo con peticiones GET: no se guardó, activó ni borró nada. Se omitieron 36 enlaces que podrían cambiar algo o salen del sitio (asistentes de configuración, "Patcher", editores de código de temas y plugins, "Conectar cuenta", "Upgrade", altas nuevas y enlaces externos). Detalle por pantalla en `01-inventario-admin.csv`.
+
+| # | Hallazgo | Impacto | Prioridad |
+|---|---|---|---|
+| 1 | Cada pantalla del panel WCFM (Seller Center) tarda **~8 s** en el servidor; wp-admin, 2–6 s | Operación lenta para vendedores y admin | P1 |
+| 2 | 85 plugins (52 activos); **8 con actualización pendiente** (Elementor, Wolmart Core, YITH Filter, Google for WooCommerce, Contact Form 7, MarketKing, Alpus ×2) | Seguridad | P0 (legado) |
+| 3 | **Cuatro marketplaces alternativos instalados** aunque inactivos: Dokan, MultiVendorX, WC Vendors y MarketKing (Core y Pro) | Superficie de ataque | P1 |
+| 4 | MarketCity Pay: el plugin está activo pero **el medio de pago está apagado**; su panel aprueba o niega créditos a mano (13 solicitudes) | Producto financiero sin definición legal (D-03) | P0 |
+| 5 | Comisión de WCFM configurable **por categoría y por producto**, además de por tienda | v1 solo tiene comisión por tienda: nuevo requisito MC-FR-026 | P1 |
+| 6 | 8 medios de pago activos; Mercado Pago solo como Checkout Pro | Alcance de adaptadores (`08`) | — |
+| 7 | Estados propios: `addi-approved`, `wava-confirm`; 130 pedidos (49 cancelados) | Mapa de migración | P1 |
+| 8 | Roto: WhatsApp de Meta ("Connection Error"), 4 entradas de Kirki redirigen al sitio público, "Mercado" duplicado en el menú con un enlace roto, `/seller-center/orders/` da 404 | Operación confusa | P2 |
+| 9 | 8 comentarios pendientes sin moderar; 23 cupones en papelera; 4 entradas de blog en papelera; categorías y etiquetas demo | Limpieza | P3 |
+| 10 | Efecto "Navidad Marketcity" (nieve) activo; "Bandera de Colombia" instalado dos veces | Rendimiento en móvil | P3 |
+| 11 | Ya existe un **registro de autorizaciones** (fecha, finalidad, canal, política, IP) en MarketCity Notify y horarios de la Ley 2300 | Reutilizar el modelo en v1 | P2 |
+| 12 | Hay un registro de búsquedas de clientes (término, veces, clics) | Insumo para la búsqueda de v1 | P2 |

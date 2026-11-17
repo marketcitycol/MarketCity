@@ -10,14 +10,14 @@
 | Hosting | Hostinger (plan compartido/cloud; cabeceras `platform: hostinger`, `panel: hpanel`) | HECHO (AUD-E-001) |
 | Borde / CDN | `hcdn` de Hostinger con HTTP/3 (`alt-svc h3`); `x-hcdn-cache-status: BYPASS` en el inicio | HECHO |
 | Servidor web | LiteSpeed (`x-litespeed-cache`) | HECHO |
-| PHP | 8.2 (Hostinger) | HECHO (Q-029) |
-| Base de datos | MariaDB 11.8.9, 218 tablas, 654 MB (70 % analítica de WCFM) | HECHO (E-031) |
-| CMS | WordPress 7.0.4 | HECHO (E-032) |
+| PHP | 8.2.35 (Hostinger), memoria WordPress 3 GB | HECHO (Fase B, WC Estado) |
+| Base de datos | MariaDB 11.8.9, prefijo `wp_`, **707,8 MB** hoy (70 % analítica de WCFM en el volcado de Fase 0) | HECHO (Fase B) |
+| CMS | WordPress **7.1.4** (actualizado desde 7.0.4 del clon de Fase 0) | HECHO (Fase B) |
 | Comercio | WooCommerce 11.3.0, HPOS desactivado | HECHO |
 | Marketplace | WCFM Marketplace + Frontend Manager + Membership | HECHO |
 | Tema | Wolmart 1.10.0 + hijo vacío | HECHO |
 | Caché | LiteSpeed Cache (página), sin Redis/Memcached | HECHO / INFERENCIA |
-| Colas / cron | Action Scheduler de WooCommerce + WP-Cron; 989 tareas fallidas | HECHO (R-020) |
+| Colas / cron | Action Scheduler 4.1.0 (28 943 acciones registradas) + WP-Cron; 989 fallidas en Fase 0 | HECHO (R-020) |
 | Correo | FluentSMTP (proveedor SMTP: PENDIENTE) | HECHO / PENDIENTE |
 | Medios | `wp-content/uploads` 989 MB; servidos por Jetpack Photon (`i0.wp.com`) | HECHO |
 | Analítica | GTM, GA4 (`_ga_SCT1W4VREG`), Meta Pixel (`_fbp`), Jetpack Stats (`tk_*`), Sourcebuster (`sbjs_*`), mc-insights | HECHO (cookies en AUD-E-001) |

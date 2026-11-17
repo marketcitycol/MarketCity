@@ -62,3 +62,65 @@
 | Plugin `wava-payment` cargando logo en la ficha | red | Confirmar si Wava sigue contratado |
 | `?mc54_js=…` sirve JS dinámico desde PHP | red | Snippet; reescribir |
 | Scripts externos: Google Tag Manager, Meta, Jetpack Stats, Addi, Bold, Amazon S3, jsDelivr | DOM | Inventario de terceros para CSP y consentimiento |
+
+## 6. Lista completa de plugins con versiones (Fase B, 2026-11-17, pantalla Plugins con sesión del propietario)
+
+**85 plugins: 52 activos, 33 inactivos, 8 con actualización pendiente.** WordPress ya está en **7.1.4** (en el clon de Fase 0 era 7.0.4), PHP 8.2.35, MariaDB 11.8.9, base de 707,8 MB.
+
+### Activos (52)
+| Plugin | Versión | Autor | Nota |
+|---|---|---|---|
+| WooCommerce | 11.3.0 | Automattic | HPOS apagado |
+| WCFM Frontend Manager / Multivendor Marketplace / Membership | 6.8.2 / 3.8.4 / 2.12.1 | WC Lovers | Núcleo del marketplace |
+| Addi | 2.1.1 | Addi | Activo |
+| Bold pagos en línea | 3.5.0 | Bold | Activo |
+| Wompi Portal de Pagos | 3.2.1 | Wompi | Activo |
+| Mercado Pago | 8.10.2 | Mercado Pago | Activo (solo Checkout Pro; tarjeta, efectivo y PSE apagados) |
+| WooCommerce Sistecrédito Payment Gateway | 2.0.0 | Sistecrédito | Activo; su CSS da 404 en el sitio |
+| Wava Payment (Nequi o Daviplata) | 0.3.10 | Wava | Activo |
+| MarketCity Pay | 2.0.1 | MarketCityPay | Plugin activo, **medio de pago apagado** |
+| ELEX Discount Per Payment Method | 1.3.3 | ELEXtensions | |
+| Checkout Field Editor for WooCommerce | 2.2.1 | ThemeHigh | Aviso de conflicto con otro editor instalado |
+| QCode Departamentos y Ciudades de Colombia | 1.2.1 | QCode | |
+| Coordinadora | 1.2.0 | Coordinadora | |
+| YITH Ajax Product Filter / Wishlist | 5.25.0 (actualizar) / 4.21.0 | YITH | |
+| Customizer Search | 1.2.1 | — | |
+| Elementor | 4.4.0 (actualizar) | Elementor | |
+| Image Optimization | 1.7.7 | Elementor | 885 tareas fallidas |
+| Wolmart Core | 1.10.3 (actualizar) | D-Themes | |
+| Kirki 6.4.2 · Meta Box 5.15.5 · MetForm 4.3.4 · Stackable 3.20.3 | | | Sin uso de negocio visible |
+| Jetpack | 16.4 | Automattic | |
+| LiteSpeed Cache | 7.9.3 | LiteSpeed | QUIC.cloud sin configurar |
+| Code Snippets | 4.1.0 | Code Snippets Pro | 70 snippets |
+| FluentSMTP | 2.4.5 | WPManageNinja | |
+| Meta for WooCommerce | 3.7.8 | Meta | WhatsApp con error de conexión |
+| Google for WooCommerce | 3.10.0 (actualizar) | WooCommerce | |
+| Google Analytics for WooCommerce | 2.4.4 | WooCommerce | |
+| Nextend Social Login | 3.1.27 | Nextendweb | |
+| Chaty | 3.6.5 | Premio | **Nuevo frente a Fase 0** |
+| Hostinger Amazon Affiliate 3.0.57 · Hostinger AI 3.1.9 | | Hostinger | |
+| Regenerate Thumbnails 3.1.6 · WooCommerce.com Update Manager 1.0.3 | | | |
+| Propios MarketCity (15) | 1.0.0–2.0.1 | MarketCity | Incluye **Navidad Marketcity (activo)** y "Bandera de Colombia en imágenes" instalado dos veces (una copia activa, otra inactiva) |
+
+### Inactivos (33) — candidatos a borrar con respaldo y autorización
+Advanced Order Export 4.1.4, All-in-One WP Migration 7.113, Alpus AI Review Summary 2.0.0, Alpus FlexBox 2.6.2, Blocks for ShopEngine 2.4.4, ShopEngine 4.9.9, Conector Gravity para Addi 3.0.0, Contact Form 7 6.1.7, **Dokan 5.3.4**, **MarketKing Core 2.1.80 y Pro 2.0.70**, **MultiVendorX 5.0.22**, **WC Vendors 2.7.3** (cuatro marketplaces alternativos instalados), Dropify 4.7.3, Editor de checkout Acowebs 3.0.10, Email Deliverability 1.4.7, ePayco 8.8.5, GTranslate 5.0.2, Helio 2.1.0, Hostinger Tools 3.0.82, Login & Register Forms 4.0.4, MailPoet 5.45.2, Meta Pixel 5.2.2, PAYCY 0.1.0, PWA for WP 1.7.88.2, Quick Comm Notification 1.5, Tidio 8.0.1, Ultimate Addons for Elementor 2.9.7, Variation Swatches 1.0.14, MarketCity BLACKOUT, MarketCity Flash 0.1.0, MarketCity Carrito Lateral, copia de MarketCity Bandera.
+
+### Medios de pago configurados (13)
+| Id | Título | Estado |
+|---|---|---|
+| addi | Paga a cuotas | Activo |
+| wcsistecredito | (sin título) | Activo |
+| cod | CONTRAENTREGA | Activo |
+| wava_payment | Nequi o Daviplata | Activo |
+| woo-mercado-pago-basic | Paga con Mercado Pago | Activo |
+| bold_co | Paga en línea con Bold | Activo |
+| wompi | Paga con Wompi | Activo |
+| marketcity | MarketCityPay - Créditos flexibles | Apagado |
+| bacs / cheque | Transferencia / Cheque | Apagado |
+| woo-mercado-pago-custom / ticket / pse | Tarjeta / Efectivo / PSE | Apagado |
+
+### Estados de pedido en uso (130 pedidos)
+pending 3 · processing 37 · on-hold 19 · completed 8 · cancelled 49 · failed 5 · **addi-approved 5** · **wava-confirm 4** · refunded 0. Los estados propios de Addi y Wava deben mapearse al estado canónico de v1 (`07-mapa-migracion-datos.md`).
+
+### Envío
+Zona Colombia: tarifa fija, envío por zona del vendedor (WCFM); envío gratis y recogida local apagados a nivel de WooCommerce. Zona GLOBAL: tarifa fija.

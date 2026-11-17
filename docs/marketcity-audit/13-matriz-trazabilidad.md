@@ -16,6 +16,7 @@
 | MC-FR-022 | Alta y aprobación de vendedor | Prompt §10 | `SellerSignupController`, `Admin\StoreController` | `test_roles_protect_panels` | PARCIAL (sin KYC/KYB) |
 | MC-FR-023 | Seller Center: productos, pedidos, liquidaciones | Prompt §10 | `Seller\*` | `test_seller_sees_only_own_orders…` | HECHO |
 | MC-FR-024 | Comisión ajustable por comercio y liquidación solo de subpedidos pagados | Prompt §10; propietario 2026-11-16 | `CommissionCalculator`, `SettlementController` | `test_negotiated_commission_…`, `test_cannot_settle_unpaid_seller_order` | HECHO (sin ledger) |
+| MC-FR-026 | Comisión por categoría y por producto (además de por tienda), como en WCFM | Fase B (ADM-L Productos > Categorías, ADM-S Add Product) | — | — | PENDIENTE |
 | MC-FR-025 | Medios de pago activables por comercio | Propietario 2026-11-16 | `PaymentRegistry::forStores` | `test_negotiated_commission_and_payment_methods_per_store` | HECHO |
 | MC-FR-030 | Importar catálogo de WooCommerce | Prompt §15 | `WooCommerceCsvImporter` | `test_woocommerce_csv_import_is_repeatable` | HECHO |
 | MC-FR-033 | SEO: rutas compatibles, sitemap, canonical | Prompt §10 | `routes/web.php`, `SitemapController`, layout | `test_sitemap_and_canonical` | HECHO (AUD) |

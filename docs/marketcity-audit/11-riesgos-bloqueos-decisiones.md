@@ -18,7 +18,9 @@
 
 ## 2. Bloqueos (formato de la sección 17)
 
-### B-01 · Recorrido del panel administrador actual (Fase B)
+### B-01 · Recorrido del panel administrador actual (Fase B) — RESUELTO 2026-11-17 para el rol administrador
+Pendiente solo el recorrido con un vendedor de prueba (no se crean usuarios en producción sin autorización).
+
 1. **Qué:** inventariar cada pantalla de `marketcity.co/admin` con permisos por rol.
 2. **Evidencia:** sin sesión, `/wp-login.php` redirige (login oculto por snippet); no se pueden ver pantallas.
 3. **Impacto:** `01-inventario-admin.csv` tiene 32 pantallas del legado en "PENDIENTE_FASE_B".

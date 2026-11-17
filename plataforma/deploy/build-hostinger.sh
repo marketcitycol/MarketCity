@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Arma el paquete para subir la versión 1 a un subdominio de Hostinger (hosting compartido, sin consola).
-# Uso: deploy/build-hostinger.sh https://v1.marketcity.co /ruta/salida
+# Uso: deploy/build-hostinger.sh https://v1.marketcity.co /ruta/salida [sitio|subdominio]
+#   sitio:      sitio propio en hPanel  → zip con mc-v1/ y public_html/   (por defecto)
+#   subdominio: subdominio de otro sitio → zip con mc-v1/ y public_html/v1/
 # Produce: marketcity-v1-hostinger.zip (mc-v1/ + public_html/v1/) y credenciales.txt (fuera del zip).
 set -euo pipefail
 
@@ -9,7 +11,8 @@ OUT="${2:?carpeta de salida}"
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$(mktemp -d)"
 APP="$WORK/mc-v1"
-PUB="$WORK/public_html/v1"
+LAYOUT="${3:-sitio}"
+if [ "$LAYOUT" = "subdominio" ]; then PUB="$WORK/public_html/v1"; else PUB="$WORK/public_html"; fi
 
 mkdir -p "$APP" "$PUB" "$OUT"
 # Solo archivos versionados (nada de .env, base local ni dependencias de desarrollo).

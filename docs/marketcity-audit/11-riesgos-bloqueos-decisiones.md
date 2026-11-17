@@ -15,11 +15,11 @@
 | AUD-R-07 | Aprobación tardía revivía pedidos cancelados | — | Corregido (MC-PAY-006) | CERRADO en repo; falta desplegar |
 | AUD-R-08 | Imágenes del catálogo importado se enlazan a `marketcity.co/wp-content/uploads` (dependencia del legado) | Media / Media | Copia de medios en la migración (§07) | ABIERTO |
 | AUD-R-09 | Sin recuperación de contraseña ni verificación de correo en v1 | Alta / Media | Fase G, con correo transaccional (D-06) | ABIERTO |
+| AUD-R-10 | **Legado:** el rol vendedor entra a `/wp-admin/` y lista los 98 usuarios con correo (`/wp-admin/users.php`) | Alta (ya ocurre) / Alta (datos personales, Ley 1581) | Propietario, con respaldo previo: en WCFM → Capacidades / o con un editor de roles, quitar al rol vendedor `list_users` y el acceso a wp-admin (redirigir al Seller Center); luego volver a probar con ALLTRONIX. v1 ya separa roles (MC-NFR-011) | ABIERTO — P0 |
 
 ## 2. Bloqueos (formato de la sección 17)
 
-### B-01 · Recorrido del panel administrador actual (Fase B) — RESUELTO 2026-11-17 para el rol administrador
-Pendiente solo el recorrido con un vendedor de prueba (no se crean usuarios en producción sin autorización).
+### B-01 · Recorrido del panel administrador actual (Fase B) — RESUELTO 2026-11-17 (administrador y vendedor ALLTRONIX; sin crear usuarios)
 
 1. **Qué:** inventariar cada pantalla de `marketcity.co/admin` con permisos por rol.
 2. **Evidencia:** sin sesión, `/wp-login.php` redirige (login oculto por snippet); no se pueden ver pantallas.

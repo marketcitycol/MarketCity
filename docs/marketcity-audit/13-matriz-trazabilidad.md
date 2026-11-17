@@ -36,6 +36,7 @@
 | MC-NFR-011 | Roles y aislamiento por tienda | Prompt §13 | `EnsureRole`, `own()` en controladores | `test_roles_protect_panels`, `test_seller_sees_only_own_orders…` | HECHO (roles finos pendientes) |
 | MC-NFR-012 | Privacidad: no exponer pedidos de terceros | Prompt §13 | `AuthController@account` | `test_unverified_account_does_not_see_guest_orders_with_same_email` | HECHO (AUD) |
 | MC-NFR-013 | MFA para administradores | Prompt §13 | — | — | PENDIENTE (Fase I) |
+| MC-NFR-014 | Mínimo privilegio del vendedor: sin acceso al panel de administración ni a datos de usuarios ajenos | AUD (AUD-R-10) | `EnsureRole` (v1) | `test_roles_protect_panels` | HECHO en v1; legado ABIERTO (P0, corrige el propietario) |
 | MC-NFR-020 | Accesibilidad WCAG 2.2 AA | Prompt §2.11 | Etiquetas en formularios v1 (0 campos sin etiqueta medidos) | axe-core | PARCIAL |
 | MC-NFR-021 | Mobile-first sin desbordes | Prompt §2.11 | Tailwind | Medición 375 px: sin scroll horizontal | PARCIAL (7 objetivos táctiles < 24 px en la ficha) |
 | MC-NFR-030 | Rendimiento: servidor < 600 ms, HTML < 60 KB | AUD | v1: 7–29 KB | Medición AUD-E-005 | PARCIAL (servidor 0,6–2,4 s con SQLite) |

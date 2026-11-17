@@ -49,6 +49,19 @@ Marketplace propio en Laravel 13, publicado en v1.marketcity.co con aviso de pru
 | F. Arquitectura | BORRADOR (`06-arquitectura-objetivo.md`) | Decisiones D-01…D-04 |
 | G–K | NO INICIADAS | Ver `11-riesgos-bloqueos-decisiones.md` |
 
+## Fase B — recorrido como vendedor (ALLTRONIX, 2026-11-17)
+
+Sesión de vendedor real iniciada por el propietario; solo lectura (GET). Detalle en `01-inventario-admin.csv` (filas ADM-W).
+
+| # | Hallazgo | Impacto | Prioridad |
+|---|---|---|---|
+| 1 | **El vendedor entra a `/wp-admin/`** y ve un menú amplio de administración (Hostinger, Elementor, Jetpack, WooCommerce, Pagos, MarketCity Pay, Usuarios, Herramientas…) | Mínimo privilegio roto; superficie de ataque | **P0 (seguridad)** |
+| 2 | **El vendedor ve la lista de los 98 usuarios con su correo** en `/wp-admin/users.php` (sin poder editarlos) | Exposición de datos personales de clientes y otras tiendas (Ley 1581) | **P0 (privacidad)** |
+| 3 | El aislamiento de pedidos entre tiendas funciona: el detalle de pedidos de otra tienda se niega y el listado global de WooCommerce da 403 | Correcto; replicado en v1 (MC-NFR-011) | — |
+| 4 | Panel del vendedor: 11 secciones (DashBoard, Productos, Ordenes, Cuponera, Reclamos, Ofertar en mi Tienda, Configuracion, Transacciones, Reportes, Pagos/Retiros, Mensajes); pantallas de 1,7–3,2 s | Alcance funcional del Seller Center de v1 | P1 |
+
+La corrección del P0 es del propietario (producción es de solo lectura para la auditoría): ver AUD-R-10 en `11`.
+
 ## Decisiones pendientes del propietario (resumen)
 Ver `11-riesgos-bloqueos-decisiones.md`. Las que cambian arquitectura: D-01 base de datos de v1 (SQLite → MySQL de Hostinger), D-02 modelo de cobro (MarketCity cobra y liquida vs. split del proveedor), D-03 alcance de MarketCityPay, D-04 qué histórico migrar.
 

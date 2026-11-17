@@ -79,6 +79,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::put('/configuracion', [Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
+    Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');
     Route::get('/paginas', [Admin\PageController::class, 'index'])->name('pages');
     Route::get('/paginas/nueva', [Admin\PageController::class, 'create'])->name('pages.create');
     Route::post('/paginas', [Admin\PageController::class, 'store'])->name('pages.store');

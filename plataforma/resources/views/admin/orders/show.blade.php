@@ -23,7 +23,7 @@
                 <div><dt class="text-xs text-slate-500">Comisión</dt><dd>{{ cop($so->commission_amount) }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Neto vendedor</dt><dd class="font-semibold">{{ cop($so->seller_net) }}</dd></div>
             </dl>
-            @if ($so->commission_rule)<p class="mt-1 text-xs text-slate-500">Regla aplicada: {{ $so->commission_rule['percent'] }} % + {{ cop($so->commission_rule['fixed']) }} ({{ $so->commission_rule['source'] ?? '' }})</p>@endif
+            @if (isset($so->commission_rule['percent']))<p class="mt-1 text-xs text-slate-500">Regla aplicada: {{ $so->commission_rule['percent'] }} % + {{ cop($so->commission_rule['fixed'] ?? 0) }} ({{ $so->commission_rule['source'] ?? '' }})</p>@elseif ($so->commission_rule)<p class="mt-1 text-xs text-slate-500">{{ $so->commission_rule['nota'] ?? 'Pedido histórico' }}</p>@endif
             @if ($so->settlement_due_on)<p class="mt-1 text-xs text-slate-500">Liquidación: {{ $so->settled_at ? 'pagada '.fecha($so->settled_at, 'd/m/Y').' · '.$so->settlement_reference : 'programada '.$so->settlement_due_on->format('d/m/Y') }}</p>@endif
             @if ($so->tracking_number)<p class="mt-1 text-sm">Guía: {{ $so->carrierName() }} {{ $so->tracking_number }}</p>@endif
             @if (! in_array($so->status, ['entregado', 'cancelado']))

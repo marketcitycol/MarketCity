@@ -1,0 +1,44 @@
+id,sitio,plantilla,ruta,actor,estado_http,tiempo_respuesta_ms,html_kb,h1,meta_description,canonical,robots,json_ld,hallazgos,severidad,recomendacion,evidencia
+FE-L-001,legado,Inicio,/,comprador,200,2009,912,1,sí,/,index,"Organization, WebSite","307 KB HTML comprimido, 95 peticiones, 111 scripts; 50 de 151 imágenes sin alt; 4 enlaces/botones sin nombre",P2,Reducir JS de terceros y snippets; alt en imágenes,AUD-E-001
+FE-L-002,legado,Tienda,/shop/,comprador,200,1846,645,1,sí,/shop/,index,1 bloque,Pesada,P2,—,AUD-E-002
+FE-L-003,legado,Categoría,/categoria-producto/tecnologia/,comprador,200,3096,648,1,sí,propia,index,1 bloque,—,P3,—,AUD-E-002
+FE-L-004,legado,Ficha de producto,/producto/consola-de-videojuegos-retro-m8/,comprador,200,1792,249,1,sí (texto en mayúsculas),propia,index,"BreadcrumbList, Product","Cientos de errores JS 'o.update is not a function' (MutationObserver en bucle); CSS de Sistecrédito 404; 10 imágenes sin alt; 5 campos sin etiqueta; 95 % de productos sin SKU; nombres duplicados (-2, -3)",P1,Corregir/retirar el script que falla; SKU obligatorio en v1,AUD-E-003
+FE-L-005,legado,Tienda de vendedor,/tienda/impowinner,comprador,200,6617,588,2,sí,/tienda/impowinner/,index,ninguno,"2 h1; 6,6 s de servidor; sin JSON-LD",P2,1 h1; Organization/Store JSON-LD,AUD-E-002
+FE-L-006,legado,Directorio de tiendas,/tiendas/,comprador,200,2928,637,1,sí,/tiendas/,index,1 bloque,—,P3,—,AUD-E-002
+FE-L-007,legado,Ofertas relámpago,/ofertas-relampago/,comprador,200,3511,573,1,sí,propia,index,1 bloque,—,P3,—,AUD-E-002
+FE-L-008,legado,Alta de vendedor,/vendor-membership/,vendedor,200,5789,606,1,sí,propia,index,ninguno,URL en inglés,P2,Redirigir a /vender (hecho en v1),AUD-E-002
+FE-L-009,legado,Mi cuenta,/my-account/,comprador,200,3874,584,1,sí,propia,index,ninguno,Página de login indexable,P2,noindex,AUD-E-002
+FE-L-010,legado,Carrito,/cart-2/,comprador,200,6201,568,1,no,/cart-2/,noindex,ninguno,Ruta duplicada,P2,Ruta única /carrito (hecho en v1),AUD-E-002
+FE-L-011,legado,Carrito duplicado,/cart/,comprador,200,4222,591,0,no,/cart/,index,ninguno,"Segunda página de carrito, indexable y sin h1",P2,301 a carrito único (hecho en v1),AUD-E-002
+FE-L-012,legado,Checkout (vacío),/checkout/,comprador,200 (redirige a /cart-2/),6986,568,1,no,/cart-2/,noindex,ninguno,Comportamiento normal con carrito vacío,—,—,AUD-E-002
+FE-L-013,legado,Rastrear pedido,/rastrear-pedido/,comprador,200,5295,579,0,sí,propia,index,ninguno,Sin h1,P3,Agregar h1,AUD-E-002
+FE-L-014,legado,Contacto,/contacto/,comprador,200,4963,603,1,sí,propia,index,ninguno,—,P3,—,AUD-E-002
+FE-L-015,legado,Juegos,/juegos/,comprador,200,7006,531,0,sí,propia,index,ninguno,Sin h1; 7 s,P3,Decidir si sigue (Q-010),AUD-E-002
+FE-L-016,legado,Seller Center,/seller-center/,vendedor,200 → /my-account/,11093,593,1,sí,/my-account/,index,ninguno,11 s sin sesión,P2,—,AUD-E-002
+FE-L-017,legado,Seller Center (alias),/sellercenter/ y /seller/,vendedor,200 → /my-account/,13254,591,1,sí,/my-account/,index,ninguno,R-025 resuelto: ya no muestra la página de Hostinger,—,—,AUD-E-002
+FE-L-018,legado,Búsqueda,/?s=consola&post_type=product,comprador,200,6323,636,1,no,/ (incorrecto),noindex,1 bloque,Canonical apunta al inicio,P3,—,AUD-E-002
+FE-L-019,legado,404,/no-existe-xyz,todos,404,6798,559,1,no,—,index,ninguno,"404 tarda 6,8 s (carga todo el tema)",P3,—,AUD-E-002
+FE-L-020,legado,Estadísticas internas,/estadisticas/,interno,200,7102,551,0,no,propia,index,ninguno,"Página interna indexable, protegida solo por contraseña de página (R-008)",P1,Retirar o noindex + login,AUD-E-002
+FE-L-021,legado,llms.txt,/llms.txt,buscadores IA,200,438,84,—,—,—,—,—,Contenido demo y páginas viejas (R-027),P3,Regenerar,AUD-E-002
+FE-L-022,legado,Store API pública,/wp-json/wc/store/v1/products,API,200,3432,6,—,—,—,—,—,Catálogo público por API (normal en WooCommerce); útil para conteos,—,—,AUD-E-004
+FE-L-023,legado,Usuarios REST,/wp-json/wp/v2/users,API,404,3718,0,—,—,—,—,—,Enumeración de usuarios cerrada (bien),—,—,AUD-E-002
+FE-L-024,legado,Sitemap,/wp-sitemap.xml,buscadores,200,715,1,—,—,—,—,—,Sitemap nativo de WordPress,—,—,AUD-E-002
+FE-L-025,legado,debug.log,/wp-content/debug.log,—,403,709,1,—,—,—,—,—,Bloqueado (bien),—,—,AUD-E-002
+FE-L-026,legado,XML-RPC,/xmlrpc.php,—,405,—,—,—,—,—,—,—,Responde (405 a GET); revisar si debe cerrarse,P2,Bloquear si no se usa,AUD-E-002
+FE-V-001,v1,Inicio,/,comprador,200,606,27,1,sí,/,noindex (demo),ninguno,Sin JSON-LD Organization/WebSite,P3,Agregar en Fase G,AUD-E-005
+FE-V-002,v1,Tienda y búsqueda,"/shop, /shop?q=jbl",comprador,200,1749,29,1,sí,propia (corregido),noindex (demo),ninguno,Sin canonical antes del 2026-11-17,P2,Corregido,AUD-E-005
+FE-V-003,v1,Categoría,/categoria-producto/audio,comprador,200,1439,13,1,sí,propia (corregido),noindex (demo),ninguno,Sin canonical antes del 2026-11-17,P2,Corregido,AUD-E-005
+FE-V-004,v1,Ficha de producto,/producto/parlante-jbl-flip-6-resistente-al-agua,comprador,200,811,12,1,sí,propia,noindex (demo),Product (inválido),Título con el nombre de otro producto; JSON-LD inválido por @context,P1,Corregido con prueba,AUD-E-006
+FE-V-005,v1,Tienda,/tienda/tecnoandes,comprador,200,1526,17,1,sí,propia,noindex (demo),ninguno,—,P3,—,AUD-E-005
+FE-V-006,v1,Directorio,/tiendas,comprador,200,1239,8,1,sí,—,noindex (demo),ninguno,—,—,—,AUD-E-005
+FE-V-007,v1,Ofertas,/ofertas-relampago,comprador,200,2246,28,1,sí,—,noindex (demo),ninguno,Sin temporizador (no incluido en v1),P2,Fase G,AUD-E-005
+FE-V-008,v1,Carrito,"/carrito (+ /cart, /cart-2 → 301)",comprador,200,1229,7,1,sí,—,noindex,ninguno,Rutas viejas redirigen bien,—,—,AUD-E-005
+FE-V-009,v1,Checkout (vacío),/checkout → /carrito,comprador,200,2243,7,1,sí,—,noindex,ninguno,Correcto,—,—,AUD-E-005
+FE-V-010,v1,Rastrear pedido,/rastrear-pedido,comprador,200,2453,7,1,sí,—,noindex,ninguno,—,—,—,AUD-E-005
+FE-V-011,v1,Ingresar / registro,"/ingresar, /registro",todos,200,2031,7,1,sí,—,noindex,ninguno,Sin recuperación de contraseña ni verificación de correo,P1,Fase G,AUD-E-005
+FE-V-012,v1,Vender,/vender (+ /vendor-membership → 301),vendedor,200,2019,10,1,sí,—,noindex,ninguno,—,—,—,AUD-E-005
+FE-V-013,v1,Seller Center / Mi cuenta sin sesión,"/seller-center, /mi-cuenta → /ingresar",vendedor/comprador,200,2148,7,1,sí,—,noindex,ninguno,Correcto,—,—,AUD-E-005
+FE-V-014,v1,404,/no-existe-xyz,todos,404,809,7,1,no,—,—,ninguno,Página por defecto en inglés,P2,Corregido: páginas de error en español,AUD-E-005
+FE-V-015,v1,Sitemap,/sitemap.xml,buscadores,404,1417,7,—,—,—,—,—,No existía,P2,Corregido,AUD-E-005
+FE-V-016,v1,Archivos sensibles,"/.env, /storage/logs/laravel.log",—,403,170,0,—,—,—,—,—,Bloqueados (bien): la app vive fuera de public_html,—,—,AUD-E-005
+FE-V-017,v1,Panel admin legado,/admin,—,404,1153,7,—,—,—,—,—,El panel de v1 está en /backoffice,—,—,AUD-E-005

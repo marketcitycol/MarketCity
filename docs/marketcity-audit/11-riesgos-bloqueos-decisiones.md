@@ -6,13 +6,13 @@
 
 | ID | Riesgo | Prob./Impacto | Mitigación | Estado |
 |---|---|---|---|---|
-| AUD-R-01 | v1 se actualiza subiendo paquetes a mano: un paquete completo reinicia la base de datos (`migrate:fresh --seed`) | Alta / Alta | Paquete de **actualización** que conserva `.env` y base y corre solo migraciones nuevas (RB-01) | MITIGADO: paquete de actualización con respaldo automático y solo `migrate` (`deploy/build-update-hostinger.sh`, `docs/v1/guia-actualizacion-hostinger.md`); falta la primera prueba en Hostinger |
+| AUD-R-01 | v1 se actualiza subiendo paquetes a mano: un paquete completo reinicia la base de datos (`migrate:fresh --seed`) | Alta / Alta | Paquete de **actualización** que conserva `.env` y base y corre solo migraciones nuevas (RB-01) | MITIGADO: paquete de actualización con respaldo automático y solo `migrate` (`deploy/build-update-hostinger.sh`, `docs/v1/guia-actualizacion-hostinger.md`); aplicado en v1.marketcity.co el 2026-11-17 (respaldo en `/respaldo-v1-20261117` y `mc-v1/storage/app/respaldos/`; "Nothing to migrate"; sitio 200, 404 en español, sitemap y cabeceras OK) |
 | AUD-R-02 | v1 usa SQLite: un solo escritor; sin respaldos del panel | Media / Media | D-01: MySQL de Hostinger | ABIERTO |
 | AUD-R-03 | El pago de prueba se puede activar en Configuración; en producción permitiría "aprobar" pedidos sin pagar | Baja hoy / Crítica en producción | Bloquear `sandbox` cuando `APP_ENV=production` y `MC_DEMO=false` (MC-PAY-010) | ABIERTO |
 | AUD-R-04 | Las cookies de analítica del dominio raíz (`_ga`, `_fbp`, `sbjs_*`) llegan a v1 | Media / Baja | Tenerlo en cuenta en consentimiento y pruebas | ABIERTO |
 | AUD-R-05 | Errores JS masivos en la ficha del legado (484 por carga) consumen CPU en celulares | Alta / Media | Diagnóstico en Fase D; no se toca producción sin autorización | ABIERTO |
-| AUD-R-06 | Registro sin verificación de correo podía exponer pedidos de invitado | — | Corregido (MC-NFR-012) | CERRADO en repo; falta desplegar |
-| AUD-R-07 | Aprobación tardía revivía pedidos cancelados | — | Corregido (MC-PAY-006) | CERRADO en repo; falta desplegar |
+| AUD-R-06 | Registro sin verificación de correo podía exponer pedidos de invitado | — | Corregido (MC-NFR-012) | CERRADO y desplegado en v1 (2026-11-17) |
+| AUD-R-07 | Aprobación tardía revivía pedidos cancelados | — | Corregido (MC-PAY-006) | CERRADO y desplegado en v1 (2026-11-17) |
 | AUD-R-08 | Imágenes del catálogo importado se enlazan a `marketcity.co/wp-content/uploads` (dependencia del legado) | Media / Media | Copia de medios en la migración (§07) | ABIERTO |
 | AUD-R-09 | Sin recuperación de contraseña ni verificación de correo en v1 | Alta / Media | Fase G, con correo transaccional (D-06) | ABIERTO |
 | AUD-R-10 | **Legado:** el rol vendedor entra a `/wp-admin/` y lista los 98 usuarios con correo (`/wp-admin/users.php`) | Alta (ya ocurre) / Alta (datos personales, Ley 1581) | Propietario, con respaldo previo: en WCFM → Capacidades / o con un editor de roles, quitar al rol vendedor `list_users` y el acceso a wp-admin (redirigir al Seller Center); luego volver a probar con ALLTRONIX. v1 ya separa roles (MC-NFR-011) | ABIERTO — P0 |

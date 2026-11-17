@@ -15,7 +15,7 @@ use App\Models\Setting;
  */
 class Plugins
 {
-    public const LOGO = 'https://marketcity.co/wp-content/uploads/2023/09/mc-largeLOGOmin.png';
+    public const LOGO = 'https://marketcity.co/wp-content/uploads/2026/05/mcLOGO.png';
 
     /** @return array<string, array{name:string, description:string, enabled:bool, fields:array<string,array{0:string,1:string}>, defaults:array<string,string>}> */
     public static function definitions(): array

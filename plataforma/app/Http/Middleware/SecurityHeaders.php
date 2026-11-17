@@ -21,6 +21,10 @@ class SecurityHeaders
         $h->set('X-Frame-Options', 'SAMEORIGIN');
         $h->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $h->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self)');
+        // Mientras v1 sea de prueba (con datos reales copiados), los buscadores no la indexan.
+        if (config('marketcity.demo')) {
+            $h->set('X-Robots-Tag', 'noindex, nofollow');
+        }
         $h->set('Content-Security-Policy', "upgrade-insecure-requests; frame-ancestors 'self'; base-uri 'self'; object-src 'none'");
         if ($request->isSecure()) {
             $h->set('Strict-Transport-Security', 'max-age=31536000');

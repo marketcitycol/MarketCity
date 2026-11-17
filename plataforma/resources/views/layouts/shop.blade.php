@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ isset($title) ? $title.' · ' : '' }}MarketCity</title>
+    @php($pageTitle = trim($__env->yieldContent('title')) ?: ($title ?? null))
+    <title>{{ $pageTitle ? $pageTitle.' · ' : '' }}MarketCity</title>
     <meta name="description" content="@yield('description', 'MarketCity: el marketplace de Colombia. Compra a muchos vendedores en un solo pedido y paga como prefieras.')">
     @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
-    @hasSection('canonical')<link rel="canonical" href="@yield('canonical')">@endif
+    <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>

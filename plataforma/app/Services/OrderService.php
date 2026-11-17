@@ -127,11 +127,20 @@ class OrderService
     /** Pago confirmado: se fija la fecha de liquidación de cada vendedor a N días hábiles. */
     public function markPaid(Order $order, Payment $payment, array $payload = []): void
     {
-        if ($order->payment_status === 'paid') {
-            return;
-        }
-
         DB::transaction(function () use ($order, $payment, $payload) {
+            // Se relee con bloqueo: dos confirmaciones simultáneas (webhook + retorno) no deben aplicarse dos veces.
+            $order = Order::lockForUpdate()->findOrFail($order->id);
+            if ($order->payment_status === 'paid') {
+                return;
+            }
+            if ($order->payment_status !== 'pending') {
+                // Aprobación tardía de un pedido ya cancelado: no se revive el pedido ni se toca el stock.
+                // Queda registrada para revisión manual (reembolso o reactivación), MC-PAY-006.
+                $payment->update(['status' => 'review', 'payload' => $payload]);
+                $order->log('pago', 'Llegó una aprobación de pago para un pedido que ya no estaba pendiente. Requiere revisión manual.');
+
+                return;
+            }
             $payment->update(['status' => 'approved', 'payload' => $payload]);
             $order->update(['payment_status' => 'paid', 'paid_at' => now()]);
             $due = BusinessDays::add(now(), (int) Setting::get('settlement_business_days', 10));
@@ -143,11 +152,11 @@ class OrderService
     /** Pago rechazado: el pedido queda cancelado y el stock vuelve. */
     public function markFailed(Order $order, Payment $payment, array $payload = []): void
     {
-        if ($order->payment_status !== 'pending') {
-            return;
-        }
-
         DB::transaction(function () use ($order, $payment, $payload) {
+            $order = Order::lockForUpdate()->findOrFail($order->id);
+            if ($order->payment_status !== 'pending') {
+                return;
+            }
             $payment->update(['status' => 'declined', 'payload' => $payload]);
             $order->update(['payment_status' => 'failed']);
             foreach ($order->sellerOrders as $so) {

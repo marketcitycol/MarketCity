@@ -18,6 +18,7 @@ Route::get('/producto/{product}', [CatalogController::class, 'product'])->name('
 Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
+Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');

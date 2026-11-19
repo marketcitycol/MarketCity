@@ -9,13 +9,15 @@
     @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
     <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
     @if (\App\Support\Analytics::active())@include('plugins.analytics-head')@endif
+    <link rel="icon" href="{{ asset(ltrim(\App\Support\Brand::ISOTIPO, '/')) }}" type="image/webp">
+    <meta name="theme-color" content="#0b2a6f">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="min-h-screen bg-slate-50 pb-16 font-sans text-slate-800 antialiased sm:pb-0">
+<body class="min-h-screen bg-[#f7f8fa] pb-16 font-sans text-slate-800 antialiased md:pb-0">
     @if (config('marketcity.demo'))
-    <div class="bg-brand-900 px-4 py-1.5 text-center text-xs text-brand-100">
-        Versión 1 de prueba de la plataforma propia · no se cobra dinero real
+    <div class="bg-[#0a1628] px-4 py-1 text-center text-[11px] text-white/70">
+        Versión de prueba · no se cobra dinero real
     </div>
     @endif
     @if (\App\Support\Plugins::enabled('announcement'))@include('plugins.announcement')@endif
@@ -56,7 +58,7 @@
     </header>
     @endif
 
-    <main class="mx-auto max-w-7xl px-4 py-6">
+    <main class="mx-auto max-w-7xl px-3.5 py-4 md:px-4 md:py-6">
         @include('partials.flash')
         @yield('content')
     </main>

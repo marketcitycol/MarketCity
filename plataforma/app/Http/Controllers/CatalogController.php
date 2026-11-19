@@ -14,9 +14,11 @@ class CatalogController extends Controller
     {
         return view('shop.home', [
             'featured' => Product::visible()->with('store')->where('featured', true)->latest('id')->take(8)->get(),
-            'offers' => Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take(4)->get(),
-            'newest' => Product::visible()->with('store')->latest('id')->take(8)->get(),
-            'stores' => Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->where('status', 'active')])->get(),
+            'offers' => Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take(10)->get(),
+            'bestsellers' => Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take(10)->get(),
+            'newest' => Product::visible()->with('store')->latest('id')->take(10)->get(),
+            'stores' => Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('products_count')->get(),
+            'categories' => \App\Support\Brand::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get()),
         ]);
     }
 
@@ -96,10 +98,43 @@ class CatalogController extends Controller
         ]);
     }
 
-    public function stores()
+    public function stores(Request $request)
     {
+        $stores = Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->visible()])
+            ->with(['products' => fn ($q) => $q->visible()->with('category')->orderByDesc('sales_count')])->get()
+            ->each(function (Store $store) {
+                // Categoría principal (la que más productos tiene) y tres miniaturas, como en marketcity.co.
+                $store->mainCategory = $store->products->groupBy('category_id')->sortByDesc->count()->first()?->first()?->category;
+                $store->categoryIds = $store->products->pluck('category_id')->filter()->unique()->values()->all();
+                $store->thumbs = $store->products->filter(fn ($p) => $p->imageUrl())->take(3)->values();
+                $store->unsetRelation('products');
+            });
+
+        $categories = \App\Support\Brand::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get())
+            ->each(fn ($c) => $c->stores_count = $stores->filter(fn ($s) => in_array($c->id, $s->categoryIds))->count())
+            ->filter(fn ($c) => $c->stores_count > 0)->values();
+
+        $list = $stores;
+        if ($term = trim((string) $request->input('q'))) {
+            $list = $list->filter(fn ($s) => str_contains(mb_strtolower($s->name.' '.$s->city), mb_strtolower($term)));
+        }
+        $active = $request->filled('categoria') ? $categories->firstWhere('slug', $request->string('categoria')->toString()) : null;
+        if ($active) {
+            $list = $list->filter(fn ($s) => in_array($active->id, $s->categoryIds));
+        }
+        $list = match ($request->input('orden')) {
+            'recientes' => $list->sortByDesc('id'),
+            'productos' => $list->sortByDesc('products_count'),
+            'alfabetico' => $list->sortBy(fn ($s) => mb_strtolower($s->name)),
+            default => $list->sortByDesc(fn ($s) => [$s->isVerified() ? 1 : 0, $s->products_count]),
+        };
+
         return view('shop.stores', [
-            'stores' => Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->where('status', 'active')])->orderBy('name')->get(),
+            'stores' => $list->values(),
+            'categories' => $categories,
+            'activeCategory' => $active,
+            'totalStores' => $stores->count(),
+            'totalProducts' => $stores->sum('products_count'),
         ]);
     }
 

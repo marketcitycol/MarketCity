@@ -111,6 +111,18 @@ class Store extends Model
         return $this->status === 'active';
     }
 
+    /** Logo de la tienda: URL completa, ruta del sitio o archivo subido a public/uploads. */
+    public function logoUrl(): ?string
+    {
+        if (! $this->logo_path) {
+            return null;
+        }
+
+        return str_starts_with($this->logo_path, 'http') || str_starts_with($this->logo_path, '/')
+            ? $this->logo_path
+            : \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path);
+    }
+
     public function initials(): string
     {
         return mb_strtoupper(mb_substr(preg_replace('/[^\pL\pN ]/u', '', $this->name), 0, 2));

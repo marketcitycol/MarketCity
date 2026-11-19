@@ -31,6 +31,14 @@ $app->usePublicPath(__DIR__);
  * limpia cachés, borra el aviso y recarga la página.
  */
 $pending = $app_dir.'/storage/app/actualizar.pendiente';
+$failed = $app_dir.'/storage/app/actualizar.fallida';
+if (is_file($failed)) {
+    // Una actualización falló: no se atiende con datos a medias. Ver storage/logs/actualizacion.log.
+    http_response_code(503);
+    header('Retry-After: 600');
+    echo '<!doctype html><meta charset="utf-8"><title>MarketCity</title><p style="font-family:sans-serif;max-width:32rem;margin:4rem auto">Estamos actualizando la tienda. Vuelve en unos minutos.</p>';
+    exit;
+}
 if (is_file($pending) && ($lock = fopen($pending, 'r')) && flock($lock, LOCK_EX | LOCK_NB)) {
     $log = $app_dir.'/storage/logs/actualizacion.log';
     $db = $app_dir.'/database/database.sqlite';
@@ -46,27 +54,39 @@ if (is_file($pending) && ($lock = fopen($pending, 'r')) && flock($lock, LOCK_EX 
     } else {
         // MySQL: respaldo en JSON con el comando propio (no hay mysqldump sin consola).
         // En el primer paso a MySQL la base está vacía y el respaldo es el propio archivo SQLite.
-        $ok = is_file($toMysql) || $console->call('mc:respaldar') === 0;
+        try {
+            $ok = is_file($toMysql) || $console->call('mc:respaldar') === 0;
+        } catch (Throwable $e) {
+            $ok = false;
+        }
     }
     if ($ok) {
-        $code = $console->call('migrate', ['--force' => true]);
-        $out = $console->output();
-        if ($code === 0 && ! $usesSqlite && is_file($toMysql)) {
-            // Paso único de SQLite a MySQL: copia y verifica fila por fila; el archivo SQLite queda intacto.
-            $copy = $console->call('mc:copiar-sqlite');
-            $out .= $console->output();
-            $code === 0 && $copy === 0 && unlink($toMysql);
-            $code = $copy;
+        try {
+            $code = $console->call('migrate', ['--force' => true]);
+            $out = $console->output();
+            if ($code === 0 && ! $usesSqlite && is_file($toMysql)) {
+                // Paso único de SQLite a MySQL: copia y verifica fila por fila; el archivo SQLite queda intacto.
+                $copy = $console->call('mc:copiar-sqlite');
+                $out .= $console->output();
+                $code === 0 && $copy === 0 && unlink($toMysql);
+                $code = $copy;
+            }
+            $console->call('optimize:clear');
+        } catch (Throwable $e) {
+            $code = 1;
+            $out = ($out ?? '').get_class($e).': '.$e->getMessage();
         }
-        $console->call('optimize:clear');
         file_put_contents($log, "[$stamp] migrate=$code\n$out\n", FILE_APPEND);
-        if ($code === 0) {
-            flock($lock, LOCK_UN);
-            fclose($lock);
-            unlink($pending);
-        }
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        // Si algo falló, se marca y se para (sin bucles de recarga). Para reintentar: renombrar
+        // actualizar.fallida a actualizar.pendiente; para volver atrás, ver la guía de actualización.
+        $code === 0 ? unlink($pending) : rename($pending, $failed);
     } else {
         file_put_contents($log, "[$stamp] no se pudo copiar la base; no se migró\n", FILE_APPEND);
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        rename($pending, $failed);
     }
     header('Location: '.($_SERVER['REQUEST_URI'] ?? '/'), true, 302);
     exit;

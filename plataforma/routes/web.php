@@ -18,6 +18,7 @@ Route::get('/producto/{product}', [CatalogController::class, 'product'])->name('
 Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
+Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
@@ -78,6 +79,18 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::put('/configuracion', [Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
+    Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');
+    Route::get('/paginas', [Admin\PageController::class, 'index'])->name('pages');
+    Route::get('/paginas/nueva', [Admin\PageController::class, 'create'])->name('pages.create');
+    Route::post('/paginas', [Admin\PageController::class, 'store'])->name('pages.store');
+    Route::post('/paginas/importar', [Admin\PageController::class, 'import'])->name('pages.import');
+    Route::get('/paginas/{page}', [Admin\PageController::class, 'edit'])->name('pages.edit');
+    Route::put('/paginas/{page}', [Admin\PageController::class, 'update'])->name('pages.update');
+    Route::get('/plugins', [Admin\PluginController::class, 'index'])->name('plugins');
+    Route::get('/plugins/{plugin}', [Admin\PluginController::class, 'edit'])->name('plugins.edit');
+    Route::put('/plugins/{plugin}', [Admin\PluginController::class, 'update'])->name('plugins.update');
+    Route::post('/plugins/{plugin}/activar', [Admin\PluginController::class, 'toggle'])->name('plugins.toggle');
+    Route::post('/plugins/{plugin}/restablecer', [Admin\PluginController::class, 'reset'])->name('plugins.reset');
 });
 
 // --- Redirecciones 301 desde rutas duplicadas del sitio actual (route-and-state-inventory.md) ---
@@ -93,3 +106,7 @@ foreach (['vendor-membership', 'vender-2', 'become-a-vendor'] as $old) {
     Route::permanentRedirect($old, '/vender');
 }
 Route::permanentRedirect('sellercenter', '/seller-center');
+
+// --- Páginas de contenido (políticas, contacto…). Va al final: cualquier ruta anterior tiene prioridad. ---
+Route::permanentRedirect('contact-us', '/contacto');
+Route::get('/{page}', [\App\Http\Controllers\PageController::class, 'show'])->where('page', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('page');

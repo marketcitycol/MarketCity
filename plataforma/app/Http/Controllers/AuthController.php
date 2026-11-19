@@ -68,7 +68,11 @@ class AuthController extends Controller
 
         return view('auth.account', [
             'user' => $user,
-            'orders' => Order::where('user_id', $user->id)->orWhere('email', $user->email)->latest('id')->with('sellerOrders')->get(),
+            // Los pedidos como invitado con el mismo correo solo se muestran si el correo está verificado;
+            // si no, cualquiera que se registre con un correo ajeno vería esos pedidos (MC-NFR-012).
+            'orders' => Order::where('user_id', $user->id)
+                ->when($user->email_verified_at, fn ($q) => $q->orWhere(fn ($g) => $g->whereNull('user_id')->where('email', $user->email)))
+                ->latest('id')->with('sellerOrders')->get(),
         ]);
     }
 }

@@ -4,7 +4,7 @@
 <div class="mx-auto max-w-md">
     <div class="card overflow-hidden">
         <div class="bg-slate-900 px-5 py-4 text-white">
-            <p class="text-xs tracking-wide text-slate-400 uppercase">Pasarela de prueba</p>
+            <p class="text-xs tracking-wide text-slate-500 uppercase">Pasarela de prueba</p>
             <p class="text-lg font-semibold">Pedido {{ $order->number }}</p>
         </div>
         <div class="p-5">

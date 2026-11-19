@@ -1,9 +1,10 @@
-@extends('layouts.shop', ['title' => $product->name])
+@extends('layouts.shop')
+@section('title', $product->name)
 @section('description', \Illuminate\Support\Str::limit($product->short_description, 150))
 @section('canonical', route('product', $product))
 @push('head')
 <script type="application/ld+json">{!! json_encode([
-    '@context' => 'https://schema.org', '@type' => 'Product', 'name' => $product->name, 'sku' => $product->sku,
+    '@'.'context' => 'https://schema.org', '@type' => 'Product', 'name' => $product->name, 'sku' => $product->sku,
     'brand' => $product->brand ? ['@type' => 'Brand', 'name' => $product->brand->name] : null,
     'offers' => ['@type' => 'Offer', 'priceCurrency' => 'COP', 'price' => $product->price, 'url' => route('product', $product),
         'availability' => $product->inStock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -30,7 +31,7 @@
 
         <div class="mt-5">
             @if ($product->isOnSale())
-                <p class="text-sm text-slate-400"><span class="line-through">{{ cop($product->regular_price) }}</span> <span class="badge bg-red-100 text-red-700">-{{ $product->discountPercent() }}%</span></p>
+                <p class="text-sm text-slate-500"><span class="line-through">{{ cop($product->regular_price) }}</span> <span class="badge bg-red-100 text-red-700">-{{ $product->discountPercent() }}%</span></p>
             @endif
             <p class="text-3xl font-extrabold">{{ cop($product->price) }}</p>
             <p class="mt-1 text-sm text-brand-700">o hasta {{ $inst }} cuotas de <strong>{{ cop(ceil($product->price / $inst)) }}</strong>*</p>
@@ -76,7 +77,7 @@
 <section class="mt-12">
     <h2 class="text-lg font-bold">También te puede interesar</h2>
     <div class="mt-3 grid grid-cols-2 gap-4 md:grid-cols-4">
-        @foreach ($related as $product) @include('partials.product-card') @endforeach
+        @foreach ($related as $item) @include('partials.product-card', ['product' => $item]) @endforeach
     </div>
 </section>
 @endif

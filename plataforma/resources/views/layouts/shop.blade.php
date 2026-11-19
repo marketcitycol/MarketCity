@@ -3,19 +3,24 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ isset($title) ? $title.' · ' : '' }}MarketCity</title>
+    @php($pageTitle = trim($__env->yieldContent('title')) ?: ($title ?? null))
+    <title>{{ $pageTitle ? $pageTitle.' · ' : '' }}MarketCity</title>
     <meta name="description" content="@yield('description', 'MarketCity: el marketplace de Colombia. Compra a muchos vendedores en un solo pedido y paga como prefieras.')">
     @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
-    @hasSection('canonical')<link rel="canonical" href="@yield('canonical')">@endif
+    <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+<body class="min-h-screen bg-slate-50 pb-16 font-sans text-slate-800 antialiased sm:pb-0">
     @if (config('marketcity.demo'))
     <div class="bg-brand-900 px-4 py-1.5 text-center text-xs text-brand-100">
         Versión 1 de prueba de la plataforma propia · no se cobra dinero real
     </div>
     @endif
+    @if (\App\Support\Plugins::enabled('announcement'))@include('plugins.announcement')@endif
+    @if (\App\Support\Plugins::enabled('header'))
+    @include('plugins.header')
+    @else
     <header class="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
             <a href="{{ route('home') }}" class="shrink-0 text-xl font-extrabold tracking-tight text-brand-700">Market<span class="text-accent-500">City</span></a>
@@ -48,12 +53,16 @@
             </div>
         </nav>
     </header>
+    @endif
 
     <main class="mx-auto max-w-7xl px-4 py-6">
         @include('partials.flash')
         @yield('content')
     </main>
 
+    @if (\App\Support\Plugins::enabled('footer'))
+    @include('plugins.footer')
+    @else
     <footer class="mt-12 border-t border-slate-200 bg-white">
         <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 text-sm sm:grid-cols-3">
             <div>
@@ -76,7 +85,9 @@
                 </ul>
             </div>
         </div>
-        <p class="border-t border-slate-100 px-4 py-4 text-center text-xs text-slate-400">* Cuotas de referencia: el valor final depende del medio de pago y su aprobación. Precios en pesos colombianos con IVA incluido.</p>
+        <p class="border-t border-slate-100 px-4 py-4 text-center text-xs text-slate-500">* Cuotas de referencia: el valor final depende del medio de pago y su aprobación. Precios en pesos colombianos con IVA incluido.</p>
     </footer>
+    @endif
+    @if (\App\Support\Plugins::enabled('whatsapp'))@include('plugins.whatsapp')@endif
 </body>
 </html>

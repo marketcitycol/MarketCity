@@ -81,5 +81,7 @@
     </div>
 </section>
 @endif
+@php($recent = json_encode(['name' => $product->name, 'price' => cop($product->price), 'url' => route('product', $product)]))
+<div hidden data-recent-save="{{ $recent }}"></div>
 @include('partials.track', ['event' => 'view_item', 'params' => ['currency' => 'COP', 'value' => (int) $product->price, 'items' => [\App\Support\Analytics::product($product)]]])
 @endsection

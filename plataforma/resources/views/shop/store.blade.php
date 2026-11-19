@@ -2,19 +2,25 @@
 @section('canonical', route('store', $store))
 
 @section('content')
-<section class="card flex flex-wrap items-center gap-5 p-6">
-    <span class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-100 text-2xl font-bold text-brand-700">{{ $store->initials() }}</span>
-    <div class="flex-1">
-        <h1 class="text-2xl font-bold">{{ $store->name }}@if ($store->isVerified()) <span class="badge bg-emerald-100 align-middle text-xs text-emerald-700" title="MarketCity revisó sus datos legales">Tienda verificada</span>@endif</h1>
-        <p class="text-sm text-slate-500">{{ $store->city }}, {{ $store->department }}</p>
-        @if ($store->description)<p class="mt-1 text-sm">{{ $store->description }}</p>@endif
+<section class="overflow-hidden rounded-[22px] border border-[#e3e6ec] bg-white">
+    <div class="h-24 md:h-32" style="background: {{ \App\Support\Brand::storeCover($store->products()->visible()->with('category')->get()->groupBy('category_id')->sortByDesc->count()->first()?->first()?->category?->slug) }}"></div>
+    <div class="flex flex-wrap items-end gap-4 px-5 pb-5">
+        <span class="-mt-10 grid h-20 w-20 place-items-center overflow-hidden rounded-full border-[3px] border-white bg-white text-2xl font-extrabold text-brand-700 shadow-[0_4px_12px_-4px_rgba(15,23,42,.35)]">
+            @if ($logo = $store->logoUrl())<img src="{{ $logo }}" alt="" class="h-full w-full object-contain">@else{{ $store->initials() }}@endif
+        </span>
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl leading-tight font-extrabold text-[#0f172a]">{{ $store->name }}</h1>
+            @if ($store->isVerified())<p class="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-900 px-2 py-0.5 text-xs font-semibold text-white" title="MarketCity revisó sus datos legales">{!! icon('verificado', 'h-3.5 w-3.5 text-[#f3d9a4]') !!} Tienda verificada</p>@endif
+            <p class="mt-1 flex items-center gap-1 text-sm text-[#4a5068]">{!! icon('pin', 'h-4 w-4') !!}{{ $store->city }}, {{ $store->department }}</p>
+        </div>
+        <div class="text-sm text-[#4a5068]">
+            <p class="flex items-center gap-1.5 font-semibold text-[#047a3a]">{!! icon('envio', 'h-4 w-4') !!}{{ $store->free_shipping ? 'Envío gratis' : 'Envío '.cop($store->shipping_fee) }}</p>
+            @if ($store->pickup_enabled)<p class="flex items-center gap-1.5">{!! icon('tienda', 'h-4 w-4') !!}Recogida en tienda</p>@endif
+        </div>
     </div>
-    <div class="text-sm text-slate-600">
-        <p>🚚 {{ $store->free_shipping ? 'Envío gratis' : 'Envío '.cop($store->shipping_fee) }}</p>
-        @if ($store->pickup_enabled)<p>🏬 Recogida en tienda</p>@endif
-    </div>
+    @if ($store->description)<p class="border-t border-[#eef0f4] px-5 py-3 text-sm text-[#4a5068]">{{ $store->description }}</p>@endif
 </section>
-<div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+<div class="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
     @foreach ($products as $product) @include('partials.product-card') @endforeach
 </div>
 <div class="mt-6">{{ $products->links() }}</div>

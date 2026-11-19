@@ -6,6 +6,69 @@ if (drawer) {
     document.querySelectorAll('[data-drawer-open]').forEach((b) => b.addEventListener('click', open));
     drawer.querySelectorAll('[data-drawer-close]').forEach((b) => b.addEventListener('click', close));
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !drawer.classList.contains('hidden')) close(); });
+    // Pestañas "Quiero comprar" / "Quiero vender".
+    const tabs = drawer.querySelectorAll('[data-drawer-tab]');
+    tabs.forEach((t) => t.addEventListener('click', () => {
+        tabs.forEach((x) => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+        drawer.querySelectorAll('[data-drawer-pane]').forEach((p) => p.classList.toggle('hidden', p.dataset.drawerPane !== t.dataset.drawerTab));
+    }));
+}
+
+// Almacenamiento del navegador: puede no estar disponible (modo privado).
+const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } },
+};
+
+// Franja de avisos: rota en celular y se puede ocultar por hoy.
+const promo = document.querySelector('[data-promo]');
+if (promo) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (store.get('mc_promo_hidden') === today) promo.remove();
+    else {
+        promo.querySelector('[data-promo-close]')?.addEventListener('click', () => { store.set('mc_promo_hidden', today); promo.remove(); });
+        const items = [...promo.querySelectorAll('[data-promo-item]')];
+        let i = 0;
+        if (items.length > 1) setInterval(() => {
+            if (window.matchMedia('(min-width: 768px)').matches) return;
+            items[i].classList.replace('inline-flex', 'hidden');
+            i = (i + 1) % items.length;
+            items[i].classList.replace('hidden', 'inline-flex');
+        }, 4500);
+    }
+}
+
+// Búsqueda por voz cuando el navegador la ofrece.
+const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (Speech) {
+    document.querySelectorAll('[data-voice]').forEach((btn) => {
+        btn.classList.remove('hidden');
+        btn.classList.add('grid');
+        btn.addEventListener('click', () => {
+            const form = btn.closest('form');
+            const input = form.querySelector('input[name="q"]');
+            const rec = new Speech();
+            rec.lang = 'es-CO';
+            rec.onresult = (e) => { input.value = e.results[0][0].transcript; form.submit(); };
+            rec.start();
+        });
+    });
+}
+
+// "Retoma donde quedaste": último producto visto, solo en este navegador.
+const seen = document.querySelector('[data-recent-save]');
+if (seen) store.set('mc_recent', seen.dataset.recentSave);
+const recentBox = document.querySelector('[data-recent]');
+if (recentBox) {
+    try {
+        const r = JSON.parse(store.get('mc_recent') || 'null');
+        if (r && r.url && r.name) {
+            recentBox.querySelector('[data-recent-link]').href = r.url;
+            recentBox.querySelector('[data-recent-name]').textContent = r.name;
+            recentBox.querySelector('[data-recent-price]').textContent = r.price || '';
+            recentBox.classList.remove('hidden');
+        }
+    } catch (e) { /* dato viejo o dañado */ }
 }
 
 // Cuenta regresiva de la barra de anuncio.

@@ -37,3 +37,11 @@ if (! function_exists('installments')) {
         return max(1, (int) \App\Models\Setting::get('installments', 4));
     }
 }
+
+if (! function_exists('icon')) {
+    /** SVG de línea de MarketCity: {!! icon('carrito', 'h-6 w-6') !!} */
+    function icon(string $name, string $class = 'h-5 w-5'): string
+    {
+        return \App\Support\Icons::svg($name, $class);
+    }
+}

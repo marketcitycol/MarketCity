@@ -1,0 +1,42 @@
+name: Paquete para Hostinger
+
+# Arma el paquete de actualización de v1 desde main (o a mano, desde cualquier rama).
+# El zip queda como artefacto de la ejecución durante 30 días: no se guarda en el repositorio.
+on:
+  push:
+    branches: [main]
+    paths: ['plataforma/**', '.github/workflows/paquete-hostinger.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paquete:
+    name: Armar paquete de actualización
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plataforma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite, pdo_mysql, sodium, intl
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: plataforma/package-lock.json
+      - name: Dependencias de estilos
+        run: npm ci
+      - name: Armar paquete
+        run: deploy/build-update-hostinger.sh "$RUNNER_TEMP/paquete" sitio
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marketcity-v1-actualizacion-${{ github.sha }}
+          path: ${{ runner.temp }}/paquete/*.zip
+          retention-days: 30
+          if-no-files-found: error

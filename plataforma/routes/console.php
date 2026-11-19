@@ -45,3 +45,10 @@ Artisan::command('pagos:conciliar', function (\App\Services\Payments\PaymentRegi
 })->purpose('Consulta en las pasarelas los pagos en línea que siguen pendientes');
 
 Schedule::command('pagos:conciliar')->everyFifteenMinutes()->withoutOverlapping();
+
+Artisan::command('mc:copiar-fotos {--lote=50}', function (\App\Services\LegacyMediaCopier $copier) {
+    do {
+        $r = $copier->copyBatch((int) $this->option('lote'));
+        $this->line("Copiadas: {$r['copied']} · fallidas: {$r['failed']} · faltan: {$r['remaining']}");
+    } while ($r['copied'] > 0 && $r['remaining'] > 0);
+})->purpose('Copia a la versión 1 las fotos que aún se enlazan al sitio anterior');

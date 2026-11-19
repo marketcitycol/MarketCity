@@ -18,6 +18,20 @@ class Store extends Model
         return ['verified_at' => 'datetime', 'free_shipping' => 'boolean', 'pickup_enabled' => 'boolean'];
     }
 
+    /** Tarifa nacional de MarketCity: la que aplica a las tiendas nuevas mientras no configuren la suya. */
+    public const NATIONAL_SHIPPING_FEE = 15000;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Store $store) {
+            // Una tienda nueva no promete envío gratis por omisión (Ley 1480: solo se promete lo real).
+            if (! array_key_exists('free_shipping', $store->getAttributes())) {
+                $store->free_shipping = false;
+                $store->shipping_fee ??= (int) Setting::get('shipping_national_fee', self::NATIONAL_SHIPPING_FEE);
+            }
+        });
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

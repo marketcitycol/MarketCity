@@ -21,4 +21,21 @@
         <p class="mt-3">Exportar no cambia nada en la tienda actual. Solo se importa el catálogo (nombres, precios, stock, categorías, marcas y fotos por enlace); no clientes ni pedidos.</p>
     </div>
 </div>
+
+@php($copier = app(\App\Services\LegacyMediaCopier::class))
+@php($remaining = $copier->pendingQuery()->count())
+@php($failed = count($copier->failed()))
+<section class="card mt-6 max-w-2xl p-5 text-sm">
+    <h2 class="font-semibold">Fotos del sitio anterior</h2>
+    <p class="mt-1 text-slate-600">{{ $remaining }} productos todavía muestran la foto desde marketcity.co. Cópialas aquí antes de apagar WordPress; se hace por lotes de 15 y la página sigue sola.@if ($failed) {{ $failed }} no se pudieron copiar (enlace roto o archivo que no es imagen).@endif</p>
+    <form method="post" action="{{ route('admin.import.media') }}" class="mt-3 flex flex-wrap items-center gap-3" id="mc-media-form">
+        @csrf
+        <button class="btn-primary" @disabled(! $remaining && ! $failed)>Copiar fotos</button>
+        @if ($failed)<label class="flex items-center gap-2"><input type="checkbox" name="reintentar" value="1"> Reintentar las que fallaron</label>@endif
+    </form>
+    @if (session('media') && session('media')['remaining'] > 0 && session('media')['copied'] > 0)
+        <p class="mt-2 text-xs text-slate-500">Siguiente lote en 2 segundos…</p>
+        <script>setTimeout(function () { document.getElementById('mc-media-form').submit(); }, 2000);</script>
+    @endif
+</section>
 @endsection

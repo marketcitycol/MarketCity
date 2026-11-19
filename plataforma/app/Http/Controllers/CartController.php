@@ -21,13 +21,26 @@ class CartController extends Controller
         $product = Product::visible()->findOrFail($data['product_id']);
 
         if (! $product->inStock()) {
-            return back()->with('error', 'Este producto está agotado.');
+            return $request->expectsJson()
+                ? response()->json(['ok' => false, 'message' => 'Este producto está agotado.'], 422)
+                : back()->with('error', 'Este producto está agotado.');
         }
 
         $this->cart->add($product, $data['quantity'] ?? 1);
 
         if ($request->input('buy_now')) {
             return redirect()->route('checkout');
+        }
+
+        if ($request->expectsJson()) {
+            // Para el panel de "Agregado al carrito": mismos totales que la página del carrito.
+            return response()->json([
+                'ok' => true,
+                'message' => "Agregaste «{$product->name}» al carrito.",
+                'count' => $this->cart->count(),
+                'subtotal' => cop($this->cart->groups()->sum('subtotal')),
+                'product' => ['name' => $product->name, 'price' => cop($product->price), 'image' => $product->imageUrl()],
+            ]);
         }
 
         return back()->with('success', "Agregaste «{$product->name}» al carrito.");

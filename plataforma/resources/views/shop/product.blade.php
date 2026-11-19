@@ -42,7 +42,7 @@
         </p>
 
         @if ($product->inStock())
-        <form method="post" action="{{ route('cart.add') }}" class="mt-4 flex flex-wrap items-end gap-3">
+        <form method="post" action="{{ route('cart.add') }}" class="mt-4 flex flex-wrap items-end gap-3" data-add-to-cart>
             @csrf
             <input type="hidden" name="product_id" value="{{ $product->id }}">
             <div>

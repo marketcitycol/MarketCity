@@ -20,3 +20,44 @@ document.querySelectorAll('[data-countdown]').forEach((el) => {
     tick();
     setInterval(tick, 1000);
 });
+
+// Panel "Agregado al carrito": agrega sin salir de la página y muestra el subtotal real del carrito.
+// Sin JavaScript, el formulario funciona igual que antes (recarga la página).
+const sheet = document.getElementById('mc-cart-sheet');
+if (sheet) {
+    const close = () => { sheet.classList.add('hidden'); sheet.setAttribute('aria-hidden', 'true'); };
+    sheet.querySelectorAll('[data-sheet-close]').forEach((b) => b.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.querySelectorAll('form[data-add-to-cart]').forEach((form) => {
+        form.addEventListener('submit', async (e) => {
+            if (e.submitter && e.submitter.name === 'buy_now') return; // "Comprar ahora" va directo al checkout
+            e.preventDefault();
+            const btn = e.submitter;
+            btn && (btn.disabled = true);
+            try {
+                const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await res.json();
+                if (!res.ok || !data.ok) { alertBox(data.message || 'No pudimos agregar el producto.'); return; }
+                sheet.querySelector('[data-sheet-name]').textContent = data.product.name;
+                sheet.querySelector('[data-sheet-price]').textContent = data.product.price;
+                sheet.querySelector('[data-sheet-subtotal]').textContent = data.subtotal;
+                const img = sheet.querySelector('[data-sheet-img]');
+                if (data.product.image) { img.src = data.product.image; img.classList.remove('hidden'); } else { img.classList.add('hidden'); }
+                document.querySelectorAll('[data-cart-count]').forEach((el) => { el.textContent = data.count; el.classList.remove('hidden'); });
+                document.querySelectorAll('[data-cart-link]').forEach((el) => el.setAttribute('aria-label', `Carrito, ${data.count} productos`));
+                sheet.classList.remove('hidden');
+                sheet.setAttribute('aria-hidden', 'false');
+                sheet.querySelector('[data-sheet-primary]').focus();
+            } catch (err) {
+                form.submit();
+            } finally {
+                btn && (btn.disabled = false);
+            }
+        });
+    });
+    function alertBox(msg) {
+        const el = sheet.querySelector('[data-sheet-error]');
+        el.textContent = msg; el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 4000);
+    }
+}

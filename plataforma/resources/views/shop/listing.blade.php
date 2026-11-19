@@ -29,7 +29,7 @@
                 <label class="label" for="cuota">Cuota de hasta</label>
                 <select id="cuota" name="cuota" class="input">
                     <option value="">Cualquier cuota</option>
-                    @foreach ([25000, 50000, 100000, 200000, 500000] as $c)
+                    @foreach ([20000, 50000, 100000, 200000] as $c)
                         <option value="{{ $c }}" @selected((int) request('cuota') === $c)>{{ cop($c) }} / mes</option>
                     @endforeach
                 </select>

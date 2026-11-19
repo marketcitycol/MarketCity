@@ -89,5 +89,6 @@
     </footer>
     @endif
     @if (\App\Support\Plugins::enabled('whatsapp'))@include('plugins.whatsapp')@endif
+@include('partials.cart-sheet')
 </body>
 </html>

@@ -1,0 +1,3 @@
+# The clone DB is only reachable on the internal Docker network; TLS is not used there.
+[client]
+skip-ssl

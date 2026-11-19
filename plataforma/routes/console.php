@@ -76,3 +76,6 @@ Artisan::command('mc:revisar-urls {--base= : Dirección de la plataforma propia 
 
 // Latido del programador de tareas: el backoffice avisa si el cron de hPanel dejó de correr.
 Schedule::call(fn () => \App\Models\Setting::put('scheduler_last_run', now()->toIso8601String()))->everyFiveMinutes()->name('latido');
+
+// Respaldo diario de la base (JSON comprimido en storage/app/respaldos; guarda los últimos 10).
+Schedule::command('mc:respaldar')->dailyAt('03:00')->timezone('America/Bogota')->withoutOverlapping();

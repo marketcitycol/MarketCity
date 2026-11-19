@@ -52,3 +52,27 @@ Artisan::command('mc:copiar-fotos {--lote=50}', function (\App\Services\LegacyMe
         $this->line("Copiadas: {$r['copied']} · fallidas: {$r['failed']} · faltan: {$r['remaining']}");
     } while ($r['copied'] > 0 && $r['remaining'] > 0);
 })->purpose('Copia a la versión 1 las fotos que aún se enlazan al sitio anterior');
+
+Artisan::command('mc:revisar-urls {--base= : Dirección de la plataforma propia (por defecto APP_URL)} {--sitemap=https://marketcity.co/wp-sitemap.xml} {--archivo= : Lista de URL, una por línea, en vez del sitemap} {--seguir : Continúa la revisión guardada}', function (\App\Services\LegacyUrlChecker $checker) {
+    if (! $this->option('seguir')) {
+        $paths = $this->option('archivo')
+            ? file($this->option('archivo'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
+            : $checker->readSitemap($this->option('sitemap'));
+        $checker->start($paths, $this->option('base') ?: config('app.url'), $this->option('archivo') ?: $this->option('sitemap'));
+        $this->info(count($paths).' URL por revisar.');
+    }
+    do {
+        $r = $checker->checkBatch(25);
+        $this->line("Revisadas {$r['checked']} · faltan {$r['remaining']}");
+    } while ($r['checked'] > 0 && $r['remaining'] > 0);
+
+    $s = $checker->summary();
+    $this->table(array_keys($s), [array_values($s)]);
+    \Illuminate\Support\Facades\Storage::disk('local')->put('revision-urls.csv', $checker->csv());
+    $this->info('Detalle en storage/app/revision-urls.csv');
+
+    return $s['falta'] + $s['error'] > 0 ? 1 : 0;
+})->purpose('Revisa que las URL del sitio WordPress respondan en la plataforma propia (200, 301 o 410)');
+
+// Latido del programador de tareas: el backoffice avisa si el cron de hPanel dejó de correr.
+Schedule::call(fn () => \App\Models\Setting::put('scheduler_last_run', now()->toIso8601String()))->everyFiveMinutes()->name('latido');

@@ -19,6 +19,7 @@ Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
 Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
+Route::get('/catalogo/productos.xml', [\App\Http\Controllers\SitemapController::class, 'feed'])->name('feed');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
@@ -102,6 +103,10 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
     Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');
+    Route::get('/cambio-de-dominio', [Admin\CutoverController::class, 'index'])->name('cutover');
+    Route::post('/cambio-de-dominio/revisar', [Admin\CutoverController::class, 'start'])->name('cutover.start');
+    Route::post('/cambio-de-dominio/lote', [Admin\CutoverController::class, 'batch'])->name('cutover.batch');
+    Route::get('/cambio-de-dominio/detalle.csv', [Admin\CutoverController::class, 'csv'])->name('cutover.csv');
     Route::get('/pqrs', [Admin\PqrController::class, 'index'])->name('pqrs');
     Route::get('/pqrs/{pqr}', [Admin\PqrController::class, 'show'])->name('pqrs.show');
     Route::put('/pqrs/{pqr}', [Admin\PqrController::class, 'update'])->name('pqrs.update');
@@ -118,20 +123,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/plugins/{plugin}/restablecer', [Admin\PluginController::class, 'reset'])->name('plugins.reset');
 });
 
-// --- Redirecciones 301 desde rutas duplicadas del sitio actual (route-and-state-inventory.md) ---
-foreach (['cart', 'cart-2'] as $old) {
-    Route::permanentRedirect($old, '/carrito');
-}
-Route::permanentRedirect('checkout-2', '/checkout');
-Route::permanentRedirect('rastrea-tu-pedido', '/rastrear-pedido');
-foreach (['my-account', 'my-account-2', 'my-orders'] as $old) {
-    Route::permanentRedirect($old, '/mi-cuenta');
-}
-foreach (['vendor-membership', 'vender-2', 'become-a-vendor'] as $old) {
-    Route::permanentRedirect($old, '/vender');
-}
-Route::permanentRedirect('sellercenter', '/seller-center');
+// Las redirecciones 301 desde las URL de WordPress viven en App\Http\Middleware\LegacyRedirects.
 
 // --- Páginas de contenido (políticas, contacto…). Va al final: cualquier ruta anterior tiene prioridad. ---
-Route::permanentRedirect('contact-us', '/contacto');
 Route::get('/{page}', [\App\Http\Controllers\PageController::class, 'show'])->where('page', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('page');

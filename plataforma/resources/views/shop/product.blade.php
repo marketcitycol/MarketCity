@@ -81,4 +81,5 @@
     </div>
 </section>
 @endif
+@include('partials.track', ['event' => 'view_item', 'params' => ['currency' => 'COP', 'value' => (int) $product->price, 'items' => [\App\Support\Analytics::product($product)]]])
 @endsection

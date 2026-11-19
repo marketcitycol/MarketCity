@@ -102,6 +102,7 @@
                 @foreach ($P::lines($f['legal']) as $l)
                     <li><a href="{{ $P::url($l[1] ?? '#') }}" class="hover:text-white" @if (str_starts_with($l[1] ?? '', 'http')) target="_blank" rel="noopener" @endif>{{ $l[0] }}</a></li>
                 @endforeach
+                @if (\App\Support\Analytics::active())<li><button type="button" class="hover:text-white" data-consent-open>Preferencias de cookies</button></li>@endif
             </ul>
         </div>
     </div>

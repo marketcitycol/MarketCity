@@ -24,7 +24,7 @@
                 <td class="{{ $overdue ? 'font-semibold text-amber-700' : '' }}">{{ $so->settlement_due_on?->format('d/m/Y') }}{{ $overdue ? ' · vencida' : '' }}</td>
                 <td>{{ $so->store->name }}</td>
                 <td><a href="{{ route('admin.orders.show', $so->order) }}" class="text-brand-600 hover:underline">{{ $so->order->number }}</a></td>
-                <td>@include('partials.status-badge')</td>
+                <td>@include('partials.status-badge')@if ($claim = $so->openClaim())<br><a href="{{ route('admin.pqrs.show', $claim) }}" class="text-xs font-semibold text-red-700 hover:underline">RETENIDA · {{ $claim->typeLabel() }} {{ $claim->radicado }}</a>@endif</td>
                 <td class="font-semibold">{{ cop($so->seller_net) }}</td>
                 <td>
                     <form method="post" action="{{ route('admin.settlements.settle', $so) }}" class="flex gap-2">@csrf

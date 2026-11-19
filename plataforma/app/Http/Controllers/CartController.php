@@ -40,6 +40,8 @@ class CartController extends Controller
                 'count' => $this->cart->count(),
                 'subtotal' => cop($this->cart->groups()->sum('subtotal')),
                 'product' => ['name' => $product->name, 'price' => cop($product->price), 'image' => $product->imageUrl()],
+                'item' => \App\Support\Analytics::product($product->loadMissing('store', 'category', 'brand'), (int) ($data['quantity'] ?? 1)),
+                'value' => (int) $product->price * (int) ($data['quantity'] ?? 1),
             ]);
         }
 

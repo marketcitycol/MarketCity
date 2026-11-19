@@ -35,6 +35,9 @@ class SettlementController extends Controller
         if ($hold = $sellerOrder->store->settlementHoldReason()) {
             return back()->with('error', "Liquidación retenida: {$hold}");
         }
+        if ($claim = $sellerOrder->openClaim()) {
+            return back()->with('error', "Liquidación retenida: hay una {$claim->typeLabel()} abierta ({$claim->radicado}). Respóndela antes de pagar al vendedor.");
+        }
         $orders->settle($sellerOrder, $request->user(), $data['reference']);
 
         return back()->with('success', 'Liquidación registrada.');

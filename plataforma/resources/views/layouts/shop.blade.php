@@ -8,6 +8,7 @@
     <meta name="description" content="@yield('description', 'MarketCity: el marketplace de Colombia. Compra a muchos vendedores en un solo pedido y paga como prefieras.')">
     @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
     <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
+    @if (\App\Support\Analytics::active())@include('plugins.analytics-head')@endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
@@ -90,5 +91,6 @@
     @endif
     @if (\App\Support\Plugins::enabled('whatsapp'))@include('plugins.whatsapp')@endif
 @include('partials.cart-sheet')
+    @if (\App\Support\Analytics::active())@include('plugins.consent-banner')@endif
 </body>
 </html>

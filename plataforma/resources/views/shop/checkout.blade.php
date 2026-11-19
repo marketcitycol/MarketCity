@@ -2,7 +2,7 @@
 
 @section('content')
 <h1 class="text-2xl font-bold">Completa tu pedido</h1>
-<form method="post" action="{{ route('checkout.place') }}" class="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
+<form method="post" action="{{ route('checkout.place') }}" data-checkout-form class="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
     @csrf
     <div class="space-y-6">
         <section class="card p-5">
@@ -80,4 +80,5 @@
         <button class="btn-primary mt-4 w-full">Realizar el pedido</button>
     </aside>
 </form>
+@include('partials.track', ['event' => 'begin_checkout', 'params' => ['currency' => 'COP', 'value' => (int) $groups->sum('subtotal'), 'items' => $groups->flatMap(fn ($g) => $g['lines']->map(fn ($l) => \App\Support\Analytics::product($l['product'], $l['quantity'])))->values()->all()]])
 @endsection

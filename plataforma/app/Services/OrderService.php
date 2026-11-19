@@ -191,6 +191,9 @@ class OrderService
 
         $from = $so->statusLabel();
         $so->fill(['status' => $to]);
+        if ($to === 'entregado') {
+            $so->delivered_at = now();
+        }
         if ($carrier && $tracking) {
             $so->fill(['carrier' => $carrier, 'tracking_number' => $tracking]);
         }

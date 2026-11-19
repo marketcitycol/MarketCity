@@ -36,6 +36,11 @@ Route::get('/pedido/{order}', [OrderController::class, 'show'])->name('orders.sh
 Route::get('/rastrear-pedido', [OrderController::class, 'trackForm'])->name('track');
 Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:10,1')->name('track.lookup');
 
+Route::get('/pqrs', [\App\Http\Controllers\PqrController::class, 'create'])->name('pqrs.create');
+Route::post('/pqrs', [\App\Http\Controllers\PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
+Route::get('/pqrs/estado', [\App\Http\Controllers\PqrController::class, 'status'])->name('pqrs.status');
+Route::post('/pqrs/consultar', [\App\Http\Controllers\PqrController::class, 'lookup'])->middleware('throttle:10,1')->name('pqrs.lookup');
+
 Route::get('/vender', [SellerSignupController::class, 'show'])->name('sell');
 Route::post('/vender', [SellerSignupController::class, 'store'])->middleware('throttle:5,1')->name('sell.store');
 
@@ -97,6 +102,9 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
     Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');
+    Route::get('/pqrs', [Admin\PqrController::class, 'index'])->name('pqrs');
+    Route::get('/pqrs/{pqr}', [Admin\PqrController::class, 'show'])->name('pqrs.show');
+    Route::put('/pqrs/{pqr}', [Admin\PqrController::class, 'update'])->name('pqrs.update');
     Route::get('/paginas', [Admin\PageController::class, 'index'])->name('pages');
     Route::get('/paginas/nueva', [Admin\PageController::class, 'create'])->name('pages.create');
     Route::post('/paginas', [Admin\PageController::class, 'store'])->name('pages.store');

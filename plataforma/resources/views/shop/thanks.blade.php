@@ -46,7 +46,7 @@
                     <p class="mt-3 whitespace-pre-line text-slate-600">{{ $extra }}</p>
                 @endif
                 @if ($wa)
-                    <a class="btn-primary mt-4" target="_blank" rel="noopener" href="https://wa.me/{{ $wa }}?text={{ rawurlencode('Hola MarketCity, envío el comprobante del pedido '.$order->number) }}">Enviar el comprobante por WhatsApp</a>
+                    <a class="btn-primary mt-4" target="_blank" rel="noopener" data-track="whatsapp_click" href="https://wa.me/{{ $wa }}?text={{ rawurlencode('Hola MarketCity, envío el comprobante del pedido '.$order->number) }}">Enviar el comprobante por WhatsApp</a>
                 @endif
                 <p class="mt-3 text-xs text-slate-500">Despachamos cuando el pago se refleje en la cuenta. Nunca te pediremos pagar a otra cuenta distinta a esta.</p>
             </section>
@@ -72,4 +72,14 @@
         </div>
     @endif
 </div>
+@if ($order->payment_status !== 'failed')
+@include('partials.track', ['event' => 'purchase', 'params' => [
+    'transaction_id' => $order->number,
+    'currency' => 'COP',
+    'value' => (int) $order->total,
+    'shipping' => (int) $order->sellerOrders->sum('shipping_total'),
+    'payment_type' => $order->paymentMethodLabel(),
+    'items' => $order->sellerOrders->flatMap(fn ($so) => $so->items->map(fn ($i) => \App\Support\Analytics::orderItem($i, $so->store?->name)))->values()->all(),
+]])
+@endif
 @endsection

@@ -31,7 +31,7 @@ class SellerOrder extends Model
 
     protected function casts(): array
     {
-        return ['commission_rule' => 'array', 'settlement_due_on' => 'date', 'settled_at' => 'datetime'];
+        return ['commission_rule' => 'array', 'settlement_due_on' => 'date', 'settled_at' => 'datetime', 'delivered_at' => 'datetime'];
     }
 
     public function order(): BelongsTo
@@ -79,5 +79,19 @@ class SellerOrder extends Model
     public function total(): int
     {
         return $this->subtotal + $this->shipping_total;
+    }
+
+    public function pqrs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Pqr::class);
+    }
+
+    /** Un reclamo, retracto o reversión abierto sobre este subpedido (o sobre todo el pedido) frena la liquidación. */
+    public function openClaim(): ?Pqr
+    {
+        return Pqr::whereIn('type', Pqr::ORDER_TYPES)->whereIn('status', Pqr::OPEN)
+            ->where('order_id', $this->order_id)
+            ->where(fn ($q) => $q->whereNull('seller_order_id')->orWhere('seller_order_id', $this->id))
+            ->first();
     }
 }

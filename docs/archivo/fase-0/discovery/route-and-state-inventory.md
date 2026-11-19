@@ -42,7 +42,7 @@ Fuente: sitemaps nativos de WordPress (E-008, E-014–E-017) y navegación públ
 | `/faq/`, `/about-us/`, `/coming-soon/` | Demo 2021 | No inspeccionado | Probable retiro con 301. |
 | `/blog/` | Contenido | No inspeccionado | Evaluar tráfico antes de decidir. |
 | `/wp-json/` | API | Índice vacío (E-013) | Hardening. |
-| `/wp-admin/`, `/admin` | Backoffice | **No accedido** (fuera de alcance) | Ver `docs/program/access-request.md`. |
+| `/wp-admin/`, `/admin` | Backoffice | **No accedido** (fuera de alcance) | Ver `docs/archivo/fase-0/program/access-request.md`. |
 
 ## 3. Parámetros de URL observados
 

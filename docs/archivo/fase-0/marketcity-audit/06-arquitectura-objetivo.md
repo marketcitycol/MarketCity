@@ -1,6 +1,6 @@
 # 06 · Arquitectura objetivo
 
-- **Fecha:** 2026-11-17. **Estado:** BORRADOR para aprobación. Parte de la decisión ya tomada por el propietario (Laravel + MySQL en Hostinger, 2026-11-16) y de `docs/adr/0001-pila-tecnologica.md` y `0002-modelo-de-datos.md`.
+- **Fecha:** 2026-11-17. **Estado:** BORRADOR para aprobación. Parte de la decisión ya tomada por el propietario (Laravel + MySQL en Hostinger, 2026-11-16) y de `docs/arquitectura/0001-pila-tecnologica.md` y `0002-modelo-de-datos.md`.
 
 ## 1. Principio
 **Monolito modular** en Laravel. Con ~130 pedidos en 5 años y 650 productos, separar servicios no aporta y sí multiplica la operación. Cada dominio es un módulo con fronteras claras (servicios, eventos y tablas propias) para poder extraerlo después si la escala lo justifica.

@@ -13,7 +13,7 @@ use Carbon\Carbon;
 
 /**
  * Lista de "sí / no" para pasar marketcity.co a la plataforma propia.
- * Lo que la app puede comprobar sola se comprueba aquí; lo demás está en docs/v1/cambio-de-dominio.md.
+ * Lo que la app puede comprobar sola se comprueba aquí; lo demás está en docs/operacion/cambio-de-dominio.md.
  */
 class CutoverReadiness
 {

@@ -11,7 +11,7 @@
    a. Cuenta nominal temporal con rol personalizado de solo lectura (p. ej. plugin de roles con capacidades `read`, `view_woocommerce_reports` y sin `manage_options`/`edit_*`), MFA activo, caducidad ≤ 7 días.
    b. Si no es viable: sesión guiada en la que el propietario navega y comparte pantalla; el equipo toma notas redactadas.
    c. Exportaciones entregadas por el propietario (ver §2).
-5. **Registro:** se anota en `docs/program/access-log.md` (se crea al primer acceso): fecha, persona, mecanismo, alcance, caducidad, autorizado por.
+5. **Registro:** se anota en `docs/archivo/fase-0/program/access-log.md` (se crea al primer acceso): fecha, persona, mecanismo, alcance, caducidad, autorizado por.
 6. **Restricciones:** sin descargas de datos personales, sin cambios, sin "Guardar", sin activar/desactivar plugins, sin actualizar nada.
 7. **Pedidos/clientes/pagos individuales:** no se abren salvo necesidad aprobada; se priorizan reportes agregados.
 8. **Cierre:** cerrar sesión, el propietario elimina o desactiva la cuenta, registrar revocación y cualquier exposición accidental.

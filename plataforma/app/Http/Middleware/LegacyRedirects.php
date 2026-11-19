@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Redirecciones 301 desde las URL de WordPress/WooCommerce de marketcity.co a las de la plataforma propia,
  * para no perder posiciones en Google ni enlaces guardados el día del cambio de dominio.
  *
- * Fuente: docs/discovery/route-and-state-inventory.md, el sitemap wp-sitemap.xml y el prompt avanzado (2026-11-19).
+ * Fuente: docs/archivo/fase-0/discovery/route-and-state-inventory.md, el sitemap wp-sitemap.xml y el prompt avanzado (2026-11-19).
  * Corre antes del enrutador y solo mira la ruta, así que cuesta casi nada en las demás visitas.
  * Las rutas que ya existen igual en v1 (/producto/{slug}, /tienda/{slug}, /categoria-producto/{slug}, /shop,
  * /mi-cuenta, /rastrear-pedido, /seller-center, /tiendas, /ofertas-relampago y las páginas copiadas) no se tocan.

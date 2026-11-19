@@ -4,7 +4,7 @@
 - **Fase actual:** A — Descubrimiento seguro y línea base (**en curso**)
 - **Producción (`marketcity.co`) modificada:** No. Solo lectura (GET desde un navegador, sin formularios, sin login).
 - **Entorno destino:** `https://v1.marketcity.co/` (Laravel 13 propio, Hostinger Cloud Startup, SQLite, datos de prueba).
-- **Base previa reutilizada:** descubrimiento de Fase 0 (`docs/discovery`, `docs/program` en la rama `claude/project-thread-y580kw`, PR #1) y versión 1 (`plataforma/`, PR #2).
+- **Base previa reutilizada:** descubrimiento de Fase 0 (`docs/archivo/fase-0/discovery`, `docs/archivo/fase-0/program` en la rama `claude/project-thread-y580kw`, PR #1) y versión 1 (`plataforma/`, PR #2).
 
 ## Qué es MarketCity hoy (HECHO)
 

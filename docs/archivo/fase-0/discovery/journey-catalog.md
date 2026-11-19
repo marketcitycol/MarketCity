@@ -56,7 +56,7 @@ Propietario de negocio por defecto: `POR DEFINIR` (Q-001). Prioridad: P0 dinero/
 - **No verificado:** motor de cupones, reglas de stock por oferta, temporizadores.
 
 ## J-11 Backoffice y procesos manuales — P0 (**bloqueo**)
-- Fuera de alcance sin acceso autorizado. Ver `docs/program/access-request.md`.
+- Fuera de alcance sin acceso autorizado. Ver `docs/archivo/fase-0/program/access-request.md`.
 
 ## J-12 App Android — P1 (**descubierta**)
 - **Observado:** `/eliminar-mi-cuenta/` menciona "marketcity.co y la app Android", con favoritos, búsquedas y carrito guardados en el dispositivo (E-022). Ficha de tienda no localizada (E-025).

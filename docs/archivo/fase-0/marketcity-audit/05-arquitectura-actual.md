@@ -1,6 +1,6 @@
 # 05 · Arquitectura actual (as-is) — marketcity.co
 
-- **Fecha:** 2026-11-17. Amplía `docs/discovery/as-is-system-map.md` (Fase 0) con lo confirmado en el clon y hoy en el sitio público.
+- **Fecha:** 2026-11-17. Amplía `docs/archivo/fase-0/discovery/as-is-system-map.md` (Fase 0) con lo confirmado en el clon y hoy en el sitio público.
 - Convenciones: HECHO (verificado), INFERENCIA, PENDIENTE.
 
 ## 1. Versiones y piezas (línea base)

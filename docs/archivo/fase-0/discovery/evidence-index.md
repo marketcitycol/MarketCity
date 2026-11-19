@@ -3,7 +3,7 @@
 - **Misión:** MC-DISC-001 · Fase 0 · Descubrimiento público de solo lectura
 - **Fecha de captura:** 2026-11-12 (UTC-5, America/Bogota)
 - **Método:** solicitudes GET anónimas a páginas públicas mediante un lector web (conversión HTML→texto). Sin login, sin envío de formularios, sin añadir al carrito, sin compras. Una solicitud por URL; 24 URLs en total.
-- **Limitación de método:** el lector devuelve texto extraído, no HTML crudo ni cabeceras HTTP; por eso no hay hash SHA-256 del cuerpo ni códigos de estado. `curl` directo y la API de PageSpeed fueron bloqueados por la política de red del entorno (E-026, E-027). Se recomienda recapturar con un rastreador propio que guarde HTML + cabeceras + hash (ver `docs/program/questions.md`, Q-015).
+- **Limitación de método:** el lector devuelve texto extraído, no HTML crudo ni cabeceras HTTP; por eso no hay hash SHA-256 del cuerpo ni códigos de estado. `curl` directo y la API de PageSpeed fueron bloqueados por la política de red del entorno (E-026, E-027). Se recomienda recapturar con un rastreador propio que guarde HTML + cabeceras + hash (ver `docs/archivo/fase-0/program/questions.md`, Q-015).
 - **Regla de datos:** se omitieron teléfonos personales; solo se registra el correo corporativo público `somos@marketcity.co`. Ningún dato de comprador fue observado.
 
 | ID | Fecha | Fuente | Tipo | Hallazgo principal | Confianza |

@@ -1,6 +1,6 @@
 # Evidencia de la auditoría (AUD-E)
 
-Todas las mediciones son de solo lectura (peticiones GET desde el navegador de Claude en el computador del propietario, 2026-11-17 ~06:07–06:30 UTC). No se enviaron formularios ni se inició sesión en producción. Los números de Fase 0 (E-0xx) están en `docs/discovery/evidence-index.md` del PR #1.
+Todas las mediciones son de solo lectura (peticiones GET desde el navegador de Claude en el computador del propietario, 2026-11-17 ~06:07–06:30 UTC). No se enviaron formularios ni se inició sesión en producción. Los números de Fase 0 (E-0xx) están en `docs/archivo/fase-0/discovery/evidence-index.md` del PR #1.
 
 | ID | Qué | Método | Resultado clave |
 |---|---|---|---|

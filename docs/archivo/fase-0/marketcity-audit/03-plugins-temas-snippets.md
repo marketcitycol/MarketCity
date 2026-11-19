@@ -1,6 +1,6 @@
 # 03 · Plugins, tema y snippets del sitio actual
 
-- **Fecha:** 2026-11-17. **Fuente:** inventario de Fase 0 en el clon aislado (E-031, E-032; `docs/discovery/private-inventory-code.md` y `private-inventory-db.md` del PR #1), más lo observado hoy en la red del sitio público (AUD-E-003).
+- **Fecha:** 2026-11-17. **Fuente:** inventario de Fase 0 en el clon aislado (E-031, E-032; `docs/archivo/fase-0/discovery/private-inventory-code.md` y `private-inventory-db.md` del PR #1), más lo observado hoy en la red del sitio público (AUD-E-003).
 - **Destino** usa: CONSERVAR (mientras viva el legado), REEMPLAZAR (por un módulo de v1), REESCRIBIR (lógica propia que se rehace en v1), RETIRAR (no se lleva).
 - Licencias y versiones exactas de cada plugin de terceros: **PENDIENTE Fase B** (pantalla Plugins con sesión del propietario). No se inventan.
 

@@ -43,7 +43,7 @@ La configuración del programa tiene `tratamiento_de_datos_personales_reales: fa
 - **B:** clon con datos reales. Requiere autorización explícita y registrada para tratar datos personales, acceso restringido, cifrado en reposo y borrado al terminar la Fase 0.
 
 ## 5. Herramienta lista (2026-11-13)
-El entorno está en [`infra/legacy-clone/`](../../infra/legacy-clone/README.md) y se validó con un backup sintético: aislamiento de red, pasarelas desactivadas, correos capturados, `noindex`, inventario y destrucción. Falta solo la copia real (Q-025).
+El entorno está en [`infra/legacy-clone/`](../../../../infra/legacy-clone/README.md) y se validó con un backup sintético: aislamiento de red, pasarelas desactivadas, correos capturados, `noindex`, inventario y destrucción. Falta solo la copia real (Q-025).
 
 ## 6. Cierre
 Al terminar la Fase 0: borrar el clon y sus volúmenes, conservar solo el original cifrado (o devolverlo) y registrar la eliminación.

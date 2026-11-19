@@ -21,4 +21,4 @@ PHP + Laravel 12, MySQL/MariaDB en el hosting y SQLite para desarrollo y demo. E
 ## Consecuencias
 - Se usa Laravel 12 (PHP 8.2+) para que corra en el mismo Hostinger sin cambiar la versión de PHP de marketcity.co. Al pasar producción a PHP 8.3 se sube a Laravel 13 (cambio menor).
 - La demo en el subdominio usa SQLite (un archivo, sin crear base); producción usará MySQL.
-- Si el propietario elige otra pila, el modelo de datos y las reglas (`docs/v1/alcance.md`) se conservan; se reescribe el código.
+- Si el propietario elige otra pila, el modelo de datos y las reglas (`docs/producto/alcance-v1.md`) se conservan; se reescribe el código.

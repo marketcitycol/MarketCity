@@ -1,12 +1,12 @@
 # 11 · Riesgos, bloqueos y decisiones
 
-- **Fecha:** 2026-11-17. Los riesgos R-001…R-028 de Fase 0 siguen vigentes (`docs/program/risks.md`, PR #1). Aquí se registran los nuevos (prefijo AUD-R) y el estado de los que afectan a v1.
+- **Fecha:** 2026-11-17. Los riesgos R-001…R-028 de Fase 0 siguen vigentes (`docs/archivo/fase-0/program/risks.md`, PR #1). Aquí se registran los nuevos (prefijo AUD-R) y el estado de los que afectan a v1.
 
 ## 1. Riesgos nuevos
 
 | ID | Riesgo | Prob./Impacto | Mitigación | Estado |
 |---|---|---|---|---|
-| AUD-R-01 | v1 se actualiza subiendo paquetes a mano: un paquete completo reinicia la base de datos (`migrate:fresh --seed`) | Alta / Alta | Paquete de **actualización** que conserva `.env` y base y corre solo migraciones nuevas (RB-01) | MITIGADO: paquete de actualización con respaldo automático y solo `migrate` (`deploy/build-update-hostinger.sh`, `docs/v1/guia-actualizacion-hostinger.md`); aplicado en v1.marketcity.co el 2026-11-17 (respaldo en `/respaldo-v1-20261117` y `mc-v1/storage/app/respaldos/`; "Nothing to migrate"; sitio 200, 404 en español, sitemap y cabeceras OK) |
+| AUD-R-01 | v1 se actualiza subiendo paquetes a mano: un paquete completo reinicia la base de datos (`migrate:fresh --seed`) | Alta / Alta | Paquete de **actualización** que conserva `.env` y base y corre solo migraciones nuevas (RB-01) | MITIGADO: paquete de actualización con respaldo automático y solo `migrate` (`deploy/build-update-hostinger.sh`, `docs/operacion/guia-actualizacion-hostinger.md`); aplicado en v1.marketcity.co el 2026-11-17 (respaldo en `/respaldo-v1-20261117` y `mc-v1/storage/app/respaldos/`; "Nothing to migrate"; sitio 200, 404 en español, sitemap y cabeceras OK) |
 | AUD-R-02 | v1 usa SQLite: un solo escritor; sin respaldos del panel | Media / Media | D-01: MySQL de Hostinger | ABIERTO |
 | AUD-R-03 | El pago de prueba se puede activar en Configuración; en producción permitiría "aprobar" pedidos sin pagar | Baja hoy / Crítica en producción | Bloquear `sandbox` cuando `APP_ENV=production` y `MC_DEMO=false` (MC-PAY-010) | ABIERTO |
 | AUD-R-04 | Las cookies de analítica del dominio raíz (`_ga`, `_fbp`, `sbjs_*`) llegan a v1 | Media / Baja | Tenerlo en cuenta en consentimiento y pruebas | ABIERTO |

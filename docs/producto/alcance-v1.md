@@ -4,6 +4,7 @@
 - **Pedido del propietario:** "que se haga la versión 1 y empiece a ser propio" (2026-11-16).
 - **Estado de la compuerta de Fase 0:** NO_APROBADA (pendientes Q-031, A-01, A-02, A-05). El propietario decidió avanzar; esos pendientes se tratan como supuestos y riesgos abajo.
 - **Producción:** no se tocó. La versión 1 corre aparte, con datos de prueba.
+- **Actualización 2026-11-19:** las olas 1 a 6 y la ola visual cambiaron parte de este alcance (por ejemplo, la contraentrega se retiró y entraron transferencia, Mercado Pago y PQRS). Lo que hace hoy la plataforma está en [plataforma/README.md](../../plataforma/README.md).
 
 ## Objetivo
 Tener un marketplace propio que el propietario pueda abrir y probar de punta a punta: comprar a varios vendedores, pagar (en prueba), despachar con guía, y liquidar a cada vendedor. Es la base sobre la que se migran los datos y se conectan las pasarelas reales.

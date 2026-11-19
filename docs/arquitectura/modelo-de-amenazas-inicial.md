@@ -28,7 +28,7 @@ Dinero (pagos, BNPL, liquidaciones a vendedores), datos personales (compradores,
 ## 3. Observaciones de privacidad (requieren validación jurídica competente)
 - La política declara tratamiento de datos financieros/crediticios y reporte a centrales de riesgo (E-007), aunque también declara que MarketCity no interviene en la cartera de Addi/Sistecrédito. Coherencia a validar (Q-008).
 - Retención declarada de 10 años para registros contables (E-022).
-- No se afirma cumplimiento; ver `docs/program/risks.md`.
+- No se afirma cumplimiento; ver `docs/archivo/fase-0/program/risks.md`.
 
 ## 4. Durante esta misión
 No se encontró contenido que intentara dar instrucciones al agente. No se capturaron datos personales de compradores.

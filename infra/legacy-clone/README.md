@@ -2,7 +2,7 @@
 
 Copia aislada del sitio actual (WordPress/WooCommerce) para la Fase 0 (MC-DISC-001). Sirve para observar checkout, Seller Center, backoffice, plugins, cron y datos **sin tocar producción**. No es la nueva plataforma.
 
-Plan y decisiones: [`docs/program/staging-clone-plan.md`](../../docs/program/staging-clone-plan.md). El propietario autorizó el clon con datos reales el 2026-11-13, con estos controles: acceso restringido, sin exportar datos personales, reportes solo agregados y borrado al cerrar la Fase 0.
+Plan y decisiones: [`docs/archivo/fase-0/program/staging-clone-plan.md`](../../docs/archivo/fase-0/program/staging-clone-plan.md). El propietario autorizó el clon con datos reales el 2026-11-13, con estos controles: acceso restringido, sin exportar datos personales, reportes solo agregados y borrado al cerrar la Fase 0.
 
 ## Cómo está aislado
 

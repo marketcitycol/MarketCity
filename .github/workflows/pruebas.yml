@@ -11,6 +11,23 @@ permissions:
   contents: read
 
 jobs:
+  estilo:
+    name: Estilo del código (Pint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plataforma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Revisar estilo
+        run: vendor/bin/pint --test
+
   pruebas:
     name: PHPUnit (SQLite y MySQL)
     runs-on: ubuntu-latest

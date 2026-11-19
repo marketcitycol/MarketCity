@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Modelo de datos de la versión 1 de MarketCity.
  *
- * Convenciones (ver docs/adr/0002-modelo-de-datos.md):
+ * Convenciones (ver docs/arquitectura/0002-modelo-de-datos.md):
  * - Dinero en pesos colombianos (COP) como enteros, sin decimales.
  * - Fechas en UTC; la aplicación muestra America/Bogota.
  * - `legacy_id` guarda el id de WooCommerce/WCFM para la migración.

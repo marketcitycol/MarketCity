@@ -1,7 +1,7 @@
 # Cambio de dominio: marketcity.co pasa a la plataforma propia
 
 - **Fecha:** 2026-11-19. **Estado:** lista preparada; **no hay fecha de cambio**. El cambio lo ordena el propietario por escrito.
-- Complementa `docs/marketcity-audit/10-plan-cutover-rollback.md` (estrategia, criterios y reversión) con los pasos concretos de Hostinger y lo que la plataforma ya comprueba sola.
+- Complementa `docs/archivo/fase-0/marketcity-audit/10-plan-cutover-rollback.md` (estrategia, criterios y reversión) con los pasos concretos de Hostinger y lo que la plataforma ya comprueba sola.
 
 ## 1. Lo que la plataforma comprueba sola
 
@@ -10,7 +10,7 @@ En **Backoffice → Cambio de dominio** hay una lista sí/no. Mientras diga «TO
 | Comprobación | Obligatoria | Cómo se pone en verde |
 |---|---|---|
 | Modo de prueba apagado | Sí | `MC_DEMO=false` en el `.env` (quita el aviso de prueba, el `noindex` y el pago de prueba). Se hace **el mismo día del cambio**, no antes. |
-| Base de datos MySQL | Sí | Guía `docs/v1/guia-ajustes-hostinger.md`, paso 2. |
+| Base de datos MySQL | Sí | Guía `docs/operacion/guia-ajustes-hostinger.md`, paso 2. |
 | Correo saliente | Sí | SMTP de Hostinger en el `.env` (`MAIL_MAILER=smtp`). |
 | Un medio de pago real | Sí | Datos de la cuenta en Configuración → Transferencia, y/o llaves de Mercado Pago en el `.env`. |
 | Cron corriendo | Sí | Tarea en hPanel → Avanzado → Cron: `php artisan schedule:run` cada minuto. |

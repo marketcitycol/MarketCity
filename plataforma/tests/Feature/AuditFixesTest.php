@@ -10,7 +10,7 @@ use App\Services\Orders\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Pruebas de los hallazgos de la auditoría Fase A (docs/marketcity-audit/13-matriz-trazabilidad.md). */
+/** Pruebas de los hallazgos de la auditoría Fase A (docs/archivo/fase-0/marketcity-audit/13-matriz-trazabilidad.md). */
 class AuditFixesTest extends TestCase
 {
     use RefreshDatabase;

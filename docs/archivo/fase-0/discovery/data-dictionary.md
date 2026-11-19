@@ -1,6 +1,6 @@
 # Diccionario de datos — borrador desde la vista pública
 
-**Estado:** PRELIMINAR. Las entidades se infieren de campos visibles y del modelo estándar de WooCommerce/WCFM. Tablas, columnas, volúmenes y calidad reales requieren exportación o acceso de solo lectura (`docs/program/access-request.md`). Clasificación: PÚBLICO, INTERNO, PERSONAL, PERSONAL-SENSIBLE/FINANCIERO.
+**Estado:** PRELIMINAR. Las entidades se infieren de campos visibles y del modelo estándar de WooCommerce/WCFM. Tablas, columnas, volúmenes y calidad reales requieren exportación o acceso de solo lectura (`docs/archivo/fase-0/program/access-request.md`). Clasificación: PÚBLICO, INTERNO, PERSONAL, PERSONAL-SENSIBLE/FINANCIERO.
 
 | Entidad | Campos observados | Origen probable (WooCommerce/WCFM) | Clasificación | Evidencia | Pendiente |
 |---|---|---|---|---|---|

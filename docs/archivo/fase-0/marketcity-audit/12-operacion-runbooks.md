@@ -7,7 +7,7 @@
 | RB-01 | Actualizar v1 sin perder datos | BORRADOR |
 | RB-02 | Pago pendiente o aprobación tardía | BORRADOR |
 | RB-03 | Configurar tareas programadas | BORRADOR |
-| RB-04 | Importar catálogo desde WooCommerce | VIGENTE (`docs/v1/guia-hostinger.md` paso 6) |
+| RB-04 | Importar catálogo desde WooCommerce | VIGENTE (`docs/operacion/guia-hostinger.md` paso 6) |
 | RB-05 | Vendedor bloqueado / suspendido | BORRADOR |
 | RB-06 | Stock inconsistente | BORRADOR |
 | RB-07 | Respaldo y restauración | BORRADOR |

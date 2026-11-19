@@ -58,4 +58,4 @@ Estados públicos: Recibido → Validado → Despachado → Entregado (E-005). R
 
 ## 4. Flujo de datos personales (borrador)
 
-Captura: registro (correo), checkout (no observado), alta de vendedor (CC/NIT, dirección, teléfono), formularios de contacto (nombre, celular, ciudad, pedido) que salen por WhatsApp, píxel de Meta, opt-in de notificaciones, app Android. Transmisión declarada a aliados financieros, logísticos, tecnológicos y centrales de riesgo (E-007). Ver `docs/security/initial-threat-model.md`.
+Captura: registro (correo), checkout (no observado), alta de vendedor (CC/NIT, dirección, teléfono), formularios de contacto (nombre, celular, ciudad, pedido) que salen por WhatsApp, píxel de Meta, opt-in de notificaciones, app Android. Transmisión declarada a aliados financieros, logísticos, tecnológicos y centrales de riesgo (E-007). Ver `docs/arquitectura/modelo-de-amenazas-inicial.md`.

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Payments\PaymentRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -67,7 +68,7 @@ class Order extends Model
 
     public function paymentMethodLabel(): string
     {
-        return \App\Services\Payments\PaymentRegistry::labelFor($this->payment_method);
+        return PaymentRegistry::labelFor($this->payment_method);
     }
 
     /** Pedido por transferencia que todavía espera el dinero. */

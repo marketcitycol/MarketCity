@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\LegacyRedirects;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,12 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['role' => \App\Http\Middleware\EnsureRole::class]);
+        $middleware->alias(['role' => EnsureRole::class]);
         // Los avisos de las pasarelas no traen token CSRF: se validan con su firma.
         $middleware->validateCsrfTokens(except: ['pagos/aviso/*']);
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(SecurityHeaders::class);
         // URL de WordPress → URL propias (301), antes del enrutador.
-        $middleware->prepend(\App\Http\Middleware\LegacyRedirects::class);
+        $middleware->prepend(LegacyRedirects::class);
         $middleware->redirectUsersTo(fn () => route('account'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {

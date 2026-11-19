@@ -52,7 +52,7 @@
     </div>
 
     <aside class="card h-fit p-5">
-        @php($shipping = $groups->sum(fn ($g) => \App\Services\Cart::shippingCost($g['store'], $cart->shippingChoice($g['store']->id))))
+        @php($shipping = $groups->sum(fn ($g) => \App\Services\Orders\Cart::shippingCost($g['store'], $cart->shippingChoice($g['store']->id))))
         <h2 class="font-semibold">Resumen</h2>
         <dl class="mt-3 space-y-2 text-sm">
             <div class="flex justify-between"><dt>Productos</dt><dd>{{ cop($groups->sum('subtotal')) }}</dd></div>

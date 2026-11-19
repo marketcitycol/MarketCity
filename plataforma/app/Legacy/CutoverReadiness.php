@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Legacy;
 
 use App\Models\Page;
 use App\Models\Pqr;
@@ -17,7 +17,7 @@ use Carbon\Carbon;
  */
 class CutoverReadiness
 {
-    public function __construct(private LegacyUrlChecker $urls) {}
+    public function __construct(private UrlChecker $urls) {}
 
     /** @return list<array{label:string, ok:bool, detail:string, blocking:bool}> */
     public function checks(): array

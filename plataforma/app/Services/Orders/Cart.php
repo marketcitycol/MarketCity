@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Orders;
 
 use App\Models\Product;
+use App\Models\Store;
 use Illuminate\Support\Collection;
 
 /**
@@ -54,7 +55,7 @@ class Cart
     /**
      * Líneas agrupadas por tienda, listas para mostrar y para crear el pedido.
      *
-     * @return Collection<int, array{store:\App\Models\Store, lines:Collection, subtotal:int}>
+     * @return Collection<int, array{store:Store, lines:Collection, subtotal:int}>
      */
     public function groups(): Collection
     {
@@ -98,7 +99,7 @@ class Cart
         session(['cart.shipping' => $choices]);
     }
 
-    public static function shippingCost(\App\Models\Store $store, string $method): int
+    public static function shippingCost(Store $store, string $method): int
     {
         if ($method === 'recogida') {
             return $store->pickup_enabled ? $store->pickup_fee : 0;

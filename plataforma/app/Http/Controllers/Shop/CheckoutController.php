@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Shop;
 
-use App\Services\Cart;
-use App\Services\OrderService;
+use App\Http\Controllers\Controller;
+use App\Mail\OrderPlacedMail;
+use App\Services\Orders\Cart;
+use App\Services\Orders\OrderService;
 use App\Services\Payments\PaymentRegistry;
+use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use RuntimeException;
@@ -75,7 +78,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart')->with('error', $e->getMessage());
         }
         $this->cart->clear();
-        \App\Support\Mailer::send($order->email, new \App\Mail\OrderPlacedMail($order->fresh()));
+        Mailer::send($order->email, new OrderPlacedMail($order->fresh()));
 
         return redirect()->to($next);
     }

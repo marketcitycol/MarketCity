@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Legacy;
 
 use App\Http\Controllers\Controller;
+use App\Legacy\MediaCopier;
+use App\Legacy\WooCommerceCsvImporter;
 use App\Models\Store;
-use App\Services\WooCommerceCsvImporter;
 use Illuminate\Http\Request;
 use RuntimeException;
 
-class ImportController extends Controller
+class CatalogImportController extends Controller
 {
     public function show()
     {
@@ -33,7 +34,7 @@ class ImportController extends Controller
     }
 
     /** Copia un lote de fotos del sitio anterior; la página sigue sola hasta terminar. */
-    public function media(Request $request, \App\Services\LegacyMediaCopier $copier)
+    public function media(Request $request, MediaCopier $copier)
     {
         if ($request->boolean('reintentar')) {
             $copier->retryFailed();

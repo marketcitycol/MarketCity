@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Legacy;
 
 use App\Http\Controllers\Controller;
-use App\Services\WooOrderImporter;
+use App\Legacy\WooOrderImporter;
 use Illuminate\Http\Request;
 
 /** Recibe clientes y pedidos leídos de la API de WooCommerce (desde el navegador del administrador). */
-class LegacyImportController extends Controller
+class OrderImportController extends Controller
 {
     public function orders(Request $request, WooOrderImporter $importer)
     {

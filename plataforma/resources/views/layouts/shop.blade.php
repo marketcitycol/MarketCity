@@ -9,7 +9,7 @@
     @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
     <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
     @if (\App\Support\Analytics::active())@include('plugins.analytics-head')@endif
-    <link rel="icon" href="{{ asset(ltrim(\App\Support\Brand::ISOTIPO, '/')) }}" type="image/webp">
+    <link rel="icon" href="{{ asset(ltrim(\App\Services\Content\BrandAssets::ISOTIPO, '/')) }}" type="image/webp">
     <meta name="theme-color" content="#0b2a6f">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
@@ -20,8 +20,8 @@
         Versión de prueba · no se cobra dinero real
     </div>
     @endif
-    @if (\App\Support\Plugins::enabled('announcement'))@include('plugins.announcement')@endif
-    @if (\App\Support\Plugins::enabled('header'))
+    @if (\App\Services\Content\Plugins::enabled('announcement'))@include('plugins.announcement')@endif
+    @if (\App\Services\Content\Plugins::enabled('header'))
     @include('plugins.header')
     @else
     <header class="sticky top-0 z-30 border-b border-slate-200 bg-white">
@@ -41,7 +41,7 @@
                 @endauth
                 <a href="{{ route('cart') }}" class="relative rounded-lg px-3 py-2 hover:bg-slate-100" aria-label="Carrito">
                     🛒 <span class="hidden sm:inline">Carrito</span>
-                    @php($count = app(\App\Services\Cart::class)->count())
+                    @php($count = app(\App\Services\Orders\Cart::class)->count())
                     @if ($count)<span class="absolute -top-0.5 -right-0.5 rounded-full bg-accent-400 px-1.5 text-xs font-bold text-brand-900">{{ $count }}</span>@endif
                 </a>
             </nav>
@@ -63,7 +63,7 @@
         @yield('content')
     </main>
 
-    @if (\App\Support\Plugins::enabled('footer'))
+    @if (\App\Services\Content\Plugins::enabled('footer'))
     @include('plugins.footer')
     @else
     <footer class="mt-12 border-t border-slate-200 bg-white">
@@ -91,7 +91,7 @@
         <p class="border-t border-slate-100 px-4 py-4 text-center text-xs text-slate-500">* Cuotas de referencia: el valor final depende del medio de pago y su aprobación. Precios en pesos colombianos con IVA incluido.</p>
     </footer>
     @endif
-    @if (\App\Support\Plugins::enabled('whatsapp'))@include('plugins.whatsapp')@endif
+    @if (\App\Services\Content\Plugins::enabled('whatsapp'))@include('plugins.whatsapp')@endif
 @include('partials.cart-sheet')
     @if (\App\Support\Analytics::active())@include('plugins.consent-banner')@endif
 </body>

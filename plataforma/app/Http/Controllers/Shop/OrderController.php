@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Shop;
 
+use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Services\OrderService;
+use App\Services\Orders\OrderService;
+use App\Services\Payments\BankTransferGateway;
+use App\Services\Payments\PaymentRegistry;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -19,7 +22,7 @@ class OrderController extends Controller
     /** El pago de prueba solo existe en modo demostración y solo para pedidos hechos con ese medio. */
     private function authorizeSandbox(Order $order): void
     {
-        abort_unless(\App\Services\Payments\PaymentRegistry::sandboxAllowed() && $order->payment_method === 'sandbox', 404);
+        abort_unless(PaymentRegistry::sandboxAllowed() && $order->payment_method === 'sandbox', 404);
     }
 
     public function sandbox(Request $request, Order $order)
@@ -54,7 +57,7 @@ class OrderController extends Controller
 
         return view('shop.thanks', [
             'order' => $order->load('sellerOrders.store', 'sellerOrders.items'),
-            'transfer' => $order->awaitingTransfer() ? \App\Services\Payments\BankTransferGateway::accountDetails() : null,
+            'transfer' => $order->awaitingTransfer() ? BankTransferGateway::accountDetails() : null,
         ]);
     }
 

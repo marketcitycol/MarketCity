@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Shop;
 
+use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Services\Cart;
+use App\Services\Orders\Cart;
+use App\Support\Analytics;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -40,7 +42,7 @@ class CartController extends Controller
                 'count' => $this->cart->count(),
                 'subtotal' => cop($this->cart->groups()->sum('subtotal')),
                 'product' => ['name' => $product->name, 'price' => cop($product->price), 'image' => $product->imageUrl()],
-                'item' => \App\Support\Analytics::product($product->loadMissing('store', 'category', 'brand'), (int) ($data['quantity'] ?? 1)),
+                'item' => Analytics::product($product->loadMissing('store', 'category', 'brand'), (int) ($data['quantity'] ?? 1)),
                 'value' => (int) $product->price * (int) ($data['quantity'] ?? 1),
             ]);
         }

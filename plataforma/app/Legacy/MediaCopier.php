@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Legacy;
 
 use App\Models\Product;
 use App\Models\Setting;
@@ -13,7 +13,7 @@ use Throwable;
  * Por lotes pequeños, para el hosting compartido. Cada foto se guarda una sola vez (por su huella SHA-1).
  * Sin esto, al apagar WordPress los productos se quedarían sin foto (AUD-R-08).
  */
-class LegacyMediaCopier
+class MediaCopier
 {
     private const MAX_BYTES = 6 * 1024 * 1024;
 

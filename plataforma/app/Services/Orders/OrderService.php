@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Orders;
 
+use App\Mail\OrderShippedMail;
+use App\Mail\PaymentConfirmedMail;
+use App\Mail\SellerNewOrderMail;
 use App\Models\MerchantEntity;
 use App\Models\Order;
 use App\Models\Payment;
@@ -9,9 +12,6 @@ use App\Models\Product;
 use App\Models\SellerOrder;
 use App\Models\Setting;
 use App\Models\User;
-use App\Mail\OrderShippedMail;
-use App\Mail\PaymentConfirmedMail;
-use App\Mail\SellerNewOrderMail;
 use App\Support\BusinessDays;
 use App\Support\Mailer;
 use Illuminate\Support\Facades\DB;

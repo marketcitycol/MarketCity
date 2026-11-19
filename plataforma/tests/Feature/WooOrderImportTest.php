@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +17,7 @@ class WooOrderImportTest extends TestCase
 
     private function payload(string $status = 'completed'): array
     {
-        $p = Product::where('store_id', '!=', \App\Models\Store::orderBy('id')->value('id'))->firstOrFail();
+        $p = Product::where('store_id', '!=', Store::orderBy('id')->value('id'))->firstOrFail();
         $p->legacy_id = 777;
         $p->save();
 

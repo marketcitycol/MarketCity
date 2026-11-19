@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Legacy\WooCommerceCsvImporter;
 use App\Models\Store;
-use App\Services\WooCommerceCsvImporter;
 use Illuminate\Console\Command;
 
 class ImportWooCommerce extends Command

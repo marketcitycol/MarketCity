@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Support;
+namespace App\Services\Content;
+
+use Illuminate\Support\Collection;
 
 /**
  * Piezas de marca que v1 comparte con marketcity.co (lectura del 2026-11-19).
@@ -8,7 +10,7 @@ namespace App\Support;
  * Las fotos de categoría siguen apuntando a las imágenes del sitio actual, igual que las de producto,
  * hasta que el copiador de medios las traiga (Backoffice → Importar).
  */
-class Brand
+class BrandAssets
 {
     public const LOGO = '/marca/logo.webp';
 
@@ -69,8 +71,8 @@ class Brand
      *
      * @template T of \App\Models\Category
      *
-     * @param  \Illuminate\Support\Collection<int, T>  $categories
-     * @return \Illuminate\Support\Collection<int, T>
+     * @param  Collection<int, T>  $categories
+     * @return Collection<int, T>
      */
     public static function sortCategories($categories)
     {

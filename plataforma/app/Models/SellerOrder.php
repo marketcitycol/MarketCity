@@ -81,7 +81,7 @@ class SellerOrder extends Model
         return $this->subtotal + $this->shipping_total;
     }
 
-    public function pqrs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function pqrs(): HasMany
     {
         return $this->hasMany(Pqr::class);
     }

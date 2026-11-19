@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MerchantEntity;
 use App\Models\Setting;
+use App\Services\Payments\BankTransferGateway;
 use App\Services\Payments\PaymentRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -56,7 +57,7 @@ class SettingsController extends Controller
             Setting::put($k, trim((string) $v));
         }
 
-        return back()->with('success', \App\Services\Payments\BankTransferGateway::isConfigured()
+        return back()->with('success', BankTransferGateway::isConfigured()
             ? 'Datos de transferencia guardados. Ya se ofrece en el checkout si está activa en «Medios de pago».'
             : 'Guardado. Faltan datos de la cuenta: la transferencia no se ofrece hasta completarlos.');
     }

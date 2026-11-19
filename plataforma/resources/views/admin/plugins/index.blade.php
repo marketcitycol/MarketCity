@@ -4,7 +4,7 @@
 <p class="mt-1 text-sm text-slate-500">Piezas de la identidad de la tienda. Vienen con el contenido de marketcity.co; actívalas, desactívalas o edítalas sin tocar código.</p>
 <div class="mt-5 grid gap-4 lg:grid-cols-2">
 @foreach ($plugins as $key => $p)
-    @php($on = \App\Support\Plugins::enabled($key))
+    @php($on = \App\Services\Content\Plugins::enabled($key))
     <section class="card flex flex-col p-5">
         <div class="flex items-start justify-between gap-3">
             <div>

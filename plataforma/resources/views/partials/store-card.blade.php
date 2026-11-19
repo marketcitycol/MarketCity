@@ -3,7 +3,7 @@
 @php($main = $store->mainCategory ?? null)
 @php($thumbs = $store->thumbs ?? collect())
 <article class="flex flex-col overflow-hidden rounded-[18px] border bg-white {{ $official ? 'border-[#c8a15a]' : 'border-[#e3e6ec]' }}">
-    <a href="{{ route('store', $store) }}" class="relative block h-[84px]" style="background: {{ \App\Support\Brand::storeCover($main?->slug) }}" aria-label="{{ $store->name }}">
+    <a href="{{ route('store', $store) }}" class="relative block h-[84px]" style="background: {{ \App\Services\Content\BrandAssets::storeCover($main?->slug) }}" aria-label="{{ $store->name }}">
         @if ($official)
             <span class="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-brand-900 px-2 py-0.5 text-xs font-semibold text-white">{!! icon('verificado', 'h-3.5 w-3.5 text-[#f3d9a4]') !!} {{ $store->isVerified() ? 'Tienda verificada' : 'Tienda oficial' }}</span>
         @endif
@@ -14,7 +14,7 @@
         </span>
         <h3 class="mt-2 text-lg leading-tight font-extrabold text-[#0f172a]"><a href="{{ route('store', $store) }}" class="hover:text-brand-600">{{ $store->name }}</a></h3>
         <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-[#4a5068]">
-            @if ($main)<span class="inline-flex items-center gap-1">{!! icon(\App\Support\Icons::forCategory($main->slug), 'h-4 w-4') !!}{{ $main->name }}</span>@endif
+            @if ($main)<span class="inline-flex items-center gap-1">{!! icon(\App\Services\Content\Icons::forCategory($main->slug), 'h-4 w-4') !!}{{ $main->name }}</span>@endif
             @if ($store->city)<span class="inline-flex items-center gap-1">{!! icon('pin', 'h-4 w-4') !!}{{ $store->city }}{{ $store->department && $store->department !== $store->city ? ', '.$store->department : '' }}</span>@endif
         </p>
         <p class="mt-1 flex items-center gap-1 text-xs text-[#6b7385]">{!! icon('estrella', 'h-3.5 w-3.5') !!} Aún sin reseñas</p>

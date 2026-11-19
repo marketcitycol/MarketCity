@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Legacy;
 
 use App\Http\Controllers\Controller;
-use App\Services\CutoverReadiness;
-use App\Services\LegacyUrlChecker;
+use App\Legacy\CutoverReadiness;
+use App\Legacy\UrlChecker;
 use Illuminate\Http\Request;
 
 /** Backoffice → Cambio de dominio: lista sí/no y revisión de las URL de WordPress. */
 class CutoverController extends Controller
 {
-    public function index(CutoverReadiness $readiness, LegacyUrlChecker $urls)
+    public function index(CutoverReadiness $readiness, UrlChecker $urls)
     {
         $state = $urls->state();
         $problems = collect($state['results'])->filter(fn ($r) => in_array($r['result'], ['falta', 'error'], true));
@@ -24,7 +24,7 @@ class CutoverController extends Controller
         ]);
     }
 
-    public function start(Request $request, LegacyUrlChecker $urls)
+    public function start(Request $request, UrlChecker $urls)
     {
         $data = $request->validate([
             'sitemap' => 'nullable|url|starts_with:https://|max:300',
@@ -48,7 +48,7 @@ class CutoverController extends Controller
         return redirect()->route('admin.cutover')->with('success', count($state['urls']).' URL listas para revisar.')->with('continue', true);
     }
 
-    public function batch(LegacyUrlChecker $urls)
+    public function batch(UrlChecker $urls)
     {
         $r = $urls->checkBatch(20);
 
@@ -57,7 +57,7 @@ class CutoverController extends Controller
             ->with('continue', $r['remaining'] > 0 && $r['checked'] > 0);
     }
 
-    public function csv(LegacyUrlChecker $urls)
+    public function csv(UrlChecker $urls)
     {
         return response($urls->csv(), 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',

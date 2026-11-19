@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Models\Category;
+use App\Models\Page;
+use App\Models\Product;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -110,7 +112,7 @@ class LegacyRedirects
 
         if (array_key_exists($path, self::EXACT)) {
             // Si el equipo creó en v1 una página con ese mismo enlace (publicada o en borrador), gana la página.
-            if (! str_contains($path, '/') && \App\Models\Page::where('slug', $path)->exists()) {
+            if (! str_contains($path, '/') && Page::where('slug', $path)->exists()) {
                 return false;
             }
 
@@ -186,7 +188,7 @@ class LegacyRedirects
             return '/producto/'.strtolower($query['product']);
         }
         if (! empty($query['p']) && ctype_digit((string) $query['p'])
-            && $slug = \App\Models\Product::where('legacy_id', (int) $query['p'])->value('slug')) {
+            && $slug = Product::where('legacy_id', (int) $query['p'])->value('slug')) {
             return '/producto/'.$slug;
         }
         if (isset($query['s']) && is_string($query['s'])) {

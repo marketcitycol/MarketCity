@@ -1,5 +1,5 @@
-@php($f = \App\Support\Plugins::config('footer'))
-@php($P = \App\Support\Plugins::class)
+@php($f = \App\Services\Content\Plugins::config('footer'))
+@php($P = \App\Services\Content\Plugins::class)
 <footer class="mt-12 bg-brand-900 text-white" id="mcft">
     @if ($trust = $P::lines($f['trust']))
     <div class="mx-auto max-w-7xl px-4 pt-6">
@@ -65,7 +65,7 @@
         <p class="text-sm font-black">Paga con</p>
         <ul class="mt-2 flex flex-wrap gap-2">
             @foreach ($pays as $p)
-                @php($pl = \App\Support\Brand::paymentLogo($p[0]))
+                @php($pl = \App\Services\Content\BrandAssets::paymentLogo($p[0]))
                 <li class="grid h-[38px] w-[82px] place-items-center rounded-lg border border-[#e5e7eb] bg-white p-1.5">
                     @if ($pl)<img src="{{ $pl }}" alt="{{ $p[0] }}" class="max-h-full max-w-full object-contain" loading="lazy">@else<span class="text-xs font-extrabold text-brand-900">{{ $p[0] }}</span>@endif
                 </li>

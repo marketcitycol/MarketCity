@@ -1,13 +1,20 @@
 <?php
 
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CatalogController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\Legacy as AdminLegacy;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Seller;
-use App\Http\Controllers\SellerSignupController;
+use App\Http\Controllers\Shop\CartController;
+use App\Http\Controllers\Shop\CatalogController;
+use App\Http\Controllers\Shop\CheckoutController;
+use App\Http\Controllers\Shop\OrderController;
+use App\Http\Controllers\Shop\PageController;
+use App\Http\Controllers\Shop\PaymentController;
+use App\Http\Controllers\Shop\PqrController;
+use App\Http\Controllers\Shop\SellerSignupController;
+use App\Http\Controllers\Shop\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // --- Tienda pública (rutas compatibles con las del sitio actual para no perder SEO) ---
@@ -18,8 +25,8 @@ Route::get('/producto/{product}', [CatalogController::class, 'product'])->name('
 Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
-Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
-Route::get('/catalogo/productos.xml', [\App\Http\Controllers\SitemapController::class, 'feed'])->name('feed');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/catalogo/productos.xml', [SitemapController::class, 'feed'])->name('feed');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
@@ -30,17 +37,17 @@ Route::post('/checkout', [CheckoutController::class, 'place'])->middleware('thro
 
 Route::get('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandbox'])->name('payments.sandbox');
 Route::post('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandboxDecide'])->name('payments.sandbox.decide');
-Route::post('/pagos/aviso/{gateway}', [\App\Http\Controllers\PaymentController::class, 'webhook'])->middleware('throttle:120,1')->name('payments.webhook');
-Route::get('/pagos/regreso/{gateway}/{order}', [\App\Http\Controllers\PaymentController::class, 'return'])->middleware('throttle:30,1')->name('payments.return');
+Route::post('/pagos/aviso/{gateway}', [PaymentController::class, 'webhook'])->middleware('throttle:120,1')->name('payments.webhook');
+Route::get('/pagos/regreso/{gateway}/{order}', [PaymentController::class, 'return'])->middleware('throttle:30,1')->name('payments.return');
 Route::get('/pedido/{order}/gracias', [OrderController::class, 'thanks'])->name('orders.thanks');
 Route::get('/pedido/{order}', [OrderController::class, 'show'])->name('orders.show');
 Route::get('/rastrear-pedido', [OrderController::class, 'trackForm'])->name('track');
 Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:10,1')->name('track.lookup');
 
-Route::get('/pqrs', [\App\Http\Controllers\PqrController::class, 'create'])->name('pqrs.create');
-Route::post('/pqrs', [\App\Http\Controllers\PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
-Route::get('/pqrs/estado', [\App\Http\Controllers\PqrController::class, 'status'])->name('pqrs.status');
-Route::post('/pqrs/consultar', [\App\Http\Controllers\PqrController::class, 'lookup'])->middleware('throttle:10,1')->name('pqrs.lookup');
+Route::get('/pqrs', [PqrController::class, 'create'])->name('pqrs.create');
+Route::post('/pqrs', [PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
+Route::get('/pqrs/estado', [PqrController::class, 'status'])->name('pqrs.status');
+Route::post('/pqrs/consultar', [PqrController::class, 'lookup'])->middleware('throttle:10,1')->name('pqrs.lookup');
 
 Route::get('/vender', [SellerSignupController::class, 'show'])->name('sell');
 Route::post('/vender', [SellerSignupController::class, 'store'])->middleware('throttle:5,1')->name('sell.store');
@@ -51,12 +58,12 @@ Route::post('/ingresar', [AuthController::class, 'login'])->middleware('throttle
 Route::get('/registro', [AuthController::class, 'registerForm'])->name('register');
 Route::post('/registro', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/salir', [AuthController::class, 'logout'])->name('logout');
-Route::get('/olvide-mi-contrasena', [\App\Http\Controllers\PasswordController::class, 'requestForm'])->middleware('guest')->name('password.request');
-Route::post('/olvide-mi-contrasena', [\App\Http\Controllers\PasswordController::class, 'sendLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
-Route::get('/restablecer-contrasena/{token}', [\App\Http\Controllers\PasswordController::class, 'resetForm'])->middleware('guest')->name('password.reset');
-Route::post('/restablecer-contrasena', [\App\Http\Controllers\PasswordController::class, 'reset'])->middleware(['guest', 'throttle:10,1'])->name('password.update');
-Route::post('/mi-cuenta/verificar-correo', [\App\Http\Controllers\EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
-Route::get('/verificar-correo/{id}/{hash}', [\App\Http\Controllers\EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
+Route::get('/olvide-mi-contrasena', [PasswordController::class, 'requestForm'])->middleware('guest')->name('password.request');
+Route::post('/olvide-mi-contrasena', [PasswordController::class, 'sendLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
+Route::get('/restablecer-contrasena/{token}', [PasswordController::class, 'resetForm'])->middleware('guest')->name('password.reset');
+Route::post('/restablecer-contrasena', [PasswordController::class, 'reset'])->middleware(['guest', 'throttle:10,1'])->name('password.update');
+Route::post('/mi-cuenta/verificar-correo', [EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
+Route::get('/verificar-correo/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 Route::get('/mi-cuenta', [AuthController::class, 'account'])->middleware('auth')->name('account');
 
 // --- Seller Center ---
@@ -94,19 +101,19 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');
     Route::get('/liquidaciones', [Admin\SettlementController::class, 'index'])->name('settlements');
     Route::post('/liquidaciones/{sellerOrder}', [Admin\SettlementController::class, 'settle'])->name('settlements.settle');
-    Route::get('/importar', [Admin\ImportController::class, 'show'])->name('import');
-    Route::post('/importar', [Admin\ImportController::class, 'store'])->name('import.store');
-    Route::post('/importar/fotos', [Admin\ImportController::class, 'media'])->name('import.media');
+    Route::get('/importar', [AdminLegacy\CatalogImportController::class, 'show'])->name('import');
+    Route::post('/importar', [AdminLegacy\CatalogImportController::class, 'store'])->name('import.store');
+    Route::post('/importar/fotos', [AdminLegacy\CatalogImportController::class, 'media'])->name('import.media');
     Route::get('/configuracion', [Admin\SettingsController::class, 'index'])->name('settings');
     Route::put('/configuracion', [Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::put('/configuracion/transferencia', [Admin\SettingsController::class, 'updateTransfer'])->name('settings.transfer');
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
-    Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');
-    Route::get('/cambio-de-dominio', [Admin\CutoverController::class, 'index'])->name('cutover');
-    Route::post('/cambio-de-dominio/revisar', [Admin\CutoverController::class, 'start'])->name('cutover.start');
-    Route::post('/cambio-de-dominio/lote', [Admin\CutoverController::class, 'batch'])->name('cutover.batch');
-    Route::get('/cambio-de-dominio/detalle.csv', [Admin\CutoverController::class, 'csv'])->name('cutover.csv');
+    Route::post('/importar/pedidos', [AdminLegacy\OrderImportController::class, 'orders'])->name('import.orders');
+    Route::get('/cambio-de-dominio', [AdminLegacy\CutoverController::class, 'index'])->name('cutover');
+    Route::post('/cambio-de-dominio/revisar', [AdminLegacy\CutoverController::class, 'start'])->name('cutover.start');
+    Route::post('/cambio-de-dominio/lote', [AdminLegacy\CutoverController::class, 'batch'])->name('cutover.batch');
+    Route::get('/cambio-de-dominio/detalle.csv', [AdminLegacy\CutoverController::class, 'csv'])->name('cutover.csv');
     Route::get('/pqrs', [Admin\PqrController::class, 'index'])->name('pqrs');
     Route::get('/pqrs/{pqr}', [Admin\PqrController::class, 'show'])->name('pqrs.show');
     Route::put('/pqrs/{pqr}', [Admin\PqrController::class, 'update'])->name('pqrs.update');
@@ -126,4 +133,4 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
 // Las redirecciones 301 desde las URL de WordPress viven en App\Http\Middleware\LegacyRedirects.
 
 // --- Páginas de contenido (políticas, contacto…). Va al final: cualquier ruta anterior tiene prioridad. ---
-Route::get('/{page}', [\App\Http\Controllers\PageController::class, 'show'])->where('page', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('page');
+Route::get('/{page}', [PageController::class, 'show'])->where('page', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('page');

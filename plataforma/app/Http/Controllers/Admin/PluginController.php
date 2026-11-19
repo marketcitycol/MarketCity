@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\Plugins;
+use App\Services\Content\Plugins;
 use Illuminate\Http\Request;
 
 class PluginController extends Controller

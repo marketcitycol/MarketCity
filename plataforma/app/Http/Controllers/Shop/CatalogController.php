@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Shop;
 
+use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
+use App\Services\Content\BrandAssets;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -18,7 +20,7 @@ class CatalogController extends Controller
             'bestsellers' => Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take(10)->get(),
             'newest' => Product::visible()->with('store')->latest('id')->take(10)->get(),
             'stores' => Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('products_count')->get(),
-            'categories' => \App\Support\Brand::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get()),
+            'categories' => BrandAssets::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get()),
         ]);
     }
 
@@ -110,7 +112,7 @@ class CatalogController extends Controller
                 $store->unsetRelation('products');
             });
 
-        $categories = \App\Support\Brand::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get())
+        $categories = BrandAssets::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get())
             ->each(fn ($c) => $c->stores_count = $stores->filter(fn ($s) => in_array($c->id, $s->categoryIds))->count())
             ->filter(fn ($c) => $c->stores_count > 0)->values();
 

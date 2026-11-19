@@ -1,7 +1,7 @@
 @extends('layouts.shop', ['title' => 'Tiendas'])
 
 @section('content')
-@php($B = \App\Support\Brand::class)
+@php($B = \App\Services\Content\BrandAssets::class)
 {{-- Portada de /tiendas, igual a la de marketcity.co. --}}
 <section class="overflow-hidden rounded-[22px] px-[18px] pt-[22px] pb-5 text-white md:px-10 md:py-10 [background:radial-gradient(120%_90%_at_100%_0,rgba(10,75,255,.55),transparent_60%),radial-gradient(80%_70%_at_0_100%,rgba(200,161,90,.35),transparent_60%),#0b2a6f]">
     <nav class="text-xs text-white/70" aria-label="Ruta"><a href="{{ route('home') }}" class="hover:text-white">Inicio</a> <span aria-hidden="true">/</span> <span class="text-white">Tiendas</span></nav>
@@ -31,7 +31,7 @@
         @foreach ($categories as $c)
             @php($on = $activeCategory?->id === $c->id)
             <a href="{{ route('stores', array_filter(['categoria' => $on ? null : $c->slug, 'q' => request('q')])) }}" class="flex w-[78px] shrink-0 flex-col items-center gap-1 text-center" @if ($on) aria-current="true" @endif>
-                <span class="grid h-16 w-16 place-items-center rounded-full {{ $on ? 'bg-brand-600 text-white' : 'bg-[#eef1f5] text-brand-600' }}">{!! icon(\App\Support\Icons::forCategory($c->slug), 'h-7 w-7') !!}</span>
+                <span class="grid h-16 w-16 place-items-center rounded-full {{ $on ? 'bg-brand-600 text-white' : 'bg-[#eef1f5] text-brand-600' }}">{!! icon(\App\Services\Content\Icons::forCategory($c->slug), 'h-7 w-7') !!}</span>
                 <span class="text-[13px] leading-tight font-semibold text-[#0f172a]">{{ $c->name }}</span>
                 <span class="text-[11px] text-[#6b7385]">{{ $c->stores_count }} {{ $c->stores_count === 1 ? 'tienda' : 'tiendas' }}</span>
             </a>

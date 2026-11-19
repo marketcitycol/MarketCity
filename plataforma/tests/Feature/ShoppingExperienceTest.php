@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Legacy\MediaCopier;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
@@ -65,6 +66,6 @@ class ShoppingExperienceTest extends TestCase
         Storage::disk('public')->assertExists($a->fresh()->image_path);
         $this->assertStringStartsWith('https://', $c->fresh()->image_path);
         $this->assertStringStartsWith('https://', $d->fresh()->image_path);
-        $this->assertSame(0, app(\App\Services\LegacyMediaCopier::class)->pendingQuery()->whereIn('id', [$c->id, $d->id])->count());
+        $this->assertSame(0, app(MediaCopier::class)->pendingQuery()->whereIn('id', [$c->id, $d->id])->count());
     }
 }

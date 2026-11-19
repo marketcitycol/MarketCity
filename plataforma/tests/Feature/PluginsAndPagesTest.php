@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Page;
 use App\Models\User;
-use App\Support\Plugins;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,7 +35,7 @@ class PluginsAndPagesTest extends TestCase
         $this->get('/')->assertDontSee('Sigue explorando');
 
         $this->actingAs($this->admin())->put(route('admin.plugins.update', 'header'), [
-            'enabled' => 1, 'values' => ['strip' => "Envío gratis hoy", 'nav' => "Gaming | /categoria-producto/gaming\nMalo | javascript:alert(1)"],
+            'enabled' => 1, 'values' => ['strip' => 'Envío gratis hoy', 'nav' => "Gaming | /categoria-producto/gaming\nMalo | javascript:alert(1)"],
         ])->assertRedirect();
         $this->get('/')->assertSee('Envío gratis hoy')->assertDontSee('javascript:alert', false);
 

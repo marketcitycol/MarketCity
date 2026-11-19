@@ -3,7 +3,7 @@
 
 @section('content')
 <section class="overflow-hidden rounded-[22px] border border-[#e3e6ec] bg-white">
-    <div class="h-24 md:h-32" style="background: {{ \App\Support\Brand::storeCover($store->products()->visible()->with('category')->get()->groupBy('category_id')->sortByDesc->count()->first()?->first()?->category?->slug) }}"></div>
+    <div class="h-24 md:h-32" style="background: {{ \App\Services\Content\BrandAssets::storeCover($store->products()->visible()->with('category')->get()->groupBy('category_id')->sortByDesc->count()->first()?->first()?->category?->slug) }}"></div>
     <div class="flex flex-wrap items-end gap-4 px-5 pb-5">
         <span class="-mt-10 grid h-20 w-20 place-items-center overflow-hidden rounded-full border-[3px] border-white bg-white text-2xl font-extrabold text-brand-700 shadow-[0_4px_12px_-4px_rgba(15,23,42,.35)]">
             @if ($logo = $store->logoUrl())<img src="{{ $logo }}" alt="" class="h-full w-full object-contain">@else{{ $store->initials() }}@endif

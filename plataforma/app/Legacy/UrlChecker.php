@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Legacy;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
  * Trabaja por lotes y guarda el avance en storage/app/revision-urls.json, para poder correrlo
  * desde el backoffice (sin consola) o con `php artisan mc:revisar-urls`.
  */
-class LegacyUrlChecker
+class UrlChecker
 {
     private const FILE = 'revision-urls.json';
 
@@ -158,7 +158,7 @@ class LegacyUrlChecker
 
     public function csv(): string
     {
-        $rows = ["url_anterior,resultado,codigo,destino,codigo_final"];
+        $rows = ['url_anterior,resultado,codigo,destino,codigo_final'];
         foreach ($this->state()['results'] as $path => $r) {
             $rows[] = implode(',', array_map(fn ($v) => '"'.str_replace('"', '""', (string) $v).'"', [$path, $r['result'], $r['status'], $r['final'], $r['final_status']]));
         }

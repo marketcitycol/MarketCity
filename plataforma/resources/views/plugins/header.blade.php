@@ -1,19 +1,19 @@
-@php($h = \App\Support\Plugins::config('header'))
-@php($P = \App\Support\Plugins::class)
+@php($h = \App\Services\Content\Plugins::config('header'))
+@php($P = \App\Services\Content\Plugins::class)
 @php($sell = $P::lines($h['sell'])[0] ?? null)
-@php($count = app(\App\Services\Cart::class)->count())
+@php($count = app(\App\Services\Orders\Cart::class)->count())
 @php($u = auth()->user())
 @php($firstName = $u ? \Illuminate\Support\Str::of($u->name)->before(' ') : null)
 @php($accountUrl = $u ? ($u->isAdmin() ? route('admin.dashboard') : ($u->isSeller() ? route('seller.dashboard') : route('account'))) : route('login'))
 @php($accountLabel = $u ? ($u->isAdmin() ? 'Backoffice' : ($u->isSeller() ? 'Seller Center' : 'Hola, '.$firstName)) : 'Ingresar')
 @php($logo = $P::logo())
-@php($cats = \App\Support\Brand::sortCategories(\App\Models\Category::whereHas('products', fn ($q) => $q->visible())->get()))
+@php($cats = \App\Services\Content\BrandAssets::sortCategories(\App\Models\Category::whereHas('products', fn ($q) => $q->visible())->get()))
 {{-- Icono de cada opción del menú de categorías según su enlace. --}}
 @php($chipIcon = function (string $url, string $style): string {
     if ($style === 'oferta') return 'ofertas';
     if ($style === 'credito') return 'credito';
     if ($style === 'parati') return 'estrella';
-    if (preg_match('#categoria-producto/([\w-]+)#', $url, $m)) return \App\Support\Icons::forCategory($m[1]);
+    if (preg_match('#categoria-producto/([\w-]+)#', $url, $m)) return \App\Services\Content\Icons::forCategory($m[1]);
     return 'categorias';
 })
 
@@ -117,7 +117,7 @@
                 <div class="grid grid-cols-3 gap-2">
                     @foreach ($cats as $c)
                         <a href="{{ route('category', $c) }}" class="flex min-h-[61px] flex-col items-center justify-center gap-1 rounded-[14px] bg-[#f3f5f8] p-2 text-center text-xs font-bold text-[#0f1222] hover:bg-[#e9edf3]">
-                            {!! icon(\App\Support\Icons::forCategory($c->slug), 'h-5 w-5') !!}<span class="[overflow-wrap:anywhere]">{{ $c->name }}</span>
+                            {!! icon(\App\Services\Content\Icons::forCategory($c->slug), 'h-5 w-5') !!}<span class="[overflow-wrap:anywhere]">{{ $c->name }}</span>
                         </a>
                     @endforeach
                 </div>
@@ -151,7 +151,7 @@
             </div>
         </div>
         <div class="border-t border-[#eef0f4] px-3.5 pt-3 pb-4">
-            @php($wa = preg_replace('/\D/', '', \App\Support\Plugins::config('whatsapp')['number'] ?? ''))
+            @php($wa = preg_replace('/\D/', '', \App\Services\Content\Plugins::config('whatsapp')['number'] ?? ''))
             @if ($wa)
                 <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" data-track="whatsapp_click" class="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#0f7a43] px-3 py-2 text-sm font-extrabold text-white hover:brightness-110">{!! icon('whatsapp', 'h-5 w-5') !!}<span>WhatsApp <small class="font-semibold text-white/85">· respondemos de lunes a sábado desde las 8 a.m.</small></span></a>
             @endif

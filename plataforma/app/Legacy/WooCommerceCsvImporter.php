@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Legacy;
 
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -61,6 +62,7 @@ class WooCommerceCsvImporter
                 $type = $r['type'] ?? 'simple';
                 if ($type === 'variation' || trim($r['name'] ?? '') === '' || str_contains($type, 'grouped') || str_contains($type, 'external')) {
                     $stats['skipped']++;
+
                     continue;
                 }
 
@@ -86,6 +88,7 @@ class WooCommerceCsvImporter
                 $price = $sale ?: $regular;
                 if (! $price) {
                     $stats['skipped']++;
+
                     continue;
                 }
 
@@ -238,7 +241,7 @@ class WooCommerceCsvImporter
 
     private function createStore(string $name, Store $template): Store
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'name' => "Vendedor {$name}",
             'email' => 'importado+'.Str::slug($name).'-'.Str::lower(Str::random(4)).'@marketcity.invalid',
             'password' => Str::random(40),

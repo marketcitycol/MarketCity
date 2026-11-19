@@ -1,8 +1,8 @@
 @extends('layouts.shop')
 
 @section('content')
-@php($P = \App\Support\Plugins::class)
-@php($B = \App\Support\Brand::class)
+@php($P = \App\Services\Content\Plugins::class)
+@php($B = \App\Services\Content\BrandAssets::class)
 @php($hero = $P::config('hero'))
 
 {{-- Portada: igual a la de marketcity.co (azul noche, texto con degradado, buscador, botones y medios de pago). --}}
@@ -70,7 +70,7 @@
                     @if ($img = $B::categoryImage($c->slug))
                         <img src="{{ $img }}" alt="" class="h-full w-full object-cover" loading="lazy" width="80" height="80">
                     @else
-                        <span class="text-brand-600">{!! icon(\App\Support\Icons::forCategory($c->slug), 'h-7 w-7') !!}</span>
+                        <span class="text-brand-600">{!! icon(\App\Services\Content\Icons::forCategory($c->slug), 'h-7 w-7') !!}</span>
                     @endif
                 </span>
                 <span class="text-[13px] leading-tight font-semibold text-[#0f172a]">{{ $c->name }}</span>

@@ -123,7 +123,9 @@ class OnlinePaymentsTest extends TestCase
         ])->assertRedirect('/carrito');
         $this->assertSame('failed', Order::latest('id')->first()->payment_status);
         $this->assertSame($stock, $p->fresh()->stock);
-        $html = $this->get('/carrito')->getContent(); file_put_contents('/tmp/cart.html', $html); $this->assertStringContainsString(e($p->name), $html); // el carrito se conserva
+        $html = $this->get('/carrito')->getContent();
+        file_put_contents('/tmp/cart.html', $html);
+        $this->assertStringContainsString(e($p->name), $html); // el carrito se conserva
     }
 
     public function test_reconciliation_finds_payments_whose_notice_never_arrived(): void

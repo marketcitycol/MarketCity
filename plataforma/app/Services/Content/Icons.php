@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Services\Content;
 
 /**
  * Iconos de línea de MarketCity (los mismos trazos del sprite de marketcity.co, 24×24, trazo 1.8).

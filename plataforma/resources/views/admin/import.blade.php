@@ -22,7 +22,7 @@
     </div>
 </div>
 
-@php($copier = app(\App\Services\LegacyMediaCopier::class))
+@php($copier = app(\App\Legacy\MediaCopier::class))
 @php($remaining = $copier->pendingQuery()->count())
 @php($failed = count($copier->failed()))
 <section class="card mt-6 max-w-2xl p-5 text-sm">

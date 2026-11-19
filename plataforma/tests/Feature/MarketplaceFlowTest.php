@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Legacy\WooCommerceCsvImporter;
 use App\Models\MerchantEntity;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\SellerOrder;
+use App\Models\Store;
 use App\Models\User;
 use App\Support\BusinessDays;
 use Carbon\Carbon;
@@ -155,8 +157,8 @@ class MarketplaceFlowTest extends TestCase
 
     public function test_woocommerce_csv_import_is_repeatable(): void
     {
-        $store = \App\Models\Store::first();
-        $importer = app(\App\Services\WooCommerceCsvImporter::class);
+        $store = Store::first();
+        $importer = app(WooCommerceCsvImporter::class);
         $stats = $importer->import(base_path('tests/fixtures/woocommerce-export.csv'), $store);
         $this->assertSame(2, $stats['created']);
         $this->assertSame(3, $stats['skipped']);
@@ -178,7 +180,7 @@ class MarketplaceFlowTest extends TestCase
 
     public function test_negotiated_commission_and_payment_methods_per_store(): void
     {
-        $sport = \App\Models\Store::where('slug', 'ruta-sport')->first(); // 12 %, solo pago en línea
+        $sport = Store::where('slug', 'ruta-sport')->first(); // 12 %, solo pago en línea
         $p = $sport->products()->first();
         $this->post('/carrito', ['product_id' => $p->id]);
 
@@ -193,7 +195,7 @@ class MarketplaceFlowTest extends TestCase
 
     public function test_admin_sets_store_terms(): void
     {
-        $store = \App\Models\Store::where('slug', 'tecnoandes')->first();
+        $store = Store::where('slug', 'tecnoandes')->first();
         $admin = User::where('role', 'admin')->first();
         $this->actingAs($admin)->get("/backoffice/vendedores/{$store->slug}")->assertOk();
         $this->actingAs($admin)->put("/backoffice/vendedores/{$store->slug}", [

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Store;
+use App\Services\Orders\CommissionCalculator;
+use App\Services\Payments\PaymentRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -17,13 +19,13 @@ class StoreController extends Controller
         ]);
     }
 
-    public function edit(Store $store, \App\Services\Payments\PaymentRegistry $payments)
+    public function edit(Store $store, PaymentRegistry $payments)
     {
-        return view('admin.store-edit', ['store' => $store, 'gateways' => $payments->all(), 'general' => app(\App\Services\CommissionCalculator::class)->rule()]);
+        return view('admin.store-edit', ['store' => $store, 'gateways' => $payments->all(), 'general' => app(CommissionCalculator::class)->rule()]);
     }
 
     /** Condiciones negociadas con el comercio. Vacío = usar los valores generales. */
-    public function update(Request $request, Store $store, \App\Services\Payments\PaymentRegistry $payments)
+    public function update(Request $request, Store $store, PaymentRegistry $payments)
     {
         $data = $request->validate([
             'commission_percent' => 'nullable|numeric|min:0|max:100',

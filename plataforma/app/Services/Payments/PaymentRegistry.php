@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Setting;
+use App\Models\Store;
 
 class PaymentRegistry
 {
@@ -59,7 +60,7 @@ class PaymentRegistry
     /**
      * Medios que se pueden usar en un carrito: los activos en la plataforma que TODAS sus tiendas aceptan.
      *
-     * @param  iterable<\App\Models\Store>  $stores
+     * @param  iterable<Store>  $stores
      * @return array<string, PaymentGateway>
      */
     public function forStores(iterable $stores): array

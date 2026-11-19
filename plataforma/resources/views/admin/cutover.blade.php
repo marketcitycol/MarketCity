@@ -2,7 +2,7 @@
 
 @section('content')
 <h1 class="text-2xl font-bold">Cambio de dominio</h1>
-<p class="mt-1 text-sm text-slate-500">Lista para pasar marketcity.co de WordPress a la plataforma propia. Lo que no se puede comprobar desde aquí está en la guía <code>docs/v1/cambio-de-dominio.md</code>.</p>
+<p class="mt-1 text-sm text-slate-500">Lista para pasar marketcity.co de WordPress a la plataforma propia. Lo que no se puede comprobar desde aquí está en la guía <code>docs/operacion/cambio-de-dominio.md</code>.</p>
 
 <section class="card mt-5 p-5">
     <div class="flex flex-wrap items-center justify-between gap-2">

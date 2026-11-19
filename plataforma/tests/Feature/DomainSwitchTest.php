@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Legacy\CutoverReadiness;
+use App\Legacy\UrlChecker;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\CutoverReadiness;
-use App\Services\LegacyUrlChecker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -55,7 +55,9 @@ class DomainSwitchTest extends TestCase
             '/etiqueta-producto/gamer-pro/' => '/shop?q=gamer%20pro',
         ];
         foreach ($cases as $from => $to) {
-            $r = $this->get($from); $this->assertSame(301, $r->status(), $from); $r->assertRedirect($to);
+            $r = $this->get($from);
+            $this->assertSame(301, $r->status(), $from);
+            $r->assertRedirect($to);
         }
 
         // Retiradas a propósito.
@@ -85,7 +87,7 @@ class DomainSwitchTest extends TestCase
             'https://v1.test/pagina-perdida/' => Http::response('', 404),
         ]);
 
-        $checker = app(LegacyUrlChecker::class);
+        $checker = app(UrlChecker::class);
         $paths = $checker->readSitemap('https://marketcity.co/wp-sitemap.xml');
         $this->assertSame(['/shop/', '/cart-2/', '/estadisticas/', '/pagina-perdida/'], $paths);
 
@@ -110,7 +112,7 @@ class DomainSwitchTest extends TestCase
         $this->assertFalse(app(CutoverReadiness::class)->ready());
         $this->actingAs($admin)->post('/backoffice/cambio-de-dominio/revisar', ['list' => "https://marketcity.co/shop/\n/cart-2/"])
             ->assertRedirect('/backoffice/cambio-de-dominio');
-        $this->assertCount(2, app(LegacyUrlChecker::class)->state()['urls']);
+        $this->assertCount(2, app(UrlChecker::class)->state()['urls']);
     }
 
     public function test_product_feed_for_google_and_meta(): void

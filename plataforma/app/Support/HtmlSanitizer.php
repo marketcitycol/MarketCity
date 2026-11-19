@@ -46,6 +46,7 @@ class HtmlSanitizer
             $child = $node->childNodes->item($i);
             if ($child->nodeType === XML_COMMENT_NODE) {
                 $node->removeChild($child);
+
                 continue;
             }
             if (! $child instanceof DOMElement) {
@@ -54,6 +55,7 @@ class HtmlSanitizer
             $tag = strtolower($child->nodeName);
             if (in_array($tag, self::DROP, true)) {
                 $node->removeChild($child);
+
                 continue;
             }
             self::walk($child);
@@ -63,6 +65,7 @@ class HtmlSanitizer
                     $node->insertBefore($child->firstChild, $child);
                 }
                 $node->removeChild($child);
+
                 continue;
             }
             $href = $tag === 'a' ? trim($child->getAttribute('href')) : null;

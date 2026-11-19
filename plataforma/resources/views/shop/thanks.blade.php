@@ -22,7 +22,7 @@
 
         @if ($transfer)
             @php($deadline = \App\Services\Payments\BankTransferGateway::deadlineHours())
-            @php($wa = preg_replace('/\D/', '', (string) (\App\Support\Plugins::config('whatsapp')['number'] ?? '')))
+            @php($wa = preg_replace('/\D/', '', (string) (\App\Services\Content\Plugins::config('whatsapp')['number'] ?? '')))
             <section class="card mt-4 p-5 text-sm" aria-labelledby="como-pagar">
                 <h2 id="como-pagar" class="text-lg font-semibold">Cómo pagar</h2>
                 <p class="mt-1 text-slate-600">Transfiere el valor exacto a esta cuenta y escribe el número del pedido en la referencia. Tienes {{ $deadline }} horas; después el pedido se cancela y las unidades vuelven al inventario.</p>

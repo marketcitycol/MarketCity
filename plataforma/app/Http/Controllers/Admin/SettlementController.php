@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SellerOrder;
-use App\Services\OrderService;
+use App\Services\Orders\OrderService;
 use Illuminate\Http\Request;
 
 class SettlementController extends Controller

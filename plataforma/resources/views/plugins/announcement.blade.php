@@ -1,4 +1,4 @@
-@php($a = \App\Support\Plugins::config('announcement'))
+@php($a = \App\Services\Content\Plugins::config('announcement'))
 @php($ends = $a['ends_at'] ? rescue(fn () => \Illuminate\Support\Carbon::parse($a['ends_at'], 'America/Bogota'), null, false) : null)
 @if (! $ends || $ends->isFuture())
 <div class="bg-[#080b12] text-white" data-announcement>
@@ -8,7 +8,7 @@
             <span class="font-mono text-accent-400" data-countdown="{{ $ends->getTimestamp() }}" aria-label="Tiempo restante">{{ (int) now()->diffInDays($ends) }}d</span>
         @endif
         @if ($a['button'])
-            <a href="{{ \App\Support\Plugins::url($a['url']) }}" class="rounded-full bg-accent-400 px-3 py-1 text-[#080b12] hover:bg-accent-500">{{ $a['button'] }}</a>
+            <a href="{{ \App\Services\Content\Plugins::url($a['url']) }}" class="rounded-full bg-accent-400 px-3 py-1 text-[#080b12] hover:bg-accent-500">{{ $a['button'] }}</a>
         @endif
     </div>
 </div>

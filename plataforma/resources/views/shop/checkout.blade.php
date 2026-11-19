@@ -59,7 +59,7 @@
         @php($shippingTotal = 0)
         @foreach ($groups as $g)
             @php($method = $cart->shippingChoice($g['store']->id))
-            @php($ship = \App\Services\Cart::shippingCost($g['store'], $method))
+            @php($ship = \App\Services\Orders\Cart::shippingCost($g['store'], $method))
             @php($shippingTotal += $ship)
             <div class="mt-4 border-t border-slate-100 pt-3 text-sm">
                 <p class="font-medium">{{ $g['store']->name }}</p>

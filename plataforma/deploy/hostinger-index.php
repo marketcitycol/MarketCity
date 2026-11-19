@@ -7,6 +7,7 @@
  * Sirve para un sitio propio (public_html/ junto a mc-v1/) o un subdominio (public_html/v1/).
  */
 
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
@@ -45,7 +46,7 @@ if (is_file($pending) && ($lock = fopen($pending, 'r')) && flock($lock, LOCK_EX 
     $backupDir = $app_dir.'/storage/app/respaldos';
     is_dir($backupDir) || mkdir($backupDir, 0750, true);
     $stamp = date('Ymd-His');
-    $console = $app->make(Illuminate\Contracts\Console\Kernel::class);
+    $console = $app->make(Kernel::class);
     $console->bootstrap();
     $usesSqlite = config('database.connections.'.config('database.default').'.driver') === 'sqlite';
     $toMysql = $app_dir.'/storage/app/pasar-a-mysql.pendiente';

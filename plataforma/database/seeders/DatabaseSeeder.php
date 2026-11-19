@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 
 /**
  * Datos de PRUEBA para abrir y probar la versión 1. No contiene datos reales de clientes, vendedores ni del titular.
- * La migración de los datos reales desde WooCommerce/WCFM es un paso aparte (ver docs/v1/alcance.md).
+ * La migración de los datos reales desde WooCommerce/WCFM es un paso aparte (ver docs/producto/alcance-v1.md).
  */
 class DatabaseSeeder extends Seeder
 {

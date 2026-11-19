@@ -3,7 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Order;
-use App\Services\OrderService;
+use App\Services\Orders\OrderService;
 
 /**
  * Aplica a un pedido el estado REAL de un pago, consultado al proveedor servidor a servidor.

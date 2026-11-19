@@ -1,4 +1,4 @@
-@php($w = \App\Support\Plugins::config('whatsapp'))
+@php($w = \App\Services\Content\Plugins::config('whatsapp'))
 @if ($n = preg_replace('/\D/', '', $w['number']))
 <a href="https://wa.me/{{ $n }}?text={{ rawurlencode($w['message']) }}" target="_blank" rel="noopener" data-track="whatsapp_click"
    class="fixed right-4 bottom-20 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25d366] text-white shadow-lg hover:brightness-95 sm:bottom-6"

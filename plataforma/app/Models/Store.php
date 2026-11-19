@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Store extends Model
 {
@@ -120,7 +121,7 @@ class Store extends Model
 
         return str_starts_with($this->logo_path, 'http') || str_starts_with($this->logo_path, '/')
             ? $this->logo_path
-            : \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path);
+            : Storage::disk('public')->url($this->logo_path);
     }
 
     public function initials(): string

@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Models\Category;
+use App\Models\Page;
+use App\Models\Product;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Redirecciones 301 desde las URL de WordPress/WooCommerce de marketcity.co a las de la plataforma propia,
  * para no perder posiciones en Google ni enlaces guardados el día del cambio de dominio.
  *
- * Fuente: docs/discovery/route-and-state-inventory.md, el sitemap wp-sitemap.xml y el prompt avanzado (2026-11-19).
+ * Fuente: docs/archivo/fase-0/discovery/route-and-state-inventory.md, el sitemap wp-sitemap.xml y el prompt avanzado (2026-11-19).
  * Corre antes del enrutador y solo mira la ruta, así que cuesta casi nada en las demás visitas.
  * Las rutas que ya existen igual en v1 (/producto/{slug}, /tienda/{slug}, /categoria-producto/{slug}, /shop,
  * /mi-cuenta, /rastrear-pedido, /seller-center, /tiendas, /ofertas-relampago y las páginas copiadas) no se tocan.
@@ -110,7 +112,7 @@ class LegacyRedirects
 
         if (array_key_exists($path, self::EXACT)) {
             // Si el equipo creó en v1 una página con ese mismo enlace (publicada o en borrador), gana la página.
-            if (! str_contains($path, '/') && \App\Models\Page::where('slug', $path)->exists()) {
+            if (! str_contains($path, '/') && Page::where('slug', $path)->exists()) {
                 return false;
             }
 
@@ -186,7 +188,7 @@ class LegacyRedirects
             return '/producto/'.strtolower($query['product']);
         }
         if (! empty($query['p']) && ctype_digit((string) $query['p'])
-            && $slug = \App\Models\Product::where('legacy_id', (int) $query['p'])->value('slug')) {
+            && $slug = Product::where('legacy_id', (int) $query['p'])->value('slug')) {
             return '/producto/'.$slug;
         }
         if (isset($query['s']) && is_string($query['s'])) {

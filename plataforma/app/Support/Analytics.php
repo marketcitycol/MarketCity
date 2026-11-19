@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\Content\Plugins;
 
 /**
  * Medición del embudo (GA4 / Google Tag Manager / píxel de Meta) con consentimiento previo.

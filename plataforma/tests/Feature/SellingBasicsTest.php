@@ -16,7 +16,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -97,7 +96,7 @@ class SellingBasicsTest extends TestCase
             ->assertSee('Cómo pagar')->assertSee('000-000000-00')->assertSee('data-copy', false)->assertSee($order->number)
             ->assertDontSee('Pagas al recibir');
 
-        Mail::assertSent(OrderPlacedMail::class, function (OrderPlacedMail $mail) use ($order) {
+        Mail::assertSent(OrderPlacedMail::class, function (OrderPlacedMail $mail) {
             $html = $mail->render();
 
             return $mail->hasTo('ana@example.com') && str_contains($html, '000-000000-00')

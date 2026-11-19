@@ -25,7 +25,7 @@ class PaymentRegistry
 
     public function __construct()
     {
-        $all = [new BankTransferGateway];
+        $all = [new BankTransferGateway, new MercadoPagoGateway];
         // El pago de prueba solo existe en modo demostración (MC_DEMO=true). En la tienda real no se puede activar.
         if (self::sandboxAllowed()) {
             array_unshift($all, new SandboxGateway);
@@ -45,6 +45,12 @@ class PaymentRegistry
         $available = array_intersect_key($this->gateways, array_flip($enabled));
         if (isset($available['transferencia']) && ! BankTransferGateway::isConfigured()) {
             unset($available['transferencia']);
+        }
+        // Una pasarela en línea sin llaves no se ofrece, aunque esté marcada como activa.
+        foreach ($available as $key => $gateway) {
+            if ($gateway instanceof OnlineGateway && ! $gateway::isConfigured()) {
+                unset($available[$key]);
+            }
         }
 
         return $available;
@@ -84,6 +90,7 @@ class PaymentRegistry
         return match ($key) {
             'sandbox' => 'Pago de prueba',
             'transferencia' => 'Transferencia bancaria',
+            'mercadopago' => 'Mercado Pago',
             null, '' => '—',
             default => self::LEGACY_LABELS[$key] ?? $key,
         };

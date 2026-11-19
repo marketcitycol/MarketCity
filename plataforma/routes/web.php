@@ -29,6 +29,8 @@ Route::post('/checkout', [CheckoutController::class, 'place'])->middleware('thro
 
 Route::get('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandbox'])->name('payments.sandbox');
 Route::post('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandboxDecide'])->name('payments.sandbox.decide');
+Route::post('/pagos/aviso/{gateway}', [\App\Http\Controllers\PaymentController::class, 'webhook'])->middleware('throttle:120,1')->name('payments.webhook');
+Route::get('/pagos/regreso/{gateway}/{order}', [\App\Http\Controllers\PaymentController::class, 'return'])->middleware('throttle:30,1')->name('payments.return');
 Route::get('/pedido/{order}/gracias', [OrderController::class, 'thanks'])->name('orders.thanks');
 Route::get('/pedido/{order}', [OrderController::class, 'show'])->name('orders.show');
 Route::get('/rastrear-pedido', [OrderController::class, 'trackForm'])->name('track');

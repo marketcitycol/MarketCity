@@ -63,11 +63,18 @@ class CheckoutController extends Controller
             return redirect()->route('cart')->with('error', $e->getMessage());
         }
 
-        $this->cart->clear();
         session()->push('my_orders', $order->number);
 
         $payment = $orders->createPayment($order);
-        $next = $this->payments->get($order->payment_method)->start($order, $payment);
+        try {
+            $next = $this->payments->get($order->payment_method)->start($order, $payment);
+        } catch (RuntimeException $e) {
+            // La pasarela no respondió: el pedido se cancela y las unidades vuelven, para no dejar stock tomado.
+            $orders->markFailed($order, $payment, ['error' => $e->getMessage()], 'La pasarela no respondió');
+
+            return redirect()->route('cart')->with('error', $e->getMessage());
+        }
+        $this->cart->clear();
         \App\Support\Mailer::send($order->email, new \App\Mail\OrderPlacedMail($order->fresh()));
 
         return redirect()->to($next);

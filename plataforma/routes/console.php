@@ -25,3 +25,23 @@ Artisan::command('pedidos:vencer-transferencias', function (OrderService $orders
 })->purpose('Cancela los pedidos por transferencia que no se pagaron a tiempo');
 
 Schedule::command('pedidos:vencer-transferencias')->hourly()->withoutOverlapping();
+
+/*
+ * Conciliación: si un aviso de la pasarela no llegó, se consulta el estado de los pagos en línea pendientes.
+ */
+Artisan::command('pagos:conciliar', function (\App\Services\Payments\PaymentRegistry $payments, \App\Services\Payments\PaymentReconciler $reconciler) {
+    $online = array_filter($payments->all(), fn ($g) => $g instanceof \App\Services\Payments\OnlineGateway && $g::isConfigured());
+    Order::whereIn('payment_method', array_keys($online))->where('payment_status', 'pending')
+        ->where('created_at', '>', now()->subDays(3))->where('created_at', '<', now()->subMinutes(10))
+        ->each(function (Order $order) use ($online, $reconciler) {
+            try {
+                $id = $online[$order->payment_method]->findPaymentForOrder($order);
+                $this->line($order->number.': '.($id ? $reconciler->apply($online[$order->payment_method], $id, $order) : 'sin pago en la pasarela'));
+            } catch (\Throwable $e) {
+                report($e);
+                $this->warn($order->number.': no se pudo consultar');
+            }
+        });
+})->purpose('Consulta en las pasarelas los pagos en línea que siguen pendientes');
+
+Schedule::command('pagos:conciliar')->everyFifteenMinutes()->withoutOverlapping();

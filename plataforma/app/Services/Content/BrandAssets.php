@@ -6,9 +6,8 @@ use Illuminate\Support\Collection;
 
 /**
  * Piezas de marca que v1 comparte con marketcity.co (lectura del 2026-11-19).
- * Logos, medios de pago y transportadoras viven en public/marca/ para no depender de WordPress.
- * Las fotos de categoría siguen apuntando a las imágenes del sitio actual, igual que las de producto,
- * hasta que el copiador de medios las traiga (Backoffice → Importar).
+ * Todas viven en public/marca/ (logos, portada, fotos de categoría, logos de tiendas, medios de pago
+ * y transportadoras) para que nada dependa de WordPress.
  */
 class BrandAssets
 {
@@ -16,21 +15,8 @@ class BrandAssets
 
     public const ISOTIPO = '/marca/isotipo.webp';
 
-    /** Foto redonda de cada categoría en «Compra por categoría» (la misma del inicio actual). */
-    public const CATEGORY_IMAGES = [
-        'tecnologia' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2023/11/425358.png?resize=150%2C150&ssl=1',
-        'hogar' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/08/ARMARIO.png?resize=150%2C150&ssl=1',
-        'belleza' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/08/encrespador.png?resize=150%2C150&ssl=1',
-        'gaming' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/08/DIADEMA-G9000.jpg?resize=150%2C150&ssl=1',
-        'cocina' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/08/abridor-huevos-1.png?resize=150%2C150&ssl=1',
-        'salud' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/07/altaf.1.png?resize=150%2C150&ssl=1',
-        'gadgets' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/06/proyector-hy300.png?resize=150%2C150&ssl=1',
-        'moda' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/07/CAMARA-INSTA.1.png?resize=150%2C150&ssl=1',
-        'herramientas' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/08/pulidora.png?resize=150%2C150&ssl=1',
-        'vehiculos' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/05/68215f6a53af4500094d5c4a_1579444868134791430-1.jpg?resize=150%2C150&ssl=1',
-        'jugueteria' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/05/68215f6a53af4500094d5c4a_16616388145418947124.jpg?resize=150%2C150&ssl=1',
-        'mascotas' => 'https://i0.wp.com/marketcity.co/wp-content/uploads/2025/06/maquina-perros.png?resize=150%2C150&ssl=1',
-    ];
+    /** Categorías con foto redonda en «Compra por categoría» (public/marca/categorias/<slug>.webp, 160×160). */
+    public const CATEGORY_IMAGES = ['tecnologia', 'hogar', 'belleza', 'gaming', 'cocina', 'salud', 'gadgets', 'moda', 'herramientas', 'vehiculos', 'jugueteria', 'mascotas'];
 
     /** Orden de las categorías en el inicio y el menú, como en marketcity.co. */
     public const CATEGORY_ORDER = ['tecnologia', 'hogar', 'belleza', 'gaming', 'cocina', 'salud', 'gadgets', 'moda', 'herramientas', 'vehiculos', 'jugueteria', 'mascotas'];
@@ -63,7 +49,7 @@ class BrandAssets
 
     public static function categoryImage(?string $slug): ?string
     {
-        return self::CATEGORY_IMAGES[$slug] ?? null;
+        return in_array($slug, self::CATEGORY_IMAGES, true) ? asset("marca/categorias/{$slug}.webp") : null;
     }
 
     /**

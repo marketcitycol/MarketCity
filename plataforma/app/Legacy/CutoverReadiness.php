@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Pqr;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\Store;
 use App\Services\Payments\BankTransferGateway;
 use App\Services\Payments\MercadoPagoGateway;
 use App\Support\Analytics;
@@ -49,10 +50,18 @@ class CutoverReadiness
         $newest = $backups ? max(array_map('filemtime', $backups)) : null;
         $add('Respaldo de las últimas 24 horas', $newest && $newest > time() - 86400, $newest ? 'Último respaldo: '.fecha(Carbon::createFromTimestamp($newest)) : 'No hay respaldos en storage/app/respaldos.');
 
-        $remoteImages = Product::where('image_path', 'like', '%marketcity.co/wp-content/%')->count();
-        $add('Fotos copiadas del sitio anterior', $remoteImages === 0, $remoteImages
-            ? "{$remoteImages} productos aún muestran la foto desde WordPress; al apagarlo se verían sin foto. Usa Importar catálogo → Copiar fotos."
-            : 'Todas las fotos están en la plataforma propia.');
+        $wp = '%marketcity.co/wp-content/%';
+        $remoteImages = Product::where('image_path', 'like', $wp)->count();
+        $remoteLogos = Store::where('logo_path', 'like', $wp)->count();
+        $remoteSettings = Setting::where('value', 'like', $wp)->count();
+        $pending = array_filter([
+            $remoteImages ? "fotos de producto: {$remoteImages} (Importar catálogo → Copiar fotos)" : null,
+            $remoteLogos ? "logos de tienda: {$remoteLogos} (Vendedores → editar la tienda)" : null,
+            $remoteSettings ? "ajustes o plugins: {$remoteSettings} (Plugins → revisar las URL de imagen)" : null,
+        ]);
+        $add('Fotos copiadas del sitio anterior', ! $pending, $pending
+            ? 'Aún cargan imágenes desde WordPress y se verían rotas al apagarlo: '.implode('; ', $pending).'.'
+            : 'Todas las imágenes están en la plataforma propia.');
 
         $s = $this->urls->summary();
         $urlsOk = $s['total'] > 0 && $s['revisadas'] === $s['total'] && $s['falta'] + $s['error'] === 0;

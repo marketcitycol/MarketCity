@@ -15,7 +15,7 @@ En **Backoffice → Cambio de dominio** hay una lista sí/no. Mientras diga «TO
 | Un medio de pago real | Sí | Datos de la cuenta en Configuración → Transferencia, y/o llaves de Mercado Pago en el `.env`. |
 | Cron corriendo | Sí | Tarea en hPanel → Avanzado → Cron: `php artisan schedule:run` cada minuto. |
 | Respaldo de las últimas 24 h | Sí | Se crea solo con cada actualización y con el cron. |
-| Fotos copiadas | Sí | Importar catálogo → Copiar fotos, hasta que no quede ninguna enlazada a WordPress. |
+| Fotos copiadas | Sí | Importar catálogo → Copiar fotos, hasta que no quede ninguna enlazada a WordPress. La lista revisa también los logos de tienda y las imágenes guardadas en los plugins; las imágenes de marca (portada, categorías, logos) ya vienen en `public/marca/`. |
 | URL antiguas revisadas | Sí | En la misma página: «Empezar revisión» con el sitemap `https://marketcity.co/wp-sitemap.xml`. Debe terminar con 0 «Sin destino». |
 | Páginas legales publicadas | Sí | Páginas: `politica-de-privacidad`, `contacto`, `eliminar-mi-cuenta`. |
 | PQRS sin vencer | Recomendado | Backoffice → PQRS. |

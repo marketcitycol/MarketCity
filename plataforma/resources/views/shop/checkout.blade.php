@@ -2,7 +2,7 @@
 
 @section('content')
 <h1 class="text-2xl font-bold">Completa tu pedido</h1>
-<form method="post" action="{{ route('checkout.place') }}" class="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
+<form method="post" action="{{ route('checkout.place') }}" data-checkout-form class="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
     @csrf
     <div class="space-y-6">
         <section class="card p-5">
@@ -45,11 +45,11 @@
                 @endif
                 @foreach ($gateways as $key => $g)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
-                        <input type="radio" name="payment_method" value="{{ $key }}" class="mt-1" @checked(old('payment_method', array_key_first($gateways)) === $key)>
+                        <input type="radio" name="payment_method" value="{{ $key }}" class="mt-1" required @checked(old('payment_method', count($gateways) === 1 ? $key : null) === $key)>
                         <span><span class="block font-medium">{{ $g->label() }}</span><span class="block text-sm text-slate-500">{{ $g->description() }}</span></span>
                     </label>
                 @endforeach
-                <p class="pt-1 text-xs text-slate-500">Bold, Wompi, Mercado Pago, Addi, Sistecrédito y MarketCityPay se conectan en la siguiente etapa.</p>
+                <p class="pt-1 text-xs text-slate-500">Ningún medio viene marcado: elige el que prefieras. Nunca te pediremos datos de tarjeta en MarketCity.</p>
             </div>
         </section>
     </div>
@@ -80,4 +80,5 @@
         <button class="btn-primary mt-4 w-full">Realizar el pedido</button>
     </aside>
 </form>
+@include('partials.track', ['event' => 'begin_checkout', 'params' => ['currency' => 'COP', 'value' => (int) $groups->sum('subtotal'), 'items' => $groups->flatMap(fn ($g) => $g['lines']->map(fn ($l) => \App\Support\Analytics::product($l['product'], $l['quantity'])))->values()->all()]])
 @endsection

@@ -9,7 +9,11 @@ use App\Models\Product;
 use App\Models\SellerOrder;
 use App\Models\Setting;
 use App\Models\User;
+use App\Mail\OrderShippedMail;
+use App\Mail\PaymentConfirmedMail;
+use App\Mail\SellerNewOrderMail;
 use App\Support\BusinessDays;
+use App\Support\Mailer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -127,11 +131,11 @@ class OrderService
     /** Pago confirmado: se fija la fecha de liquidación de cada vendedor a N días hábiles. */
     public function markPaid(Order $order, Payment $payment, array $payload = []): void
     {
-        DB::transaction(function () use ($order, $payment, $payload) {
+        $applied = DB::transaction(function () use ($order, $payment, $payload) {
             // Se relee con bloqueo: dos confirmaciones simultáneas (webhook + retorno) no deben aplicarse dos veces.
             $order = Order::lockForUpdate()->findOrFail($order->id);
             if ($order->payment_status === 'paid') {
-                return;
+                return false;
             }
             if ($order->payment_status !== 'pending') {
                 // Aprobación tardía de un pedido ya cancelado: no se revive el pedido ni se toca el stock.
@@ -139,20 +143,30 @@ class OrderService
                 $payment->update(['status' => 'review', 'payload' => $payload]);
                 $order->log('pago', 'Llegó una aprobación de pago para un pedido que ya no estaba pendiente. Requiere revisión manual.');
 
-                return;
+                return false;
             }
             $payment->update(['status' => 'approved', 'payload' => $payload]);
             $order->update(['payment_status' => 'paid', 'paid_at' => now()]);
             $due = BusinessDays::add(now(), (int) Setting::get('settlement_business_days', 10));
             $order->sellerOrders()->update(['settlement_due_on' => $due->toDateString()]);
             $order->log('pago', 'Pago aprobado por '.cop($payment->amount).' (ref. '.$payment->provider_reference.'). Liquidación a vendedores el '.$due->format('d/m/Y').'.');
+
+            return true;
         });
+
+        if ($applied) {
+            $order->refresh();
+            Mailer::send($order->email, new PaymentConfirmedMail($order));
+            foreach ($order->sellerOrders()->with('store.user')->get() as $so) {
+                Mailer::send($so->store->notificationEmail(), new SellerNewOrderMail($so));
+            }
+        }
     }
 
     /** Pago rechazado: el pedido queda cancelado y el stock vuelve. */
-    public function markFailed(Order $order, Payment $payment, array $payload = []): void
+    public function markFailed(Order $order, Payment $payment, array $payload = [], string $reason = 'Pago rechazado'): void
     {
-        DB::transaction(function () use ($order, $payment, $payload) {
+        DB::transaction(function () use ($order, $payment, $payload, $reason) {
             $order = Order::lockForUpdate()->findOrFail($order->id);
             if ($order->payment_status !== 'pending') {
                 return;
@@ -160,9 +174,9 @@ class OrderService
             $payment->update(['status' => 'declined', 'payload' => $payload]);
             $order->update(['payment_status' => 'failed']);
             foreach ($order->sellerOrders as $so) {
-                $this->cancel($so, null, 'Pago rechazado');
+                $this->cancel($so, null, $reason);
             }
-            $order->log('pago', 'Pago rechazado. El pedido se canceló y las unidades volvieron al inventario.');
+            $order->log('pago', $reason.'. El pedido se canceló y las unidades volvieron al inventario.');
         });
     }
 
@@ -177,6 +191,9 @@ class OrderService
 
         $from = $so->statusLabel();
         $so->fill(['status' => $to]);
+        if ($to === 'entregado') {
+            $so->delivered_at = now();
+        }
         if ($carrier && $tracking) {
             $so->fill(['carrier' => $carrier, 'tracking_number' => $tracking]);
         }
@@ -187,6 +204,10 @@ class OrderService
             $msg .= " ({$so->carrierName()}, guía {$so->tracking_number})";
         }
         $so->order->log('estado', $msg.'.', $so, $by);
+
+        if ($to === 'despachado') {
+            Mailer::send($so->order->email, new OrderShippedMail($so));
+        }
     }
 
     public function cancel(SellerOrder $so, ?User $by, string $reason): void

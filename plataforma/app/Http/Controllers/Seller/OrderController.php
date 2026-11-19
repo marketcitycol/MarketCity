@@ -45,7 +45,7 @@ class OrderController extends Controller
         if ($sellerOrder->order->payment_status === 'failed') {
             return back()->with('error', 'El pago de este pedido fue rechazado.');
         }
-        if ($sellerOrder->order->payment_status === 'pending' && $sellerOrder->order->payment_method !== 'contraentrega') {
+        if ($sellerOrder->order->payment_status === 'pending') {
             return back()->with('error', 'Espera a que el pago se confirme antes de avanzar el pedido.');
         }
 

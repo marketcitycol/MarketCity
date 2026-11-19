@@ -19,6 +19,7 @@ Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
 Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
+Route::get('/catalogo/productos.xml', [\App\Http\Controllers\SitemapController::class, 'feed'])->name('feed');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
@@ -29,10 +30,17 @@ Route::post('/checkout', [CheckoutController::class, 'place'])->middleware('thro
 
 Route::get('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandbox'])->name('payments.sandbox');
 Route::post('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandboxDecide'])->name('payments.sandbox.decide');
+Route::post('/pagos/aviso/{gateway}', [\App\Http\Controllers\PaymentController::class, 'webhook'])->middleware('throttle:120,1')->name('payments.webhook');
+Route::get('/pagos/regreso/{gateway}/{order}', [\App\Http\Controllers\PaymentController::class, 'return'])->middleware('throttle:30,1')->name('payments.return');
 Route::get('/pedido/{order}/gracias', [OrderController::class, 'thanks'])->name('orders.thanks');
 Route::get('/pedido/{order}', [OrderController::class, 'show'])->name('orders.show');
 Route::get('/rastrear-pedido', [OrderController::class, 'trackForm'])->name('track');
 Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:10,1')->name('track.lookup');
+
+Route::get('/pqrs', [\App\Http\Controllers\PqrController::class, 'create'])->name('pqrs.create');
+Route::post('/pqrs', [\App\Http\Controllers\PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
+Route::get('/pqrs/estado', [\App\Http\Controllers\PqrController::class, 'status'])->name('pqrs.status');
+Route::post('/pqrs/consultar', [\App\Http\Controllers\PqrController::class, 'lookup'])->middleware('throttle:10,1')->name('pqrs.lookup');
 
 Route::get('/vender', [SellerSignupController::class, 'show'])->name('sell');
 Route::post('/vender', [SellerSignupController::class, 'store'])->middleware('throttle:5,1')->name('sell.store');
@@ -43,6 +51,12 @@ Route::post('/ingresar', [AuthController::class, 'login'])->middleware('throttle
 Route::get('/registro', [AuthController::class, 'registerForm'])->name('register');
 Route::post('/registro', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/salir', [AuthController::class, 'logout'])->name('logout');
+Route::get('/olvide-mi-contrasena', [\App\Http\Controllers\PasswordController::class, 'requestForm'])->middleware('guest')->name('password.request');
+Route::post('/olvide-mi-contrasena', [\App\Http\Controllers\PasswordController::class, 'sendLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
+Route::get('/restablecer-contrasena/{token}', [\App\Http\Controllers\PasswordController::class, 'resetForm'])->middleware('guest')->name('password.reset');
+Route::post('/restablecer-contrasena', [\App\Http\Controllers\PasswordController::class, 'reset'])->middleware(['guest', 'throttle:10,1'])->name('password.update');
+Route::post('/mi-cuenta/verificar-correo', [\App\Http\Controllers\EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
+Route::get('/verificar-correo/{id}/{hash}', [\App\Http\Controllers\EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 Route::get('/mi-cuenta', [AuthController::class, 'account'])->middleware('auth')->name('account');
 
 // --- Seller Center ---
@@ -55,6 +69,9 @@ Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:selle
     Route::get('/liquidaciones', [Seller\DashboardController::class, 'settlements'])->name('settlements');
     Route::get('/tienda', [Seller\DashboardController::class, 'editStore'])->name('store.edit');
     Route::put('/tienda', [Seller\DashboardController::class, 'updateStore'])->name('store.update');
+    Route::get('/datos-legales', [Seller\LegalController::class, 'show'])->name('legal');
+    Route::put('/datos-legales', [Seller\LegalController::class, 'updateLegal'])->name('legal.update');
+    Route::post('/cuenta-bancaria', [Seller\LegalController::class, 'requestBankChange'])->middleware('throttle:5,10')->name('legal.bank');
 });
 
 // --- Backoffice ---
@@ -69,17 +86,30 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::get('/vendedores/{store}', [Admin\StoreController::class, 'edit'])->name('stores.edit');
     Route::put('/vendedores/{store}', [Admin\StoreController::class, 'update'])->name('stores.update');
     Route::post('/vendedores/{store}/estado', [Admin\StoreController::class, 'status'])->name('stores.status');
+    Route::post('/vendedores/{store}/cuenta/{account}/aprobar', [Admin\StoreLegalController::class, 'approve'])->name('stores.bank.approve');
+    Route::post('/vendedores/{store}/cuenta/{account}/rechazar', [Admin\StoreLegalController::class, 'reject'])->name('stores.bank.reject');
+    Route::post('/vendedores/{store}/verificada', [Admin\StoreLegalController::class, 'verify'])->name('stores.verify');
+    Route::get('/vendedores/{store}/rut', [Admin\StoreLegalController::class, 'rut'])->name('stores.rut');
     Route::get('/productos', [Admin\StoreController::class, 'products'])->name('products');
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');
     Route::get('/liquidaciones', [Admin\SettlementController::class, 'index'])->name('settlements');
     Route::post('/liquidaciones/{sellerOrder}', [Admin\SettlementController::class, 'settle'])->name('settlements.settle');
     Route::get('/importar', [Admin\ImportController::class, 'show'])->name('import');
     Route::post('/importar', [Admin\ImportController::class, 'store'])->name('import.store');
+    Route::post('/importar/fotos', [Admin\ImportController::class, 'media'])->name('import.media');
     Route::get('/configuracion', [Admin\SettingsController::class, 'index'])->name('settings');
     Route::put('/configuracion', [Admin\SettingsController::class, 'update'])->name('settings.update');
+    Route::put('/configuracion/transferencia', [Admin\SettingsController::class, 'updateTransfer'])->name('settings.transfer');
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
     Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');
+    Route::get('/cambio-de-dominio', [Admin\CutoverController::class, 'index'])->name('cutover');
+    Route::post('/cambio-de-dominio/revisar', [Admin\CutoverController::class, 'start'])->name('cutover.start');
+    Route::post('/cambio-de-dominio/lote', [Admin\CutoverController::class, 'batch'])->name('cutover.batch');
+    Route::get('/cambio-de-dominio/detalle.csv', [Admin\CutoverController::class, 'csv'])->name('cutover.csv');
+    Route::get('/pqrs', [Admin\PqrController::class, 'index'])->name('pqrs');
+    Route::get('/pqrs/{pqr}', [Admin\PqrController::class, 'show'])->name('pqrs.show');
+    Route::put('/pqrs/{pqr}', [Admin\PqrController::class, 'update'])->name('pqrs.update');
     Route::get('/paginas', [Admin\PageController::class, 'index'])->name('pages');
     Route::get('/paginas/nueva', [Admin\PageController::class, 'create'])->name('pages.create');
     Route::post('/paginas', [Admin\PageController::class, 'store'])->name('pages.store');
@@ -93,20 +123,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/plugins/{plugin}/restablecer', [Admin\PluginController::class, 'reset'])->name('plugins.reset');
 });
 
-// --- Redirecciones 301 desde rutas duplicadas del sitio actual (route-and-state-inventory.md) ---
-foreach (['cart', 'cart-2'] as $old) {
-    Route::permanentRedirect($old, '/carrito');
-}
-Route::permanentRedirect('checkout-2', '/checkout');
-Route::permanentRedirect('rastrea-tu-pedido', '/rastrear-pedido');
-foreach (['my-account', 'my-account-2', 'my-orders'] as $old) {
-    Route::permanentRedirect($old, '/mi-cuenta');
-}
-foreach (['vendor-membership', 'vender-2', 'become-a-vendor'] as $old) {
-    Route::permanentRedirect($old, '/vender');
-}
-Route::permanentRedirect('sellercenter', '/seller-center');
+// Las redirecciones 301 desde las URL de WordPress viven en App\Http\Middleware\LegacyRedirects.
 
 // --- Páginas de contenido (políticas, contacto…). Va al final: cualquier ruta anterior tiene prioridad. ---
-Route::permanentRedirect('contact-us', '/contacto');
 Route::get('/{page}', [\App\Http\Controllers\PageController::class, 'show'])->where('page', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('page');

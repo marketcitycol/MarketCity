@@ -11,11 +11,25 @@ class Store extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'department', 'city', 'address', 'phone', 'document_type', 'document_number', 'free_shipping', 'shipping_fee', 'pickup_enabled', 'pickup_fee', 'status', 'commission_percent', 'commission_fixed', 'payment_methods'];
+    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'department', 'city', 'address', 'phone', 'document_type', 'document_number', 'legal_name', 'rut_path', 'verified_at', 'free_shipping', 'shipping_fee', 'pickup_enabled', 'pickup_fee', 'status', 'commission_percent', 'commission_fixed', 'payment_methods'];
 
     protected function casts(): array
     {
-        return ['free_shipping' => 'boolean', 'pickup_enabled' => 'boolean'];
+        return ['verified_at' => 'datetime', 'free_shipping' => 'boolean', 'pickup_enabled' => 'boolean'];
+    }
+
+    /** Tarifa nacional de MarketCity: la que aplica a las tiendas nuevas mientras no configuren la suya. */
+    public const NATIONAL_SHIPPING_FEE = 15000;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Store $store) {
+            // Una tienda nueva no promete envío gratis por omisión (Ley 1480: solo se promete lo real).
+            if (! array_key_exists('free_shipping', $store->getAttributes())) {
+                $store->free_shipping = false;
+                $store->shipping_fee ??= (int) Setting::get('shipping_national_fee', self::NATIONAL_SHIPPING_FEE);
+            }
+        });
     }
 
     public function getRouteKeyName(): string
@@ -39,6 +53,49 @@ class Store extends Model
     }
 
     /** Medios de pago permitidos para esta tienda; null = todos los activos en la plataforma. */
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(StoreBankAccount::class)->latest('id');
+    }
+
+    /** Cuenta vigente a la que se le paga (la última aprobada). */
+    public function approvedBankAccount(): ?StoreBankAccount
+    {
+        return $this->bankAccounts()->where('status', 'approved')->first();
+    }
+
+    public function pendingBankAccount(): ?StoreBankAccount
+    {
+        return $this->bankAccounts()->where('status', 'pending')->first();
+    }
+
+    /**
+     * Motivo por el que hoy no se le puede pagar a la tienda, o null si se puede.
+     * Se retiene si no hay cuenta aprobada o si hay un cambio de cuenta en revisión.
+     */
+    public function settlementHoldReason(): ?string
+    {
+        if ($this->pendingBankAccount()) {
+            return 'Hay un cambio de cuenta bancaria en revisión.';
+        }
+        if (! $this->approvedBankAccount()) {
+            return 'La tienda no tiene una cuenta bancaria aprobada.';
+        }
+
+        return null;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->verified_at !== null;
+    }
+
+    /** Correo al que se avisan los pedidos de la tienda: el de la cuenta del vendedor. */
+    public function notificationEmail(): ?string
+    {
+        return $this->user?->email;
+    }
+
     public function allowedPaymentMethods(): ?array
     {
         return $this->payment_methods === null ? null : array_values(array_filter(explode(',', $this->payment_methods)));

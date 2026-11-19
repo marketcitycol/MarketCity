@@ -13,7 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['role' => \App\Http\Middleware\EnsureRole::class]);
+        // Los avisos de las pasarelas no traen token CSRF: se validan con su firma.
+        $middleware->validateCsrfTokens(except: ['pagos/aviso/*']);
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        // URL de WordPress → URL propias (301), antes del enrutador.
+        $middleware->prepend(\App\Http\Middleware\LegacyRedirects::class);
         $middleware->redirectUsersTo(fn () => route('account'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {

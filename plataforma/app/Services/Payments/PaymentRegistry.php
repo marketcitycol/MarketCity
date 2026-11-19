@@ -6,21 +6,54 @@ use App\Models\Setting;
 
 class PaymentRegistry
 {
+    /** Nombres para mostrar de medios que ya no se ofrecen o vienen del sitio anterior (pedidos históricos). */
+    public const LEGACY_LABELS = [
+        'contraentrega' => 'Contraentrega (histórico)',
+        'cod' => 'Contraentrega (histórico)',
+        'bacs' => 'Transferencia bancaria',
+        'addi' => 'Addi',
+        'bold_co' => 'Bold',
+        'wava_payment' => 'Nequi o Daviplata (Wava)',
+        'woo-mercado-pago-basic' => 'Mercado Pago',
+        'epayco' => 'ePayco',
+        'wompi' => 'Wompi',
+        'legado' => 'Sitio anterior',
+    ];
+
     /** @var array<string, PaymentGateway> */
     private array $gateways;
 
     public function __construct()
     {
-        $all = [new SandboxGateway, new CashOnDeliveryGateway];
+        $all = [new BankTransferGateway, new MercadoPagoGateway];
+        // El pago de prueba solo existe en modo demostración (MC_DEMO=true). En la tienda real no se puede activar.
+        if (self::sandboxAllowed()) {
+            array_unshift($all, new SandboxGateway);
+        }
         $this->gateways = collect($all)->keyBy(fn ($g) => $g->key())->all();
+    }
+
+    public static function sandboxAllowed(): bool
+    {
+        return (bool) config('marketcity.demo');
     }
 
     /** @return array<string, PaymentGateway> */
     public function enabled(): array
     {
-        $enabled = explode(',', (string) Setting::get('payment_methods', 'sandbox,contraentrega'));
+        $enabled = explode(',', (string) Setting::get('payment_methods', 'sandbox,transferencia'));
+        $available = array_intersect_key($this->gateways, array_flip($enabled));
+        if (isset($available['transferencia']) && ! BankTransferGateway::isConfigured()) {
+            unset($available['transferencia']);
+        }
+        // Una pasarela en línea sin llaves no se ofrece, aunque esté marcada como activa.
+        foreach ($available as $key => $gateway) {
+            if ($gateway instanceof OnlineGateway && ! $gateway::isConfigured()) {
+                unset($available[$key]);
+            }
+        }
 
-        return array_intersect_key($this->gateways, array_flip($enabled));
+        return $available;
     }
 
     /**
@@ -49,5 +82,17 @@ class PaymentRegistry
     public function get(string $key): ?PaymentGateway
     {
         return $this->enabled()[$key] ?? null;
+    }
+
+    /** Nombre legible de cualquier medio, también de los históricos. */
+    public static function labelFor(?string $key): string
+    {
+        return match ($key) {
+            'sandbox' => 'Pago de prueba',
+            'transferencia' => 'Transferencia bancaria',
+            'mercadopago' => 'Mercado Pago',
+            null, '' => '—',
+            default => self::LEGACY_LABELS[$key] ?? $key,
+        };
     }
 }

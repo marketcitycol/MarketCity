@@ -31,4 +31,15 @@ class ImportController extends Controller
 
         return back()->with('success', "Importación lista: {$stats['created']} productos nuevos, {$stats['updated']} actualizados, {$stats['skipped']} omitidos (variaciones, sin precio o sin nombre), {$stats['stores']} tiendas nuevas.");
     }
+
+    /** Copia un lote de fotos del sitio anterior; la página sigue sola hasta terminar. */
+    public function media(Request $request, \App\Services\LegacyMediaCopier $copier)
+    {
+        if ($request->boolean('reintentar')) {
+            $copier->retryFailed();
+        }
+        $r = $copier->copyBatch(15);
+
+        return redirect()->route('admin.import')->with('media', $r)->with('success', "Fotos copiadas en este lote: {$r['copied']}. Faltan {$r['remaining']}.");
+    }
 }

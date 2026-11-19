@@ -31,7 +31,7 @@ class OrderController extends Controller
         return view('admin.orders.show', ['order' => $order->load('sellerOrders.store', 'sellerOrders.items', 'events.user', 'payments', 'merchantEntity')]);
     }
 
-    /** Para contraentrega: el operador registra que el dinero llegó. */
+    /** Para transferencia: el operador registra que el dinero llegó, con la referencia del banco. */
     public function markPaid(Request $request, Order $order, OrderService $orders)
     {
         $payment = $order->payments()->where('status', 'pending')->latest('id')->firstOrFail();

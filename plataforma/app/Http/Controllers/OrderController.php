@@ -16,9 +16,16 @@ class OrderController extends Controller
         abort_unless($ok, 404);
     }
 
+    /** El pago de prueba solo existe en modo demostración y solo para pedidos hechos con ese medio. */
+    private function authorizeSandbox(Order $order): void
+    {
+        abort_unless(\App\Services\Payments\PaymentRegistry::sandboxAllowed() && $order->payment_method === 'sandbox', 404);
+    }
+
     public function sandbox(Request $request, Order $order)
     {
         $this->authorizeView($request, $order);
+        $this->authorizeSandbox($order);
         if ($order->payment_status !== 'pending') {
             return redirect()->route('orders.thanks', [$order, 't' => $order->access_token]);
         }
@@ -29,6 +36,7 @@ class OrderController extends Controller
     public function sandboxDecide(Request $request, Order $order, OrderService $orders)
     {
         $this->authorizeView($request, $order);
+        $this->authorizeSandbox($order);
         $payment = $order->payments()->where('status', 'pending')->latest('id')->firstOrFail();
 
         if ($request->input('decision') === 'approve') {
@@ -44,7 +52,10 @@ class OrderController extends Controller
     {
         $this->authorizeView($request, $order);
 
-        return view('shop.thanks', ['order' => $order->load('sellerOrders.store', 'sellerOrders.items')]);
+        return view('shop.thanks', [
+            'order' => $order->load('sellerOrders.store', 'sellerOrders.items'),
+            'transfer' => $order->awaitingTransfer() ? \App\Services\Payments\BankTransferGateway::accountDetails() : null,
+        ]);
     }
 
     public function show(Request $request, Order $order)

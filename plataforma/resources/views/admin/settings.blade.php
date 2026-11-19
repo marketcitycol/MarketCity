@@ -27,6 +27,26 @@
 </section>
 
 <section class="card p-5">
+    <h2 class="font-semibold">Transferencia bancaria</h2>
+    <p class="mt-1 text-sm text-slate-500">El comprador ve estos datos en la página de gracias y en el correo del pedido. Se ofrece en el checkout solo cuando están completos. El pedido queda pendiente hasta que registres el pago en el pedido.</p>
+    @unless (\App\Services\Payments\BankTransferGateway::isConfigured())
+        <p class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">Faltan datos: hoy la transferencia no aparece en el checkout.</p>
+    @endunless
+    <form method="post" action="{{ route('admin.settings.transfer') }}" class="mt-4 grid gap-3 sm:grid-cols-2">
+        @csrf @method('put')
+        <div><label class="label" for="transfer_bank">Banco</label><input class="input" id="transfer_bank" name="transfer_bank" value="{{ $s('transfer_bank') }}"></div>
+        <div><label class="label" for="transfer_account_type">Tipo de cuenta</label>
+            <select class="input" id="transfer_account_type" name="transfer_account_type"><option value="">Elige</option>@foreach (['Ahorros', 'Corriente'] as $t)<option @selected($s('transfer_account_type') === $t)>{{ $t }}</option>@endforeach</select></div>
+        <div><label class="label" for="transfer_account_number">Número de cuenta</label><input class="input" id="transfer_account_number" name="transfer_account_number" inputmode="numeric" value="{{ $s('transfer_account_number') }}"></div>
+        <div><label class="label" for="transfer_holder">Titular</label><input class="input" id="transfer_holder" name="transfer_holder" value="{{ $s('transfer_holder') }}"></div>
+        <div><label class="label" for="transfer_holder_document">Documento del titular</label><input class="input" id="transfer_holder_document" name="transfer_holder_document" placeholder="CC 123… o NIT 900…" value="{{ $s('transfer_holder_document') }}"></div>
+        <div><label class="label" for="transfer_deadline_hours">Horas para pagar antes de cancelar</label><input class="input" type="number" id="transfer_deadline_hours" name="transfer_deadline_hours" value="{{ $s('transfer_deadline_hours', 24) }}"></div>
+        <div class="sm:col-span-2"><label class="label" for="transfer_instructions">Indicaciones adicionales (opcional, sin emojis)</label><textarea class="input" id="transfer_instructions" name="transfer_instructions" rows="2">{{ $s('transfer_instructions') }}</textarea></div>
+        <div class="sm:col-span-2"><button class="btn-primary">Guardar datos de transferencia</button></div>
+    </form>
+</section>
+
+<section class="card p-5">
     <h2 class="font-semibold">Titular del comercio</h2>
     <p class="mt-1 text-sm text-slate-500">Quien cobra ante las pasarelas y factura. Hoy es una persona natural; cuando la sociedad esté lista, agrégala y actívala. Los pedidos anteriores conservan su titular.</p>
     <ul class="mt-4 divide-y divide-slate-100 text-sm">

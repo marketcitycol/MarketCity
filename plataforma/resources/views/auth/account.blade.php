@@ -5,6 +5,12 @@
     <div><h1 class="text-2xl font-bold">Hola, {{ $user->name }}</h1><p class="text-sm text-slate-500">{{ $user->email }}</p></div>
     <form method="post" action="{{ route('logout') }}">@csrf<button class="btn-ghost">Cerrar sesión</button></form>
 </div>
+@unless ($user->email_verified_at)
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <p>Confirma tu correo para ver aquí también los pedidos que hiciste sin iniciar sesión.</p>
+        <form method="post" action="{{ route('verification.send') }}">@csrf<button class="btn-ghost btn-sm">Enviarme el enlace</button></form>
+    </div>
+@endunless
 <h2 class="mt-8 font-semibold">Mis pedidos</h2>
 @if ($orders->isEmpty())
     <div class="card mt-3 p-8 text-center text-sm text-slate-500">Aún no tienes pedidos. <a href="{{ route('shop') }}" class="text-brand-600 hover:underline">Ir a la tienda</a></div>

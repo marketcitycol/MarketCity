@@ -39,9 +39,9 @@
             <a href="{{ $accountUrl }}" class="hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold hover:bg-slate-100 sm:inline-flex">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>{{ $accountLabel }}
             </a>
-            <a href="{{ route('cart') }}" class="relative rounded-lg p-2 hover:bg-slate-100" aria-label="Carrito, {{ $count }} productos">
+            <a href="{{ route('cart') }}" class="relative rounded-lg p-2 hover:bg-slate-100" aria-label="Carrito, {{ $count }} productos" data-cart-link>
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h2l2.4 11h11l2-8H6.2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
-                @if ($count)<span class="absolute -top-0.5 -right-0.5 rounded-full bg-accent-400 px-1.5 text-xs font-bold text-brand-900">{{ $count }}</span>@endif
+                <span class="absolute -top-0.5 -right-0.5 rounded-full bg-accent-400 px-1.5 text-xs font-bold text-brand-900 {{ $count ? '' : 'hidden' }}" data-cart-count>{{ $count }}</span>
             </a>
         </div>
     </div>

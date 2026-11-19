@@ -10,7 +10,7 @@
             <td><a href="{{ route('admin.orders.show', $o) }}" class="font-medium text-brand-600 hover:underline">{{ $o->number }}</a></td>
             <td>{{ fecha($o->created_at, 'd/m/Y g:i a') }}</td>
             <td>{{ $o->customerName() }}<br><span class="text-xs text-slate-500">{{ $o->city }}</span></td>
-            <td><span class="badge {{ ['paid' => 'bg-emerald-100 text-emerald-700', 'failed' => 'bg-red-100 text-red-700'][$o->payment_status] ?? 'bg-amber-100 text-amber-800' }}">{{ $o->paymentStatusLabel() }}</span><br><span class="text-xs text-slate-500">{{ $o->payment_method }}</span></td>
+            <td><span class="badge {{ ['paid' => 'bg-emerald-100 text-emerald-700', 'failed' => 'bg-red-100 text-red-700'][$o->payment_status] ?? 'bg-amber-100 text-amber-800' }}">{{ $o->paymentStatusLabel() }}</span><br><span class="text-xs text-slate-500">{{ $o->paymentMethodLabel() }}</span></td>
             <td class="text-xs">@foreach ($o->sellerOrders as $so){{ $so->store->name ?? '' }} · {{ $so->statusLabel() }}<br>@endforeach</td>
             <td class="text-right">{{ cop($o->total) }}</td>
         </tr>

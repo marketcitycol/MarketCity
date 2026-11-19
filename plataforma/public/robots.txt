@@ -4,3 +4,7 @@ Disallow: /backoffice
 Disallow: /carrito
 Disallow: /checkout
 Disallow: /pedido/
+Disallow: /mi-cuenta
+Disallow: /pqrs/estado
+
+Sitemap: https://marketcity.co/sitemap.xml

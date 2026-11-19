@@ -110,7 +110,8 @@ class WooCommerceCsvImporter
                     'regular_price' => $regular && $regular > $price ? $regular : null,
                     'stock' => $stock,
                     'image_path' => $this->firstImage($r['images'] ?? ''),
-                    'status' => in_array(trim($r['published'] ?? '1'), ['1', 'yes', 'si', 'sí'], true) ? 'active' : 'draft',
+                    // Un precio por debajo del mínimo entra como borrador para revisarlo, nunca a la venta.
+                    'status' => in_array(trim($r['published'] ?? '1'), ['1', 'yes', 'si', 'sí'], true) && $price >= Product::MIN_PRICE ? 'active' : 'draft',
                     'featured' => in_array(trim($r['featured'] ?? '0'), ['1', 'yes', 'si', 'sí'], true),
                 ];
 

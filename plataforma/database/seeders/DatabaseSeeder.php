@@ -24,9 +24,16 @@ class DatabaseSeeder extends Seeder
             'commission_percent' => '15',
             'commission_fixed' => '0',
             'settlement_business_days' => '10',
-            'payment_methods' => 'sandbox,contraentrega',
+            'payment_methods' => 'sandbox,transferencia',
             'terms_version' => '2026-11',
             'installments' => '4',
+            // Cuenta de PRUEBA para ver la transferencia en local; en el servidor la escribe el propietario.
+            'transfer_bank' => 'Banco de prueba',
+            'transfer_account_type' => 'Ahorros',
+            'transfer_account_number' => '000-000000-00',
+            'transfer_holder' => 'MarketCity (prueba)',
+            'transfer_holder_document' => 'NIT 000.000.000-0',
+            'transfer_deadline_hours' => '24',
         ];
         foreach ($settings as $k => $v) {
             Setting::put($k, $v);

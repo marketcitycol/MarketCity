@@ -100,13 +100,21 @@ class MarketplaceFlowTest extends TestCase
     {
         $p = Product::first();
         $this->post('/carrito', ['product_id' => $p->id]);
-        $this->post('/checkout', $this->checkoutData(['payment_method' => 'contraentrega']));
+        $this->post('/checkout', $this->checkoutData(['payment_method' => 'transferencia']));
         $so = SellerOrder::first();
 
         $other = User::where('email', 'vendedor2@marketcity.test')->first();
         $this->actingAs($other)->get("/seller-center/pedidos/{$so->id}")->assertNotFound();
 
+        // Con la transferencia sin confirmar, el vendedor no puede avanzar el pedido.
         $owner = $so->store->user;
+        $this->actingAs($owner)->post("/seller-center/pedidos/{$so->id}/estado", ['to' => 'validado'])->assertSessionHas('error');
+        $this->assertSame('recibido', $so->fresh()->status);
+
+        $admin = User::where('role', 'admin')->first();
+        $this->actingAs($admin)->post("/backoffice/pedidos/{$so->order->number}/pago-recibido", ['reference' => 'BANCO-123']);
+        $this->assertSame('paid', $so->order->fresh()->payment_status);
+
         $this->actingAs($owner)->post("/seller-center/pedidos/{$so->id}/estado", ['to' => 'validado']);
         $this->assertSame('validado', $so->fresh()->status);
         $this->actingAs($owner)->post("/seller-center/pedidos/{$so->id}/estado", ['to' => 'despachado'])->assertSessionHas('error');
@@ -189,10 +197,10 @@ class MarketplaceFlowTest extends TestCase
         $admin = User::where('role', 'admin')->first();
         $this->actingAs($admin)->get("/backoffice/vendedores/{$store->slug}")->assertOk();
         $this->actingAs($admin)->put("/backoffice/vendedores/{$store->slug}", [
-            'commission_percent' => '10', 'commission_fixed' => '', 'payments_mode' => 'custom', 'payment_methods' => ['contraentrega'],
+            'commission_percent' => '10', 'commission_fixed' => '', 'payments_mode' => 'custom', 'payment_methods' => ['transferencia'],
         ])->assertRedirect('/backoffice/vendedores');
         $store->refresh();
         $this->assertEquals(10, $store->commission_percent);
-        $this->assertSame(['contraentrega'], $store->allowedPaymentMethods());
+        $this->assertSame(['transferencia'], $store->allowedPaymentMethods());
     }
 }

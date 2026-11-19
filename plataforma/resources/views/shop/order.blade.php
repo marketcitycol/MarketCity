@@ -36,6 +36,14 @@
         </section>
     @endforeach
 
+    <section class="card mt-5 flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
+        <p class="text-slate-600">¿Te arrepentiste o tuviste un problema? Tienes 5 días hábiles desde la entrega para el retracto.</p>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('pqrs.create', ['tipo' => 'retracto', 'pedido' => $order->number]) }}" class="btn-ghost btn-sm">Retracto</a>
+            <a href="{{ route('pqrs.create', ['tipo' => 'reclamo', 'pedido' => $order->number]) }}" class="btn-ghost btn-sm">Reclamo o PQRS</a>
+        </div>
+    </section>
+
     <section class="card mt-5 p-5 text-sm">
         <p class="font-semibold">Historial</p>
         <ul class="mt-2 space-y-1 text-slate-600">

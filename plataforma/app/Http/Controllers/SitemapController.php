@@ -23,4 +23,12 @@ class SitemapController extends Controller
 
         return response()->view('sitemap', ['urls' => $urls], 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
+
+    /** Feed de productos (RSS 2.0 con g:) para Google Merchant Center y el catálogo de Meta. */
+    public function feed()
+    {
+        $products = Product::visible()->with('store', 'category', 'brand')->orderBy('id')->get();
+
+        return response()->view('feed', ['products' => $products], 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+    }
 }

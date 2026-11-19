@@ -16,6 +16,20 @@ if (! function_exists('fecha')) {
     }
 }
 
+if (! function_exists('mask_document')) {
+    /** Muestra solo los últimos 4 caracteres de un documento: 1012345678 → ••••••5678. */
+    function mask_document(?string $document): string
+    {
+        $document = trim((string) $document);
+        if ($document === '') {
+            return '';
+        }
+        $visible = mb_substr($document, -4);
+
+        return str_repeat('•', max(2, mb_strlen($document) - 4)).$visible;
+    }
+}
+
 if (! function_exists('installments')) {
     /** Número de cuotas que se muestra como referencia en catálogo (configurable). */
     function installments(): int

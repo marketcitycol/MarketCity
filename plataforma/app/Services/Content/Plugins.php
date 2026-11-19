@@ -155,7 +155,7 @@ class Plugins
                     'title_soft' => 'hoy mismo.',
                     'title_end' => 'Págalo después.',
                     'subtitle' => 'Tecnología, hogar, belleza y más de tiendas colombianas, con envío a todo el país y crédito con Addi o Sistecrédito.',
-                    'image_url' => 'https://marketcity.co/wp-content/uploads/2026/10/marketcity-hero-final-web.jpg',
+                    'image_url' => '/marca/portada.webp',
                     'buttons' => "⚡ Ver ofertas | /ofertas-relampago\nExplorar la tienda | /shop",
                 ],
             ],

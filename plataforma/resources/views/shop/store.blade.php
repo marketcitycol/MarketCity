@@ -5,7 +5,7 @@
 <section class="card flex flex-wrap items-center gap-5 p-6">
     <span class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-100 text-2xl font-bold text-brand-700">{{ $store->initials() }}</span>
     <div class="flex-1">
-        <h1 class="text-2xl font-bold">{{ $store->name }}</h1>
+        <h1 class="text-2xl font-bold">{{ $store->name }}@if ($store->isVerified()) <span class="badge bg-emerald-100 align-middle text-xs text-emerald-700" title="MarketCity revisó sus datos legales">Tienda verificada</span>@endif</h1>
         <p class="text-sm text-slate-500">{{ $store->city }}, {{ $store->department }}</p>
         @if ($store->description)<p class="mt-1 text-sm">{{ $store->description }}</p>@endif
     </div>

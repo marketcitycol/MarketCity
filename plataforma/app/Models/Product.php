@@ -12,6 +12,9 @@ class Product extends Model
 {
     use HasFactory;
 
+    /** Precio mínimo para vender: nada a $0, $1 o precios mal escritos (lección del sitio anterior). */
+    public const MIN_PRICE = 1000;
+
     protected $fillable = ['store_id', 'category_id', 'brand_id', 'name', 'slug', 'sku', 'short_description', 'description', 'price', 'regular_price', 'stock', 'color', 'image_path', 'status', 'featured'];
 
     protected function casts(): array
@@ -42,7 +45,7 @@ class Product extends Model
     /** Productos que se pueden ver y comprar: activos y de una tienda activa. */
     public function scopeVisible(Builder $q): Builder
     {
-        return $q->where('status', 'active')->whereHas('store', fn ($s) => $s->where('status', 'active'));
+        return $q->where('status', 'active')->where('price', '>=', self::MIN_PRICE)->whereHas('store', fn ($s) => $s->where('status', 'active'));
     }
 
     public function isOnSale(): bool

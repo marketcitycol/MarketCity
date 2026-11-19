@@ -9,6 +9,7 @@
         <div><label class="label" for="password">Contraseña</label><input class="input" type="password" id="password" name="password" required autocomplete="current-password"></div>
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="remember" value="1"> Recordarme</label>
         <button class="btn-primary w-full">Ingresar</button>
+        <p class="text-center text-sm"><a href="{{ route('password.request') }}" class="text-brand-600 hover:underline">¿Olvidaste tu contraseña o compraste en la tienda anterior? Créala aquí</a></p>
         <p class="text-center text-sm text-slate-500">¿No tienes cuenta? <a href="{{ route('register') }}" class="text-brand-600 hover:underline">Regístrate</a></p>
     </form>
     @if (config('marketcity.show_demo_accounts'))

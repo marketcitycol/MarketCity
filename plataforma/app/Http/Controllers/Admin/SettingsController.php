@@ -40,6 +40,27 @@ class SettingsController extends Controller
         return back()->with('success', 'Configuración guardada. Aplica a los pedidos nuevos; los anteriores conservan su regla.');
     }
 
+    /** Datos de la cuenta para transferencias. La transferencia solo se ofrece cuando están todos. */
+    public function updateTransfer(Request $request)
+    {
+        $data = $request->validate([
+            'transfer_bank' => 'nullable|string|max:60',
+            'transfer_account_type' => ['nullable', Rule::in(['Ahorros', 'Corriente'])],
+            'transfer_account_number' => ['nullable', 'string', 'max:30', 'regex:/^[0-9 \-]+$/'],
+            'transfer_holder' => 'nullable|string|max:120',
+            'transfer_holder_document' => 'nullable|string|max:40',
+            'transfer_instructions' => 'nullable|string|max:500',
+            'transfer_deadline_hours' => 'required|integer|min:1|max:168',
+        ], ['transfer_account_number.regex' => 'El número de cuenta solo lleva números, espacios o guiones.']);
+        foreach ($data as $k => $v) {
+            Setting::put($k, trim((string) $v));
+        }
+
+        return back()->with('success', \App\Services\Payments\BankTransferGateway::isConfigured()
+            ? 'Datos de transferencia guardados. Ya se ofrece en el checkout si está activa en «Medios de pago».'
+            : 'Guardado. Faltan datos de la cuenta: la transferencia no se ofrece hasta completarlos.');
+    }
+
     public function storeEntity(Request $request)
     {
         $data = $request->validate([

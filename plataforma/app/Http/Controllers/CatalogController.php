@@ -87,7 +87,7 @@ class CatalogController extends Controller
 
     public function product(Product $product)
     {
-        abort_unless($product->status === 'active' && $product->store->isActive(), 404);
+        abort_unless($product->status === 'active' && $product->price >= Product::MIN_PRICE && $product->store->isActive(), 404);
 
         return view('shop.product', [
             'product' => $product->load('store', 'category', 'brand'),

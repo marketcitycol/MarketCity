@@ -29,4 +29,40 @@
     </fieldset>
     <button class="btn-primary">Guardar condiciones</button>
 </form>
+
+@php($approved = $store->approvedBankAccount())
+@php($pending = $store->pendingBankAccount())
+<section class="card mt-6 max-w-2xl p-5">
+    <h2 class="font-semibold">Datos legales y cuenta bancaria</h2>
+    <p class="mt-2 text-sm">Titular: <strong>{{ $store->legal_name ?: 'sin registrar' }}</strong> · {{ $store->document_type }} {{ $store->document_number }}
+        @if ($store->rut_path) · <a class="text-brand-600 hover:underline" href="{{ route('admin.stores.rut', $store) }}">Descargar RUT</a>@else · <span class="text-amber-700">sin RUT</span>@endif</p>
+    <form method="post" action="{{ route('admin.stores.verify', $store) }}" class="mt-3 flex items-center gap-3 text-sm">
+        @csrf
+        <input type="hidden" name="verified" value="{{ $store->isVerified() ? 0 : 1 }}">
+        <span>{{ $store->isVerified() ? 'Verificada desde el '.fecha($store->verified_at, 'd/m/Y') : 'No verificada' }}</span>
+        <button class="btn-ghost btn-sm">{{ $store->isVerified() ? 'Quitar verificación' : 'Marcar como verificada' }}</button>
+    </form>
+
+    <div class="mt-4 border-t border-slate-100 pt-4 text-sm">
+        @if ($approved)
+            <p>Cuenta vigente: <strong>{{ $approved->bank }} · {{ $approved->account_type }} {{ $approved->account_number }}</strong><br>Titular: {{ $approved->holder_name }} ({{ $approved->holder_document_type }} {{ $approved->holder_document_number }})</p>
+        @else
+            <p class="text-amber-700">Sin cuenta aprobada: las liquidaciones de esta tienda están retenidas.</p>
+        @endif
+        @if ($pending)
+            <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <p class="font-semibold text-blue-900">Cambio de cuenta en revisión (enviado el {{ fecha($pending->created_at) }} desde {{ $pending->submitted_ip }})</p>
+                <p class="mt-1">{{ $pending->bank }} · {{ $pending->account_type }} {{ $pending->account_number }}<br>Titular: {{ $pending->holder_name }} ({{ $pending->holder_document_type }} {{ $pending->holder_document_number }})</p>
+                @if ($pending->holder_document_number !== $store->document_number)
+                    <p class="mt-2 text-red-700">Atención: el documento del titular no coincide con el de la tienda.</p>
+                @endif
+                <p class="mt-2 text-xs text-slate-600">Antes de aprobar, confírmala con el vendedor por un canal conocido (no respondiendo a un mensaje nuevo).</p>
+                <div class="mt-3 flex flex-wrap gap-3">
+                    <form method="post" action="{{ route('admin.stores.bank.approve', [$store, $pending]) }}">@csrf<button class="btn-primary btn-sm">Aprobar cuenta</button></form>
+                    <form method="post" action="{{ route('admin.stores.bank.reject', [$store, $pending]) }}" class="flex gap-2">@csrf<input class="input" name="note" placeholder="Motivo del rechazo" required><button class="btn-ghost btn-sm">Rechazar</button></form>
+                </div>
+            </div>
+        @endif
+    </div>
+</section>
 @endsection

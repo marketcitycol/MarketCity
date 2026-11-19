@@ -29,6 +29,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
+
     public function store(): HasOne
     {
         return $this->hasOne(Store::class);

@@ -43,6 +43,12 @@ Route::post('/ingresar', [AuthController::class, 'login'])->middleware('throttle
 Route::get('/registro', [AuthController::class, 'registerForm'])->name('register');
 Route::post('/registro', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/salir', [AuthController::class, 'logout'])->name('logout');
+Route::get('/olvide-mi-contrasena', [\App\Http\Controllers\PasswordController::class, 'requestForm'])->middleware('guest')->name('password.request');
+Route::post('/olvide-mi-contrasena', [\App\Http\Controllers\PasswordController::class, 'sendLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
+Route::get('/restablecer-contrasena/{token}', [\App\Http\Controllers\PasswordController::class, 'resetForm'])->middleware('guest')->name('password.reset');
+Route::post('/restablecer-contrasena', [\App\Http\Controllers\PasswordController::class, 'reset'])->middleware(['guest', 'throttle:10,1'])->name('password.update');
+Route::post('/mi-cuenta/verificar-correo', [\App\Http\Controllers\EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
+Route::get('/verificar-correo/{id}/{hash}', [\App\Http\Controllers\EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 Route::get('/mi-cuenta', [AuthController::class, 'account'])->middleware('auth')->name('account');
 
 // --- Seller Center ---
@@ -55,6 +61,9 @@ Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:selle
     Route::get('/liquidaciones', [Seller\DashboardController::class, 'settlements'])->name('settlements');
     Route::get('/tienda', [Seller\DashboardController::class, 'editStore'])->name('store.edit');
     Route::put('/tienda', [Seller\DashboardController::class, 'updateStore'])->name('store.update');
+    Route::get('/datos-legales', [Seller\LegalController::class, 'show'])->name('legal');
+    Route::put('/datos-legales', [Seller\LegalController::class, 'updateLegal'])->name('legal.update');
+    Route::post('/cuenta-bancaria', [Seller\LegalController::class, 'requestBankChange'])->middleware('throttle:5,10')->name('legal.bank');
 });
 
 // --- Backoffice ---
@@ -69,6 +78,10 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::get('/vendedores/{store}', [Admin\StoreController::class, 'edit'])->name('stores.edit');
     Route::put('/vendedores/{store}', [Admin\StoreController::class, 'update'])->name('stores.update');
     Route::post('/vendedores/{store}/estado', [Admin\StoreController::class, 'status'])->name('stores.status');
+    Route::post('/vendedores/{store}/cuenta/{account}/aprobar', [Admin\StoreLegalController::class, 'approve'])->name('stores.bank.approve');
+    Route::post('/vendedores/{store}/cuenta/{account}/rechazar', [Admin\StoreLegalController::class, 'reject'])->name('stores.bank.reject');
+    Route::post('/vendedores/{store}/verificada', [Admin\StoreLegalController::class, 'verify'])->name('stores.verify');
+    Route::get('/vendedores/{store}/rut', [Admin\StoreLegalController::class, 'rut'])->name('stores.rut');
     Route::get('/productos', [Admin\StoreController::class, 'products'])->name('products');
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');
     Route::get('/liquidaciones', [Admin\SettlementController::class, 'index'])->name('settlements');
@@ -77,6 +90,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/importar', [Admin\ImportController::class, 'store'])->name('import.store');
     Route::get('/configuracion', [Admin\SettingsController::class, 'index'])->name('settings');
     Route::put('/configuracion', [Admin\SettingsController::class, 'update'])->name('settings.update');
+    Route::put('/configuracion/transferencia', [Admin\SettingsController::class, 'updateTransfer'])->name('settings.transfer');
     Route::post('/titular', [Admin\SettingsController::class, 'storeEntity'])->name('entities.store');
     Route::post('/titular/{entity}/activar', [Admin\SettingsController::class, 'activateEntity'])->name('entities.activate');
     Route::post('/importar/pedidos', [Admin\LegacyImportController::class, 'orders'])->name('import.orders');

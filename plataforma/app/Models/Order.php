@@ -65,6 +65,23 @@ class Order extends Model
         ][$this->payment_status] ?? $this->payment_status;
     }
 
+    public function paymentMethodLabel(): string
+    {
+        return \App\Services\Payments\PaymentRegistry::labelFor($this->payment_method);
+    }
+
+    /** Pedido por transferencia que todavía espera el dinero. */
+    public function awaitingTransfer(): bool
+    {
+        return $this->payment_method === 'transferencia' && $this->payment_status === 'pending';
+    }
+
+    /** Documento del comprador enmascarado para pantallas y correos (Ley 1581). */
+    public function maskedDocument(): string
+    {
+        return trim($this->document_type.' '.mask_document($this->document_number));
+    }
+
     public function log(string $type, string $message, ?SellerOrder $sellerOrder = null, ?User $user = null): void
     {
         $this->events()->create([

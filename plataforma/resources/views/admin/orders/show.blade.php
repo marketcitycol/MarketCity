@@ -4,7 +4,7 @@
 <a href="{{ route('admin.orders') }}" class="text-sm text-brand-600 hover:underline">← Pedidos</a>
 <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-bold">Pedido {{ $order->number }}</h1>
-    <span class="badge bg-white">{{ $order->paymentStatusLabel() }} · {{ $order->payment_method }}</span>
+    <span class="badge bg-white">{{ $order->paymentStatusLabel() }} · {{ $order->paymentMethodLabel() }}</span>
     <span class="text-sm text-slate-500">{{ fecha($order->created_at) }}</span>
 </div>
 

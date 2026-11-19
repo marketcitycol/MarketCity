@@ -6,7 +6,7 @@
 
 <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     @forelse ($byStore as $row)
-        @include('partials.stat', ['label' => $row['store']->name, 'value' => cop($row['total']), 'hint' => cop($row['due']).' ya vencido'])
+        @include('partials.stat', ['label' => $row['store']->name, 'value' => cop($row['total']), 'hint' => cop($row['due']).' ya vencido'.(($hold = $row['store']->settlementHoldReason()) ? ' · RETENIDA: '.$hold : '')])
     @empty
         <p class="text-sm text-slate-500">No hay nada pendiente por liquidar.</p>
     @endforelse

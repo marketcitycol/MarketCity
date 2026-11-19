@@ -6,7 +6,7 @@
 <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-bold">Pedido {{ $o->number }}</h1>
     @include('partials.status-badge')
-    <span class="badge bg-white text-slate-600">{{ $o->paymentStatusLabel() }} · {{ $o->payment_method === 'contraentrega' ? 'Contraentrega' : 'Pago en línea' }}</span>
+    <span class="badge bg-white text-slate-600">{{ $o->paymentStatusLabel() }} · {{ $o->paymentMethodLabel() }}</span>
 </div>
 
 <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_320px]">
@@ -41,7 +41,7 @@
     </div>
     <aside class="card h-fit p-5 text-sm">
         <h2 class="font-semibold">{{ $so->shipping_method === 'recogida' ? 'Recoge en tienda' : 'Enviar a' }}</h2>
-        <p class="mt-2">{{ $o->customerName() }}<br>{{ $o->document_type }} {{ $o->document_number }}<br>{{ $o->phone }}</p>
+        <p class="mt-2">{{ $o->customerName() }}<br>{{ $o->maskedDocument() }}<br>{{ $o->phone }}</p>
         @if ($so->shipping_method === 'envio')
             <p class="mt-2">{{ $o->address }}@if ($o->address_2), {{ $o->address_2 }}@endif<br>{{ $o->city }}, {{ $o->department }}</p>
         @endif

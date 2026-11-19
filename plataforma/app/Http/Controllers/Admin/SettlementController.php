@@ -32,6 +32,9 @@ class SettlementController extends Controller
         $data = $request->validate(['reference' => 'required|string|max:100']);
         abort_if($sellerOrder->settled_at, 422, 'Ya estaba liquidado.');
         abort_if($sellerOrder->status === 'cancelado' || $sellerOrder->order->payment_status !== 'paid', 422, 'Solo se liquidan subpedidos pagados y no cancelados.');
+        if ($hold = $sellerOrder->store->settlementHoldReason()) {
+            return back()->with('error', "Liquidación retenida: {$hold}");
+        }
         $orders->settle($sellerOrder, $request->user(), $data['reference']);
 
         return back()->with('success', 'Liquidación registrada.');

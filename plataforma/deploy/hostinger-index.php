@@ -37,11 +37,27 @@ if (is_file($pending) && ($lock = fopen($pending, 'r')) && flock($lock, LOCK_EX 
     $backupDir = $app_dir.'/storage/app/respaldos';
     is_dir($backupDir) || mkdir($backupDir, 0750, true);
     $stamp = date('Ymd-His');
-    $ok = ! is_file($db) || copy($db, "$backupDir/database-$stamp.sqlite");
+    $console = $app->make(Illuminate\Contracts\Console\Kernel::class);
+    $console->bootstrap();
+    $usesSqlite = config('database.connections.'.config('database.default').'.driver') === 'sqlite';
+    $toMysql = $app_dir.'/storage/app/pasar-a-mysql.pendiente';
+    if ($usesSqlite) {
+        $ok = ! is_file($db) || copy($db, "$backupDir/database-$stamp.sqlite");
+    } else {
+        // MySQL: respaldo en JSON con el comando propio (no hay mysqldump sin consola).
+        // En el primer paso a MySQL la base está vacía y el respaldo es el propio archivo SQLite.
+        $ok = is_file($toMysql) || $console->call('mc:respaldar') === 0;
+    }
     if ($ok) {
-        $console = $app->make(Illuminate\Contracts\Console\Kernel::class);
         $code = $console->call('migrate', ['--force' => true]);
         $out = $console->output();
+        if ($code === 0 && ! $usesSqlite && is_file($toMysql)) {
+            // Paso único de SQLite a MySQL: copia y verifica fila por fila; el archivo SQLite queda intacto.
+            $copy = $console->call('mc:copiar-sqlite');
+            $out .= $console->output();
+            $code === 0 && $copy === 0 && unlink($toMysql);
+            $code = $copy;
+        }
         $console->call('optimize:clear');
         file_put_contents($log, "[$stamp] migrate=$code\n$out\n", FILE_APPEND);
         if ($code === 0) {

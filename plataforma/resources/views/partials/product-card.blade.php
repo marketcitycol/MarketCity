@@ -1,7 +1,7 @@
 {{-- Tarjeta de producto con el diseño de marketcity.co: precio, cuota con Addi o Sistecrédito, envío y «Lo llevo». --}}
 @php($inst = installments())
-<article class="group relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e6ec] bg-white transition hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,.25)]">
-    <a href="{{ route('product', $product) }}" class="relative block aspect-square bg-[#f7f8fa]">
+<article class="group relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white transition hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,.25)]">
+    <a href="{{ route('product', $product) }}" class="relative block aspect-square bg-surface">
         @include('partials.product-image', ['product' => $product, 'size' => 'text-5xl'])
         @if ($product->isOnSale())
             <span class="absolute top-2 left-2 rounded-full bg-offer-600 px-2 py-0.5 text-xs font-bold text-white">{{ $product->discountPercent() }}%</span>
@@ -15,10 +15,10 @@
     </a>
     <div class="flex flex-1 flex-col gap-1 p-2.5 sm:p-3">
         <a href="{{ route('product', $product) }}" class="line-clamp-2 min-h-10 text-sm leading-5 font-medium text-[#1e293b] group-hover:text-brand-600">{{ $product->name }}</a>
-        <p class="truncate text-xs text-[#64748b]">Por: <a href="{{ route('store', $product->store) }}" class="font-semibold text-[#0b5cff] hover:underline">{{ $product->store->name }}</a></p>
+        <p class="truncate text-xs text-[#64748b]">Por: <a href="{{ route('store', $product->store) }}" class="font-semibold text-electric-600 hover:underline">{{ $product->store->name }}</a></p>
         <div class="mt-auto pt-1">
             <p class="flex flex-wrap items-baseline gap-x-1.5">
-                <span class="text-lg font-bold text-[#0f172a]">{{ cop($product->price) }}</span>
+                <span class="text-lg font-bold text-ink-900">{{ cop($product->price) }}</span>
                 @if ($product->isOnSale())<del class="text-[13px] text-[#64748b]">{{ cop($product->regular_price) }}</del>@endif
             </p>
             <p class="text-[11.5px] leading-4 font-semibold text-credit-600">o {{ $inst }} cuotas de <strong>{{ cop(ceil($product->price / $inst)) }}</strong> con Addi o Sistecrédito*</p>
@@ -32,7 +32,7 @@
                 <button class="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-brand-600 text-sm font-bold text-white hover:bg-brand-700">{!! icon('carrito', 'h-4 w-4') !!} Lo llevo</button>
             </form>
         @else
-            <a href="{{ route('product', $product) }}" class="mt-2 flex h-11 w-full items-center justify-center rounded-xl border border-[#e3e6ec] text-sm font-bold text-[#4a5068]">Ver producto</a>
+            <a href="{{ route('product', $product) }}" class="mt-2 flex h-11 w-full items-center justify-center rounded-xl border border-line text-sm font-bold text-ink-700">Ver producto</a>
         @endif
     </div>
 </article>

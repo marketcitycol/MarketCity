@@ -14,9 +14,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="min-h-screen bg-[#f7f8fa] pb-16 font-sans text-slate-800 antialiased md:pb-0">
+<body class="min-h-screen bg-surface pb-16 font-sans text-slate-800 antialiased md:pb-0">
     @if (config('marketcity.demo'))
-    <div class="bg-[#0a1628] px-4 py-1 text-center text-[11px] text-white/70">
+    <div class="bg-night-800 px-4 py-1 text-center text-[11px] text-white/70">
         Versión de prueba · no se cobra dinero real
     </div>
     @endif

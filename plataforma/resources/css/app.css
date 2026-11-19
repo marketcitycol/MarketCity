@@ -28,6 +28,18 @@
     --color-offer-600: #c23d0b;
     --color-success-50: #e8f6ee;
     --color-success-700: #0e7a3d;
+    /* Textos, líneas y fondos del diseño de marketcity.co (ola visual). */
+    --color-ink-900: #0f172a;
+    --color-ink-700: #4a5068;
+    --color-ink-500: #6b7385;
+    --color-ink-400: #8a94a6;
+    --color-line: #e3e6ec;
+    --color-surface: #f7f8fa;
+    --color-night-900: #0f1222;
+    --color-night-800: #0a1628;
+    --color-electric-600: #0b5cff;
+    --color-gold-200: #f3d9a4;
+    --color-gold-500: #c8a15a;
     --radius-lg: 0.75rem;
     --radius-xl: 0.75rem;
 }

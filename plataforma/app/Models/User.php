@@ -32,6 +32,17 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Busca por correo sin importar mayúsculas: SQLite compara con distinción y hay cuentas
+     * creadas antes de guardar los correos en minúscula.
+     */
+    public static function findByEmail(?string $email): ?self
+    {
+        $email = mb_strtolower(trim((string) $email));
+
+        return $email === '' ? null : static::whereRaw('lower(email) = ?', [$email])->orderBy('id')->first();
+    }
+
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         $this->notify(new ResetPasswordNotification($token));

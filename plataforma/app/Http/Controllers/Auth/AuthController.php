@@ -18,6 +18,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate(['email' => 'required|email', 'password' => 'required']);
+        // El correo se compara sin mayúsculas (SQLite distingue mayúsculas).
+        $credentials['email'] = User::findByEmail($credentials['email'])?->email ?? $credentials['email'];
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withInput($request->only('email'))->with('error', 'El correo o la contraseña no coinciden.');
@@ -40,6 +42,7 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]);
         $data = $request->validate([
             'name' => 'required|string|max:120',
             'email' => 'required|email|max:120|unique:users,email',

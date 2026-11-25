@@ -65,6 +65,7 @@ Route::post('/restablecer-contrasena', [PasswordController::class, 'reset'])->mi
 Route::post('/mi-cuenta/verificar-correo', [EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
 Route::get('/verificar-correo/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 Route::get('/mi-cuenta', [AuthController::class, 'account'])->middleware('auth')->name('account');
+Route::put('/mi-cuenta/contrasena', [PasswordController::class, 'update'])->middleware(['auth', 'throttle:5,1'])->name('password.change');
 
 // --- Seller Center ---
 Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:seller'])->group(function () {

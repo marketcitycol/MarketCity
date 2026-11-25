@@ -21,7 +21,7 @@ Tener un marketplace propio que el propietario pueda abrir y probar de punta a p
 | C-07 Carrito | Sí, una sola ruta; `/cart`, `/cart-2` redirigen |
 | C-08 Checkout multivendedor | Sí |
 | C-09/C-10 Pagos | Contrato de adaptadores + pago de prueba + contraentrega |
-| C-14 Cuenta de comprador | Sí (registro, ingreso, mis pedidos) |
+| C-14 Cuenta de comprador | Sí (registro, ingreso, mis pedidos, recuperar y cambiar contraseña) |
 | C-15/C-17 Pedidos y estados | Sí, con historial |
 | C-16 Tracking por guía | Sí, guardando la guía y enlazando a la transportadora |
 | C-18 Envío | Por tienda: gratis, tarifa fija o recogida |

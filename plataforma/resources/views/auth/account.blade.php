@@ -32,4 +32,17 @@
     </table>
 </div>
 @endif
+<details class="card mt-8 p-5" @if ($errors->hasAny(['current_password', 'password'])) open @endif>
+    <summary class="cursor-pointer font-semibold">Cambiar contraseña</summary>
+    <form method="post" action="{{ route('password.change') }}" class="mt-4 max-w-sm space-y-4">
+        @csrf
+        @method('put')
+        <input type="email" name="email" value="{{ $user->email }}" autocomplete="username" class="hidden" readonly>
+        <div><label class="label" for="current_password">Contraseña actual</label><input class="input" type="password" id="current_password" name="current_password" required autocomplete="current-password"></div>
+        <div><label class="label" for="new_password">Contraseña nueva (mínimo 8 caracteres)</label><input class="input" type="password" id="new_password" name="password" required minlength="8" autocomplete="new-password"></div>
+        <div><label class="label" for="new_password_confirmation">Repítela</label><input class="input" type="password" id="new_password_confirmation" name="password_confirmation" required minlength="8" autocomplete="new-password"></div>
+        <button class="btn-primary">Guardar contraseña nueva</button>
+        <p class="text-xs text-slate-500">Se cierra la sesión en los demás equipos. ¿No recuerdas la actual? Cierra sesión y usa «¿Olvidaste tu contraseña?».</p>
+    </form>
+</details>
 @endsection

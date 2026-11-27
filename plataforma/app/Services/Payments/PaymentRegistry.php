@@ -26,7 +26,7 @@ class PaymentRegistry
 
     public function __construct()
     {
-        $all = [new BankTransferGateway, new MercadoPagoGateway];
+        $all = [new BankTransferGateway, new WompiGateway, new MercadoPagoGateway];
         // El pago de prueba solo existe en modo demostración (MC_DEMO=true). En la tienda real no se puede activar.
         if (self::sandboxAllowed()) {
             array_unshift($all, new SandboxGateway);

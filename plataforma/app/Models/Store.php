@@ -12,11 +12,11 @@ class Store extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'department', 'city', 'address', 'phone', 'document_type', 'document_number', 'legal_name', 'rut_path', 'verified_at', 'free_shipping', 'shipping_fee', 'pickup_enabled', 'pickup_fee', 'status', 'commission_percent', 'commission_fixed', 'payment_methods'];
+    protected $fillable = ['user_id', 'name', 'slug', 'description', 'logo_path', 'department', 'city', 'address', 'phone', 'document_type', 'document_number', 'legal_name', 'rut_path', 'verified_at', 'free_shipping', 'shipping_fee', 'pickup_enabled', 'pickup_fee', 'dispatch_days', 'carriers', 'notify_email', 'notify_new_order', 'featured', 'directory_hidden', 'status', 'commission_percent', 'commission_fixed', 'payment_methods'];
 
     protected function casts(): array
     {
-        return ['verified_at' => 'datetime', 'free_shipping' => 'boolean', 'pickup_enabled' => 'boolean'];
+        return ['verified_at' => 'datetime', 'free_shipping' => 'boolean', 'pickup_enabled' => 'boolean', 'featured' => 'boolean', 'directory_hidden' => 'boolean', 'notify_new_order' => 'boolean', 'dispatch_days' => 'integer'];
     }
 
     /** Tarifa nacional de MarketCity: la que aplica a las tiendas nuevas mientras no configuren la suya. */
@@ -51,6 +51,12 @@ class Store extends Model
     public function sellerOrders(): HasMany
     {
         return $this->hasMany(SellerOrder::class);
+    }
+
+    /** Total que se restará de las próximas liquidaciones por reembolsos de ventas ya pagadas. */
+    public function pendingDeduction(): int
+    {
+        return (int) Refund::undeductedFor($this->id)->get()->sum(fn (Refund $r) => $r->deductionLeft());
     }
 
     /** Medios de pago permitidos para esta tienda; null = todos los activos en la plataforma. */
@@ -91,10 +97,16 @@ class Store extends Model
         return $this->verified_at !== null;
     }
 
-    /** Correo al que se avisan los pedidos de la tienda: el de la cuenta del vendedor. */
+    /** Correo al que se avisan los pedidos y las PQRS de la tienda: el elegido en su perfil o el de la cuenta (#69). */
     public function notificationEmail(): ?string
     {
-        return $this->user?->email;
+        return $this->notify_email ?: $this->user?->email;
+    }
+
+    /** ¿Se le avisa por correo cada pedido pagado? Las PQRS siempre se avisan: tienen plazos legales. */
+    public function wantsNewOrderEmail(): bool
+    {
+        return $this->notify_new_order !== false;
     }
 
     public function allowedPaymentMethods(): ?array

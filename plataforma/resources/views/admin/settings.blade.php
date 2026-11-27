@@ -16,6 +16,10 @@
             <div><label class="label" for="installments">Cuotas de referencia en catálogo</label><input class="input" type="number" id="installments" name="installments" value="{{ $s('installments', 4) }}"></div>
             <div><label class="label" for="terms_version">Versión vigente de términos</label><input class="input" id="terms_version" name="terms_version" value="{{ $s('terms_version', '2026-11') }}"></div>
         </div>
+        <input type="hidden" name="home_rotation" value="0">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="home_rotation" value="1" @checked($s('home_rotation', '1') === '1')> Rotar los productos de las secciones del inicio en cada visita</label>
+        <input type="hidden" name="admin_requires_2fa" value="0">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="admin_requires_2fa" value="1" @checked($s('admin_requires_2fa', '0') === '1')> Exigir verificación en dos pasos para entrar al Backoffice</label>
         <fieldset>
             <legend class="label">Medios de pago activos</legend>
             @foreach ($gateways as $key => $g)

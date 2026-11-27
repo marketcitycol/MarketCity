@@ -12,7 +12,7 @@
 
 <div class="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
     @include('partials.stat', ['label' => 'Ventas pagadas', 'value' => cop($stats['ventas'])])
-    @include('partials.stat', ['label' => 'Pedidos por atender', 'value' => $stats['pedidos_pendientes'], 'class' => $stats['pedidos_pendientes'] ? 'text-amber-600' : ''])
+    @include('partials.stat', ['label' => 'Pedidos por atender', 'value' => $stats['pedidos_pendientes'], 'class' => $stats['pedidos_pendientes'] ? 'text-amber-600' : '', 'hint' => $stats['preguntas'] ? $stats['preguntas'].' '.($stats['preguntas'] === 1 ? 'pregunta' : 'preguntas').' sin responder' : null])
     @include('partials.stat', ['label' => 'Por liquidarte', 'value' => cop($stats['por_liquidar'])])
     @include('partials.stat', ['label' => 'Productos activos', 'value' => $stats['productos'], 'hint' => $stats['agotados'] ? $stats['agotados'].' agotados' : null])
 </div>

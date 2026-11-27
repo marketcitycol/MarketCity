@@ -77,6 +77,20 @@ Backoffice → **Configuración** → **Transferencia bancaria**: banco, tipo y 
 4. Backoffice → **Configuración** → medios de pago: active Mercado Pago. Haga una compra de prueba con las tarjetas de prueba de Mercado Pago; el pedido debe pasar a «Pagado» solo, sin tocar nada.
 5. Cuando funcione, cambie a las credenciales de producción.
 
+## 6b. Wompi
+
+1. En el panel de comercios de Wompi → **Desarrolladores**: copie las llaves del ambiente de **pruebas** (`pub_test_…`, `prv_test_…`), el secreto de **integridad** y el de **eventos**. En el `.env`:
+   ```
+   WOMPI_PUBLIC_KEY=pub_test_…
+   WOMPI_PRIVATE_KEY=prv_test_…
+   WOMPI_INTEGRITY_SECRET=test_integrity_…
+   WOMPI_EVENTS_SECRET=test_events_…
+   ```
+   Las cuatro son obligatorias: si falta una, Wompi no se ofrece en el pago.
+2. En **Desarrolladores** → **URL de eventos**: `https://v1.marketcity.co/pagos/aviso/wompi` (la de pruebas y, después, la de producción).
+3. Backoffice → **Configuración** → medios de pago: active Wompi. Haga una compra con las tarjetas o el Nequi de prueba de Wompi: el pedido pasa a «Pagado» solo, y si se rechaza queda cancelado con el plan B.
+4. Cuando funcione, cambie las cuatro llaves a las de producción (`pub_prod_…`). La plataforma usa el ambiente de producción en cuanto la llave pública empieza por `pub_prod_`.
+
 ## 7. Medición (opcional)
 
 Backoffice → **Plugins** → **Medición y aviso de cookies**: pegue el ID de Google Tag Manager (`GTM-…`) o el de Google Analytics 4 (`G-…`), y el del píxel de Meta. Actívelo. Aparece el aviso de cookies y nada se mide hasta que el visitante pulsa «Aceptar».

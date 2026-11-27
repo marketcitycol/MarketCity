@@ -5,6 +5,7 @@ namespace App\Legacy;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -128,6 +129,7 @@ class WooCommerceCsvImporter
                     $product->save();
                     $stats['created']++;
                 }
+                $this->syncGallery($product, $r['images'] ?? '');
             }
         });
 
@@ -208,6 +210,23 @@ class WooCommerceCsvImporter
         $t = trim(html_entity_decode(strip_tags(str_replace(['<br>', '<br />', '</p>', '\n'], "\n", $html))));
 
         return $t === '' ? null : Str::limit(preg_replace("/\n{3,}/", "\n\n", $t), 4900, '');
+    }
+
+    /** Fotos 2 a 9 de la columna «Imágenes» → galería. Las URL externas las copia después «Copiar fotos». */
+    private function syncGallery(Product $product, string $images): void
+    {
+        $urls = array_values(array_filter(array_map('trim', array_slice(explode(',', $images), 1)),
+            fn ($u) => filter_var($u, FILTER_VALIDATE_URL) && str_starts_with($u, 'https://')));
+        $urls = array_slice(array_values(array_unique($urls)), 0, ProductImage::MAX_PER_PRODUCT);
+        $current = $product->images()->pluck('path')->all();
+        // Si ya se copiaron (rutas locales), no se reemplazan por las URL viejas.
+        if ($urls === [] || count($current) === count($urls) && ! array_filter($current, fn ($p) => str_starts_with($p, 'http'))) {
+            return;
+        }
+        $product->images()->delete();
+        foreach ($urls as $i => $url) {
+            $product->images()->create(['path' => $url, 'position' => $i + 1]);
+        }
     }
 
     private function firstImage(string $images): ?string

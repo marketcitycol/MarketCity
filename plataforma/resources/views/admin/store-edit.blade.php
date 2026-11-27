@@ -30,6 +30,14 @@
     <button class="btn-primary">Guardar condiciones</button>
 </form>
 
+<form method="post" action="{{ route('admin.stores.directory', $store) }}" class="card mt-6 max-w-2xl space-y-2 p-5 text-sm">
+    @csrf
+    <h2 class="font-semibold">Directorio de tiendas</h2>
+    <label class="flex items-center gap-2"><input type="checkbox" name="featured" value="1" @checked($store->featured)> Destacar en /tiendas y en el inicio (sale primero)</label>
+    <label class="flex items-center gap-2"><input type="checkbox" name="directory_hidden" value="1" @checked($store->directory_hidden)> Ocultar del directorio, del inicio y del mapa del sitio (p. ej. tienda de prueba). Su página y sus productos siguen visibles.</label>
+    <button class="btn-ghost btn-sm">Guardar directorio</button>
+</form>
+
 @php($approved = $store->approvedBankAccount())
 @php($pending = $store->pendingBankAccount())
 <section class="card mt-6 max-w-2xl p-5">

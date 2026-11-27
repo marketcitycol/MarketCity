@@ -34,6 +34,26 @@ return [
         'webhook_secret' => env('MP_WEBHOOK_SECRET'),
     ],
 
+    // Wompi: pub_test_/prv_test_ = ambiente de pruebas; pub_prod_/prv_prod_ = producción.
+    'wompi' => [
+        'public_key' => env('WOMPI_PUBLIC_KEY'),
+        'private_key' => env('WOMPI_PRIVATE_KEY'),
+        'integrity_secret' => env('WOMPI_INTEGRITY_SECRET'),
+        'events_secret' => env('WOMPI_EVENTS_SECRET'),
+    ],
+
+    // Ingreso con Google (OAuth). Credenciales en Google Cloud → APIs y servicios → Credenciales →
+    // «ID de cliente de OAuth» (aplicación web), con la URI de redirección {APP_URL}/ingresar/google/regreso.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    ],
+
+    // API de conversiones de Meta (#85). El píxel se configura en Backoffice → Plugins → Medición.
+    'meta' => [
+        'capi_token' => env('META_CAPI_TOKEN'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

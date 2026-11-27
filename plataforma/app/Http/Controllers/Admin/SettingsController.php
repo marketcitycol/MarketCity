@@ -30,10 +30,17 @@ class SettingsController extends Controller
             'settlement_business_days' => 'required|integer|min:0|max:60',
             'installments' => 'required|integer|min:1|max:48',
             'terms_version' => 'required|string|max:20',
+            'home_rotation' => 'nullable|boolean',
+            'admin_requires_2fa' => 'nullable|boolean',
             'payment_methods' => 'required|array|min:1',
             'payment_methods.*' => [Rule::in(array_keys($payments->all()))],
         ]);
         $data['payment_methods'] = implode(',', $data['payment_methods']);
+        $data['home_rotation'] = $request->boolean('home_rotation') ? '1' : '0';
+        $data['admin_requires_2fa'] = $request->boolean('admin_requires_2fa') ? '1' : '0';
+        if ($data['admin_requires_2fa'] === '1' && ! $request->user()->hasTwoFactor()) {
+            return back()->with('error', 'Activa primero tu propia verificación en dos pasos (Seguridad) antes de exigirla a los administradores.');
+        }
         foreach ($data as $k => $v) {
             Setting::put($k, (string) $v);
         }

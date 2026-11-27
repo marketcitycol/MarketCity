@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Product;
@@ -28,10 +29,14 @@ class LegacyRedirects
         'finalizar-compra' => '/checkout',
         'my-account' => '/mi-cuenta',
         'my-account-2' => '/mi-cuenta',
-        'my-account-2/pedidos' => '/mi-cuenta',
-        'mi-cuenta/pedidos' => '/mi-cuenta',
-        'mi-cuenta/orders' => '/mi-cuenta',
-        'my-orders' => '/mi-cuenta',
+        'my-account-2/pedidos' => '/mi-cuenta/pedidos',
+        'mi-cuenta/orders' => '/mi-cuenta/pedidos',
+        'my-account/orders' => '/mi-cuenta/pedidos',
+        'my-orders' => '/mi-cuenta/pedidos',
+        'mi-cuenta/edit-address' => '/mi-cuenta/direcciones',
+        'my-account/edit-address' => '/mi-cuenta/direcciones',
+        'mi-cuenta/edit-account' => '/mi-cuenta/datos',
+        'my-account/edit-account' => '/mi-cuenta/datos',
         'mi-cuenta/lost-password' => '/olvide-mi-contrasena',
         'my-account/lost-password' => '/olvide-mi-contrasena',
         'rastrea-tu-pedido' => '/rastrear-pedido',
@@ -110,6 +115,11 @@ class LegacyRedirects
             return $this->fromQuery($query);
         }
 
+        // La página de campaña de WordPress (#78) va a la campaña propia si existe; si no, a las ofertas.
+        if ($path === 'black-city' && Campaign::where('slug', 'black-city')->where('active', true)->exists()) {
+            return '/campana/black-city';
+        }
+
         if (array_key_exists($path, self::EXACT)) {
             // Si el equipo creó en v1 una página con ese mismo enlace (publicada o en borrador), gana la página.
             if (! str_contains($path, '/') && Page::where('slug', $path)->exists()) {
@@ -170,7 +180,7 @@ class LegacyRedirects
             return '/rastrear-pedido';
         }
         if (preg_match('#^(?:my-account|mi-cuenta)/(?:view-order|ver-pedido)/\d+$#', $path)) {
-            return '/mi-cuenta';
+            return '/mi-cuenta/pedidos';
         }
         if (str_starts_with($path, 'wp-admin/') || str_starts_with($path, 'wp-json')) {
             return null;

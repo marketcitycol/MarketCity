@@ -4,7 +4,7 @@
 <nav class="text-xs text-slate-500" aria-label="Ruta"><a href="{{ route('home') }}" class="hover:underline">Inicio</a> / {{ $title }}</nav>
 <div class="mt-2 flex flex-wrap items-end justify-between gap-3">
     <div>
-        <h1 class="text-2xl font-bold">{{ request('q') ? 'Resultados para «'.request('q').'»' : $title }}</h1>
+        <h1 class="text-2xl font-bold">{{ request('q') ? 'Resultados para «'.($search['term'] !== '' ? $search['term'] : request('q')).'»'.($search['min'] !== null && $search['max'] !== null ? ' entre '.cop($search['min']).' y '.cop($search['max']) : ($search['max'] !== null ? ' por menos de '.cop($search['max']) : ($search['min'] !== null ? ' desde '.cop($search['min']) : ''))) : $title }}</h1>
         <p class="text-sm text-slate-500">{{ $products->total() }} {{ $products->total() === 1 ? 'producto' : 'productos' }}</p>
     </div>
     <form method="get" class="flex items-center gap-2 text-sm">

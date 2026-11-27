@@ -76,9 +76,20 @@ class SellerOrder extends Model
         return self::CARRIERS[$this->carrier][1].urlencode($this->tracking_number);
     }
 
+    /** Lo que pagó el cliente por este subpedido (con el descuento del cupón). */
     public function total(): int
     {
-        return $this->subtotal + $this->shipping_total;
+        return max(0, $this->subtotal + $this->shipping_total - (int) $this->discount_total);
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    public function refundable(): int
+    {
+        return max(0, $this->total() - (int) $this->refunded_total);
     }
 
     public function pqrs(): HasMany

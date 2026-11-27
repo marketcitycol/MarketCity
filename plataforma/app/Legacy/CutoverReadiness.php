@@ -5,6 +5,7 @@ namespace App\Legacy;
 use App\Models\Page;
 use App\Models\Pqr;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\Setting;
 use App\Models\Store;
 use App\Services\Payments\BankTransferGateway;
@@ -51,7 +52,7 @@ class CutoverReadiness
         $add('Respaldo de las últimas 24 horas', $newest && $newest > time() - 86400, $newest ? 'Último respaldo: '.fecha(Carbon::createFromTimestamp($newest)) : 'No hay respaldos en storage/app/respaldos.');
 
         $wp = '%marketcity.co/wp-content/%';
-        $remoteImages = Product::where('image_path', 'like', $wp)->count();
+        $remoteImages = Product::where('image_path', 'like', $wp)->count() + ProductImage::where('path', 'like', $wp)->count();
         $remoteLogos = Store::where('logo_path', 'like', $wp)->count();
         $remoteSettings = Setting::where('value', 'like', $wp)->count();
         $pending = array_filter([

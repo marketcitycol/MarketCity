@@ -92,6 +92,7 @@ class PasswordRecoveryTest extends TestCase
         $this->fakeSession($user, 'sesion-en-otro-equipo');
 
         $this->actingAs($user)->get('/mi-cuenta')->assertSee('Cambiar contraseña');
+        $this->actingAs($user)->get('/mi-cuenta/seguridad')->assertSee('Contraseña actual');
 
         $this->actingAs($user)->from('/mi-cuenta')->put('/mi-cuenta/contrasena', ['current_password' => 'equivocada', 'password' => 'clave-nueva-9', 'password_confirmation' => 'clave-nueva-9'])
             ->assertSessionHasErrors(['current_password' => 'La contraseña actual no es correcta.']);
@@ -99,7 +100,7 @@ class PasswordRecoveryTest extends TestCase
             ->assertSessionHasErrors(['password' => 'La contraseña nueva debe ser distinta de la actual.']);
 
         $this->actingAs($user)->put('/mi-cuenta/contrasena', ['current_password' => 'marketcity', 'password' => 'clave-nueva-9', 'password_confirmation' => 'clave-nueva-9'])
-            ->assertRedirect('/mi-cuenta')->assertSessionHas('success');
+            ->assertRedirect('/mi-cuenta/seguridad')->assertSessionHas('success');
         $this->assertTrue(Hash::check('clave-nueva-9', $user->fresh()->password));
         $this->assertSame(0, DB::table('sessions')->where('id', 'sesion-en-otro-equipo')->count());
         $this->assertAuthenticatedAs($user->fresh());

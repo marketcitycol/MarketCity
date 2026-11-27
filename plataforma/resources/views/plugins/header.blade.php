@@ -51,6 +51,11 @@
             @if ($sell)
                 <a href="{{ $P::url($sell[1] ?? '/vender') }}" class="hidden h-11 items-center gap-2 rounded-full bg-brand-50 px-4 text-sm font-bold text-brand-700 hover:bg-brand-100 lg:inline-flex">{!! icon('tienda', 'h-5 w-5') !!}{{ $sell[0] }}</a>
             @endif
+            @unless (request()->routeIs('checkout*', 'payments.*', 'orders.*'))
+            <button type="button" class="mcdk-toggle grid h-11 w-11 place-items-center rounded-xl text-night-900 hover:bg-slate-100" data-theme-toggle aria-pressed="false" aria-label="Modo oscuro" title="Modo oscuro">
+                <span class="mcdk-moon">{!! icon('luna', 'h-[22px] w-[22px]') !!}</span><span class="mcdk-sun hidden">{!! icon('sol', 'h-[22px] w-[22px]') !!}</span>
+            </button>
+            @endunless
             <a href="{{ $accountUrl }}" class="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold text-night-900 hover:bg-slate-100" aria-label="{{ $u ? $accountLabel : 'Mi cuenta' }}">
                 {!! icon('cuenta', 'h-6 w-6') !!}<span class="hidden max-w-40 truncate xl:inline">{{ $accountLabel }}</span>
             </a>

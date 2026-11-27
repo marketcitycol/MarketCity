@@ -8,9 +8,11 @@ PHP 8.2+ con Laravel 12, MySQL en producción y SQLite para desarrollo. Los dato
 | Área | Funciones |
 |---|---|
 | Tienda | Inicio, catálogo con búsqueda, filtros (cuota, precio, marca, ofertas, disponibles) y orden; categorías; ficha de producto con cuotas de referencia y datos estructurados; directorio `/tiendas` con búsqueda, filtro y orden; ofertas; páginas de contenido; `sitemap.xml` y feed de productos. |
-| Compra | Carrito lateral con varios vendedores, envío o recogida por tienda, checkout con cédula y departamentos de Colombia, aceptación de términos con versión y fecha, autorización de marketing aparte, rastreo de pedido. |
+| Compra | Carrito lateral con varios vendedores, envío o recogida por tienda, checkout con cédula y departamentos de Colombia, aceptación de términos con versión y fecha, autorización de marketing aparte, rastreo de pedido con número y correo o celular. |
 | Pago | Medios de pago como adaptadores (`app/Services/Payments`): transferencia bancaria (con vencimiento), Mercado Pago (aviso firmado y conciliación) y pago de prueba en el modo demo. Activables por comercio. |
 | Pedido | Un pedido se divide en un subpedido por tienda: Recibido → Validado → Despachado → Entregado (o Cancelado), con guía de transportadora e historial auditable. |
+| Campañas | Precio programado por fechas, tope de unidades por producto, cuenta regresiva, página `/campana/{nombre}` y «precio con correo» con cupón único (Backoffice → Campañas). |
+| Mensajes | Casillas de correo y WhatsApp en el pago con registro de autorizaciones y bajas (Ley 1581 y Ley 2300), horario legal, baja con un clic y recordatorios de carritos abandonados (Backoffice → Mensajes). |
 | PQRS | Formulario con radicado, plazos en días hábiles de Colombia, respuesta desde el Backoffice; una PQRS abierta retiene la liquidación del vendedor. |
 | Seller Center | Indicadores, productos, pedidos de su tienda, liquidaciones, datos de la tienda, datos legales y cuenta bancaria (con revisión de MarketCity). |
 | Backoffice | Resumen, pedidos, vendedores, productos, liquidaciones, PQRS, páginas, plugins de la identidad del sitio (encabezado, pie, anuncio, WhatsApp, medición con consentimiento) y configuración. |
@@ -61,6 +63,8 @@ app/
 │  ├─ Catalog/       directorio de tiendas
 │  ├─ Orders/        carrito, pedidos (crear, pagar, despachar, cancelar, liquidar) y comisión
 │  ├─ Payments/      contrato PaymentGateway y un adaptador por medio de pago
+│  ├─ Campaigns/     campañas con precio programado, tope de unidades y precio con correo
+│  ├─ Marketing/     permisos de mensajes, carritos abandonados y compra de Meta por servidor
 │  └─ Content/       plugins de la identidad del sitio, recursos de marca e iconos
 ├─ Legacy/           todo lo que solo sirve para salir de WordPress (ver su README)
 ├─ Models/           tablas de la base
@@ -68,7 +72,7 @@ app/
 └─ Support/          utilidades sin estado: días hábiles, calendario de Colombia, HTML seguro, correo, medición
 resources/views/      shop/, seller/, admin/, auth/, plugins/ (piezas activables), partials/ (piezas compartidas), mail/
 routes/web.php        rutas por área (tienda, cuenta, Seller Center, Backoffice)
-routes/console.php    tareas programadas: vencer transferencias, conciliar pagos, respaldo diario
+routes/console.php    tareas programadas: vencer transferencias, conciliar pagos, campañas, recordatorios de carrito, respaldo diario
 deploy/               paquetes para Hostinger (ver docs/operacion)
 ```
 

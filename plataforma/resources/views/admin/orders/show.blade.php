@@ -25,6 +25,8 @@
             </dl>
             @if (isset($so->commission_rule['percent']))<p class="mt-1 text-xs text-slate-500">Regla aplicada: {{ $so->commission_rule['percent'] }} % + {{ cop($so->commission_rule['fixed'] ?? 0) }} ({{ $so->commission_rule['source'] ?? '' }})</p>@elseif ($so->commission_rule)<p class="mt-1 text-xs text-slate-500">{{ $so->commission_rule['nota'] ?? 'Pedido histórico' }}</p>@endif
             @if ($so->settlement_due_on)<p class="mt-1 text-xs text-slate-500">Liquidación: {{ $so->settled_at ? 'pagada '.fecha($so->settled_at, 'd/m/Y').' · '.$so->settlement_reference : 'programada '.$so->settlement_due_on->format('d/m/Y') }}</p>@endif
+            @if ($so->discount_total)<p class="mt-1 text-xs text-emerald-700">Cupón {{ $order->coupon_code }}: −{{ cop($so->discount_total) }}, lo asume {{ $so->discount_funded_by === 'tienda' ? 'la tienda (ya restado del neto)' : 'MarketCity (no cambia el neto del vendedor)' }}</p>@endif
+            @if ($so->refunded_total)<p class="mt-1 text-xs text-rose-700">Reembolsado: {{ cop($so->refunded_total) }}</p>@endif
             @if ($so->tracking_number)<p class="mt-1 text-sm">Guía: {{ $so->carrierName() }} {{ $so->tracking_number }}</p>@endif
             @if (! in_array($so->status, ['entregado', 'cancelado']))
             <div class="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-slate-100 pt-4">
@@ -45,6 +47,14 @@
                 @foreach ($order->events as $e)<li><span class="text-slate-500">{{ fecha($e->created_at) }}</span> · {{ $e->message }} @if ($e->user)<span class="text-xs text-slate-500">({{ $e->user->name }})</span>@endif</li>@endforeach
             </ul>
         </section>
+
+        <form method="post" action="{{ route('admin.orders.note', $order) }}" class="card space-y-2 p-5 text-sm">
+            @csrf
+            <label for="note" class="font-semibold">Nota para el cliente</label>
+            <textarea id="note" name="note" rows="3" maxlength="1000" class="input" required placeholder="Ej.: Tu pedido sale mañana porque la transportadora no recogió hoy."></textarea>
+            <p class="text-xs text-slate-500">Le llega por correo a {{ $order->email }} y queda en el historial.</p>
+            <button class="btn-ghost btn-sm">Enviar nota</button>
+        </form>
     </div>
 
     <aside class="space-y-5">
@@ -59,7 +69,9 @@
             <dl class="mt-2 space-y-1">
                 <div class="flex justify-between"><dt>Productos</dt><dd>{{ cop($order->subtotal) }}</dd></div>
                 <div class="flex justify-between"><dt>Envíos</dt><dd>{{ cop($order->shipping_total) }}</dd></div>
+                @if ($order->discount_total)<div class="flex justify-between text-emerald-700"><dt>Cupón {{ $order->coupon_code }}</dt><dd>−{{ cop($order->discount_total) }}</dd></div>@endif
                 <div class="flex justify-between font-bold"><dt>Total</dt><dd>{{ cop($order->total) }}</dd></div>
+                @if ($order->refunded_total)<div class="flex justify-between text-rose-700"><dt>Reembolsado</dt><dd>−{{ cop($order->refunded_total) }}</dd></div>@endif
             </dl>
             <p class="mt-2 text-xs text-slate-500">Cobrado a nombre de: {{ $order->merchantEntity?->legal_name ?? '—' }}</p>
             @foreach ($order->payments as $p)<p class="mt-1 text-xs">{{ $p->provider }} · {{ $p->status }} · {{ $p->provider_reference ?? 'sin referencia' }}</p>@endforeach
@@ -71,6 +83,40 @@
                 </form>
             @endif
         </section>
+        @if ($order->refunds->isNotEmpty())
+        <section class="card p-5 text-sm">
+            <h2 class="font-semibold">Reembolsos</h2>
+            <ul class="mt-2 space-y-2 text-slate-600">
+                @foreach ($order->refunds as $r)
+                    <li><strong>{{ cop($r->amount) }}</strong> · {{ fecha($r->created_at) }}@if ($r->sellerOrder) · {{ $r->sellerOrder->store?->name }}@endif<br>
+                        {{ $r->reason }} · a cargo de {{ $r->charged_to === 'tienda' ? 'la tienda' : 'MarketCity' }}@if ($r->reference) · ref. {{ $r->reference }}@endif
+                        @if ($r->pending_deduction)<br><span class="text-amber-700">Descontar {{ cop($r->seller_debit) }} en la próxima liquidación.</span>@endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+        @endif
+        @if ($order->refundable() > 0)
+        <form method="post" action="{{ route('admin.orders.refund', $order) }}" class="card space-y-2 p-5 text-sm">
+            @csrf
+            <h2 class="font-semibold">Registrar reembolso</h2>
+            <p class="text-xs text-slate-500">Primero devuelve el dinero en la pasarela ({{ $order->paymentMethodLabel() }}) o por transferencia; aquí lo anotas, se ajusta la cuenta del vendedor y le avisamos al cliente. Disponible: {{ cop($order->refundable()) }}.</p>
+            <label class="label" for="seller_order_id">Subpedido</label>
+            <select class="input" id="seller_order_id" name="seller_order_id">
+                @foreach ($order->sellerOrders as $so)<option value="{{ $so->id }}" @selected((int) old('seller_order_id') === $so->id)>{{ $so->store->name }} · {{ $so->statusLabel() }} · hasta {{ cop(min($so->refundable(), $order->refundable())) }}</option>@endforeach
+                <option value="" @selected(old('seller_order_id') === '')>Ninguno: compensación general (la asume MarketCity)</option>
+            </select>
+            <label class="label" for="amount">Valor</label><input class="input" type="number" min="1" max="{{ $order->refundable() }}" id="amount" name="amount" value="{{ old('amount') }}" required>
+            <label class="label" for="reason">Motivo</label><input class="input" id="reason" name="reason" maxlength="300" value="{{ old('reason') }}" required placeholder="Retracto, garantía, producto agotado…">
+            <fieldset class="space-y-1"><legend class="label">¿Quién lo asume?</legend>
+                <label class="flex items-center gap-2"><input type="radio" name="charged_to" value="tienda" @checked(old('charged_to', 'tienda') === 'tienda')> La tienda (se le devuelve la comisión de lo reembolsado)</label>
+                <label class="flex items-center gap-2"><input type="radio" name="charged_to" value="marketcity" @checked(old('charged_to') === 'marketcity')> MarketCity</label>
+            </fieldset>
+            <label class="flex items-start gap-2"><input type="checkbox" name="restock" value="1" class="mt-0.5" @checked(old('restock'))> <span>Devolver las unidades al inventario (si no se ha entregado, el subpedido se cancela)</span></label>
+            <label class="label" for="reference">Referencia del reembolso (opcional)</label><input class="input" id="reference" name="reference" maxlength="120" value="{{ old('reference') }}">
+            <button class="btn-danger w-full">Registrar reembolso</button>
+        </form>
+        @endif
     </aside>
 </div>
 @endsection

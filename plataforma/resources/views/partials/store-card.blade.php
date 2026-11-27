@@ -4,6 +4,9 @@
 @php($thumbs = $store->thumbs ?? collect())
 <article class="flex flex-col overflow-hidden rounded-[18px] border bg-white {{ $official ? 'border-gold-500' : 'border-line' }}">
     <a href="{{ route('store', $store) }}" class="relative block h-[84px]" style="background: {{ \App\Services\Content\BrandAssets::storeCover($main?->slug) }}" aria-label="{{ $store->name }}">
+        @if ($store->featured)
+            <span class="absolute top-2.5 left-2.5 rounded-full bg-accent-400 px-2 py-0.5 text-xs font-bold text-brand-900">Destacada</span>
+        @endif
         @if ($official)
             <span class="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-brand-900 px-2 py-0.5 text-xs font-semibold text-white">{!! icon('verificado', 'h-3.5 w-3.5 text-gold-200') !!} {{ $store->isVerified() ? 'Tienda verificada' : 'Tienda oficial' }}</span>
         @endif

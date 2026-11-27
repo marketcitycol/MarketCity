@@ -4,6 +4,9 @@ use App\Legacy\MediaCopier;
 use App\Legacy\UrlChecker;
 use App\Models\Order;
 use App\Models\Setting;
+use App\Services\Campaigns\CampaignService;
+use App\Services\Campaigns\EmailPriceService;
+use App\Services\Marketing\AbandonedCarts;
 use App\Services\Orders\OrderService;
 use App\Services\Payments\BankTransferGateway;
 use App\Services\Payments\OnlineGateway;
@@ -80,6 +83,31 @@ Artisan::command('mc:revisar-urls {--base= : Dirección de la plataforma propia 
 
     return $s['falta'] + $s['error'] > 0 ? 1 : 0;
 })->purpose('Revisa que las URL del sitio WordPress respondan en la plataforma propia (200, 301 o 410)');
+
+/*
+ * Campañas (#16, #77): aplica y retira precios según fechas y topes. Idempotente.
+ */
+Artisan::command('campanas:sincronizar', function (CampaignService $campaigns) {
+    $this->info('Productos con cambio de precio: '.$campaigns->sync());
+})->purpose('Aplica o retira los precios de campaña según fechas y topes');
+
+Schedule::command('campanas:sincronizar')->everyMinute()->withoutOverlapping();
+
+/*
+ * Recordatorios de carritos abandonados (#83) y limpieza de datos personales (Ley 1581).
+ */
+Artisan::command('mensajes:carritos', function (AbandonedCarts $carts) {
+    $r = $carts->tick();
+    $this->info(collect($r)->map(fn ($v, $k) => "{$k}: {$v}")->implode(' · '));
+})->purpose('Envía los recordatorios de carritos abandonados que tocan');
+
+Schedule::command('mensajes:carritos')->everyTenMinutes()->withoutOverlapping();
+
+Artisan::command('mensajes:limpiar', function (AbandonedCarts $carts, EmailPriceService $prices) {
+    $this->info('Carritos borrados: '.$carts->purge().' · correos de cupones borrados: '.$prices->purge());
+})->purpose('Borra carritos de más de 30 días y correos de cupones vencidos hace más de 30 días');
+
+Schedule::command('mensajes:limpiar')->dailyAt('04:00')->timezone('America/Bogota');
 
 // Latido del programador de tareas: el backoffice avisa si el cron de hPanel dejó de correr.
 Schedule::call(fn () => Setting::put('scheduler_last_run', now()->toIso8601String()))->everyFiveMinutes()->name('latido');

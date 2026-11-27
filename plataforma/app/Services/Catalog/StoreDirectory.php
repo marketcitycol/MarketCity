@@ -20,7 +20,8 @@ class StoreDirectory
     /** @return Collection<int, Store> */
     public function activeStores(): Collection
     {
-        return Store::where('status', 'active')
+        // Las tiendas marcadas «Ocultar del directorio» en Backoffice (p. ej. de prueba) no salen (#68).
+        return Store::where('status', 'active')->where('directory_hidden', false)
             ->withCount(['products' => fn ($q) => $q->visible()])
             ->with(['products' => fn ($q) => $q->visible()->with('category')->orderByDesc('sales_count')])
             ->get()
@@ -68,8 +69,8 @@ class StoreDirectory
             'recientes' => $stores->sortByDesc('id'),
             'productos' => $stores->sortByDesc('products_count'),
             'alfabetico' => $stores->sortBy(fn ($s) => mb_strtolower($s->name)),
-            // Por defecto: primero las verificadas y, entre ellas, las de más productos.
-            default => $stores->sortByDesc(fn ($s) => [$s->isVerified() ? 1 : 0, $s->products_count]),
+            // Por defecto: primero las destacadas (#68), luego las verificadas y, entre ellas, las de más productos.
+            default => $stores->sortByDesc(fn ($s) => [$s->featured ? 1 : 0, $s->isVerified() ? 1 : 0, $s->products_count]),
         };
 
         return $sorted->values();

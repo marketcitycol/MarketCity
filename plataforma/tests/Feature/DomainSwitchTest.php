@@ -31,7 +31,7 @@ class DomainSwitchTest extends TestCase
             '/cart-2/' => '/carrito',
             '/cart' => '/carrito',
             '/checkout-2' => '/checkout',
-            '/my-account-2/pedidos/' => '/mi-cuenta',
+            '/my-account-2/pedidos/' => '/mi-cuenta/pedidos',
             '/rastrea-tu-pedido/' => '/rastrear-pedido',
             '/vendor-membership/' => '/vender',
             '/store-listing/' => '/tiendas',

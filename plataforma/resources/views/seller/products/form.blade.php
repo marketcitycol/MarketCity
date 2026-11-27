@@ -17,7 +17,28 @@
         </div>
         <div><label class="label" for="short_description">Resumen</label><input class="input" id="short_description" name="short_description" value="{{ old('short_description', $product->short_description) }}" maxlength="300"></div>
         <div><label class="label" for="description">Descripción</label><textarea class="input" id="description" name="description" rows="6">{{ old('description', $product->description) }}</textarea></div>
-        <div><label class="label" for="image">Foto principal</label><input class="input" type="file" id="image" name="image" accept="image/*"></div>
+        <div><label class="label" for="image">Foto principal</label><input class="input" type="file" id="image" name="image" accept="image/*">
+            @if ($product->imageUrl())<img src="{{ $product->imageUrl() }}" alt="" class="mt-2 h-20 w-20 rounded-lg border border-slate-200 object-cover">@endif</div>
+        @php($gallery = $product->exists ? $product->images : collect())
+        <fieldset>
+            <legend class="label">Más fotos (hasta {{ \App\Models\ProductImage::MAX_PER_PRODUCT }})</legend>
+            @if ($gallery->isNotEmpty())
+                <div class="mt-1 flex flex-wrap gap-3">
+                    @foreach ($gallery as $img)
+                        <label class="text-center text-xs text-slate-600">
+                            <img src="{{ $img->url() }}" alt="" class="h-20 w-20 rounded-lg border border-slate-200 object-cover">
+                            <span class="mt-1 flex items-center justify-center gap-1"><input type="checkbox" name="remove_images[]" value="{{ $img->id }}"> Quitar</span>
+                        </label>
+                    @endforeach
+                </div>
+            @endif
+            @if ($gallery->count() < \App\Models\ProductImage::MAX_PER_PRODUCT)
+                <input class="input mt-2" type="file" id="gallery" name="gallery[]" accept="image/*" multiple aria-label="Agregar más fotos">
+                <p class="mt-1 text-xs text-slate-500">Puedes elegir varias a la vez. Máximo 4 MB cada una.</p>
+            @endif
+            @error('gallery')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+            @error('gallery.*')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+        </fieldset>
     </div>
     <div class="card h-fit space-y-4 p-5">
         <div><label class="label" for="price">Precio de venta (COP)</label><input class="input" type="number" id="price" name="price" min="1000" step="100" value="{{ old('price', $product->price) }}" required></div>

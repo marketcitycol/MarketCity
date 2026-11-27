@@ -152,6 +152,14 @@ if (sheet) {
             window.gtag('js', new Date());
             window.gtag('config', ids.ga4);
         }
+        // Google Ads (#7): con GTM se configura dentro de GTM; sin GTM se carga con la misma gtag.
+        if (ids.ads && !ids.gtm) {
+            if (!ids.ga4) {
+                script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ids.ads)}`);
+                window.gtag('js', new Date());
+            }
+            window.gtag('config', ids.ads);
+        }
         if (ids.meta) {
             /* eslint-disable */
             !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
@@ -173,6 +181,9 @@ if (sheet) {
             window.dataLayer.push({ event: name, ecommerce: params });
         } else if (ids.ga4) {
             window.gtag('event', name, params);
+        }
+        if (name === 'purchase' && ids.ads_purchase && !ids.gtm) {
+            window.gtag('event', 'conversion', { send_to: ids.ads_purchase, value: params.value, currency: params.currency, transaction_id: params.transaction_id });
         }
         if (ids.meta && window.fbq && META[name]) {
             const items = params.items || [];
@@ -225,3 +236,184 @@ if (sheet) {
     if (choice === 'granted') load();
     else if (!choice && banner) banner.classList.remove('hidden');
 })();
+
+// Permisos de mensajes en el pago (#82 y #83): cada cambio de casilla se guarda al instante, siempre con el
+// último estado, para poder recordar el carrito si el cliente no termina la compra. Nada viene marcado.
+(function () {
+    const box = document.querySelector('[data-messages-consent]');
+    const form = box && box.closest('form');
+    if (!box || !form) return;
+    const token = form.querySelector('input[name="_token"]');
+    let timer = null;
+    let busy = false;
+    let again = false;
+
+    function payload() {
+        const v = (n) => (form.querySelector(`[name="${n}"]`) || {}).value || '';
+        const c = (n) => !!(form.querySelector(`[name="messages[${n}]"]`) || {}).checked;
+        return { email: v('email'), phone: v('phone'), first_name: v('first_name'), messages: { email: c('email'), whatsapp: c('whatsapp') } };
+    }
+
+    async function sync(retry = true) {
+        if (busy) { again = true; return; }
+        busy = true;
+        try {
+            const r = await fetch(box.dataset.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': token ? token.value : '' },
+                body: JSON.stringify(payload()),
+            });
+            if (r.status >= 500 && retry) { busy = false; return sync(false); }
+        } catch (e) {
+            if (retry) { busy = false; return sync(false); }
+        }
+        busy = false;
+        if (again) { again = false; sync(); }
+    }
+
+    const anyChecked = () => !!box.querySelector('input[type="checkbox"]:checked');
+    box.addEventListener('change', () => { clearTimeout(timer); timer = setTimeout(sync, 250); });
+    ['email', 'phone'].forEach((n) => {
+        const el = form.querySelector(`[name="${n}"]`);
+        if (el) el.addEventListener('change', () => { if (anyChecked()) sync(); });
+    });
+})();
+
+// Pago claro (#87): el enlace de WhatsApp suma el medio de pago elegido al tocarlo (sin datos personales),
+// y los datos de envío de un invitado se recuerdan mientras la pestaña siga abierta.
+(function () {
+    const form = document.querySelector('form[data-checkout-form]');
+    if (!form) return;
+
+    const wa = document.querySelector('[data-checkout-whatsapp]');
+    if (wa) {
+        wa.addEventListener('click', () => {
+            const pm = form.querySelector('input[name="payment_method"]:checked');
+            const label = pm ? (pm.closest('label').querySelector('.font-medium') || {}).textContent : '';
+            const text = wa.dataset.text + (label ? `\nMedio de pago: ${label.trim()}` : '');
+            wa.href = `https://wa.me/${wa.dataset.checkoutWhatsapp}?text=${encodeURIComponent(text)}`;
+        });
+    }
+
+    // Solo campos de contacto y entrega; nunca el documento ni el medio de pago. Solo rellena campos vacíos.
+    if (!form.hasAttribute('data-remember-fields')) return;
+    const KEY = 'mc_ck_v1';
+    const FIELDS = ['first_name', 'last_name', 'email', 'phone', 'department', 'city', 'address', 'address_2'];
+    let saved = {};
+    try { saved = JSON.parse(sessionStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
+    FIELDS.forEach((n) => {
+        const el = form.querySelector(`[name="${n}"]`);
+        if (!el) return;
+        if (!el.value && typeof saved[n] === 'string') el.value = saved[n];
+        el.addEventListener('change', () => {
+            saved[n] = el.value;
+            try { sessionStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* sin almacenamiento */ }
+        });
+    });
+})();
+
+// Galería de la ficha: al tocar una miniatura cambia la foto grande.
+(function () {
+    const main = document.querySelector('[data-gallery-main]');
+    if (!main) return;
+    document.querySelectorAll('[data-gallery-thumb]').forEach((b) => {
+        b.addEventListener('click', () => {
+            main.src = b.dataset.galleryThumb;
+            document.querySelectorAll('[data-gallery-thumb]').forEach((o) => {
+                const on = o === b;
+                o.classList.toggle('border-brand-500', on);
+                o.classList.toggle('border-transparent', !on);
+                on ? o.setAttribute('aria-current', 'true') : o.removeAttribute('aria-current');
+            });
+        });
+    });
+})();
+
+// Carga un script o una hoja de estilo una sola vez (librerías en public/vendor, sin CDN).
+const loaded = {};
+const loadAsset = (url) => loaded[url] ??= new Promise((ok, fail) => {
+    const el = url.endsWith('.css') ? Object.assign(document.createElement('link'), { rel: 'stylesheet', href: url }) : Object.assign(document.createElement('script'), { src: url, async: true });
+    el.onload = ok; el.onerror = fail;
+    document.head.appendChild(el);
+});
+
+// Mapa de cobertura (#33): Leaflet + OpenStreetMap, sin claves. Se descarga solo cuando la sección
+// se acerca a la pantalla. Los puntos son ciudades con totales agregados (nunca datos de clientes).
+const coverage = document.querySelector('[data-coverage-map]');
+if (coverage) {
+    const draw = async () => {
+        const base = coverage.dataset.lib;
+        await Promise.all([loadAsset(`${base}/leaflet.css`), loadAsset(`${base}/leaflet.js`)]);
+        const L = window.L;
+        const points = JSON.parse(coverage.dataset.points || '[]');
+        const map = L.map(coverage, { scrollWheelZoom: false, zoomSnap: 0.25, attributionControl: true }).setView([4.6, -74.2], 5);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 12, minZoom: 4,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+        }).addTo(map);
+        const max = Math.max(1, ...points.map((p) => p[4]));
+        const bounds = [];
+        points.forEach(([city, dept, lat, lng, n]) => {
+            const r = n ? 5 + Math.round(9 * Math.sqrt(n / max)) : 4;
+            L.circleMarker([lat, lng], { radius: r, color: '#f4e2ac', weight: 1, fillColor: '#d9b871', fillOpacity: 0.85, className: 'mc-dot' })
+                .bindTooltip(`<b>${city}</b>, ${dept}<br>${n ? `${n.toLocaleString('es-CO')} pedidos` : 'Ya llegamos aquí'}`, { direction: 'top', className: 'mc-tip' })
+                .addTo(map);
+            bounds.push([lat, lng]);
+        });
+        if (bounds.length > 1) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 6 });
+        coverage.classList.add('is-on');
+    };
+    const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) { io.disconnect(); draw().catch(() => coverage.remove()); }
+    }, { rootMargin: '300px' });
+    io.observe(coverage);
+}
+
+// Simulador de cuotas de «Compra ahora, paga después» (#59): valor ÷ cuotas, solo de referencia.
+const sim = document.querySelector('[data-bnpl-sim]');
+if (sim) {
+    const cop = (n) => '$ ' + Math.round(n).toLocaleString('es-CO');
+    const value = sim.querySelector('[data-sim-value]');
+    const count = sim.querySelector('[data-sim-n]');
+    const update = () => {
+        const v = parseInt(value.value.replace(/\D/g, ''), 10) || 0;
+        const n = parseInt(count.value, 10) || 1;
+        value.value = v ? v.toLocaleString('es-CO') : '';
+        sim.querySelector('[data-sim-total]').textContent = cop(v);
+        sim.querySelector('[data-sim-count]').textContent = n;
+        sim.querySelector('[data-sim-quota]').textContent = cop(Math.ceil(v / n));
+    };
+    value.addEventListener('input', update);
+    count.addEventListener('change', update);
+}
+
+// Modo oscuro (#64): botón luna/sol; se recuerda en este navegador ("mc-theme") y avisa con "mc:tema".
+document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
+    const root = document.documentElement;
+    const paint = () => {
+        const dark = root.dataset.theme === 'dark';
+        btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+        btn.setAttribute('aria-label', dark ? 'Modo claro' : 'Modo oscuro');
+        btn.title = btn.getAttribute('aria-label');
+        btn.querySelector('.mcdk-moon')?.classList.toggle('hidden', dark);
+        btn.querySelector('.mcdk-sun')?.classList.toggle('hidden', !dark);
+    };
+    paint();
+    btn.addEventListener('click', () => {
+        const dark = root.dataset.theme !== 'dark';
+        if (dark) root.dataset.theme = 'dark'; else delete root.dataset.theme;
+        store.set('mc-theme', dark ? 'dark' : 'light');
+        document.querySelectorAll('[data-theme-toggle]').forEach((b) => b.dispatchEvent(new Event('mc:paint')));
+        document.dispatchEvent(new CustomEvent('mc:tema', { detail: { tema: dark ? 'dark' : 'light' } }));
+    });
+    btn.addEventListener('mc:paint', paint);
+});
+
+// Código QR del segundo factor (la librería se descarga solo en esa pantalla).
+document.querySelectorAll('[data-qr]').forEach(async (box) => {
+    await loadAsset(box.dataset.lib);
+    const qr = window.qrcode(0, 'M');
+    qr.addData(box.dataset.qr);
+    qr.make();
+    box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+});

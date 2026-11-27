@@ -6,5 +6,6 @@
     @endforeach
     <tr><td style="padding:2px 0;color:#4A5068;">Envío</td><td align="right" style="padding:2px 0;">{{ $so->shipping_total ? cop($so->shipping_total) : 'Gratis' }}</td></tr>
 @endforeach
+@if ($order->discount_total)<tr><td style="padding:6px 0 2px;color:#047857;">Cupón {{ $order->coupon_code }}</td><td align="right" style="padding:6px 0 2px;color:#047857;">−{{ cop($order->discount_total) }}</td></tr>@endif
 <tr><td style="padding:10px 0;border-top:1px solid #E5E7EB;font-weight:700;">Total</td><td align="right" style="padding:10px 0;border-top:1px solid #E5E7EB;font-weight:700;">{{ cop($order->total) }}</td></tr>
 </table>

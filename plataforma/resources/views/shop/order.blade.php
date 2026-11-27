@@ -36,6 +36,13 @@
         </section>
     @endforeach
 
+    @if ($order->discount_total || $order->refunded_total)
+    <section class="card mt-5 space-y-1 p-5 text-sm">
+        @if ($order->discount_total)<p class="text-emerald-700">Cupón {{ $order->coupon_code }}: −{{ cop($order->discount_total) }}</p>@endif
+        @foreach ($order->refunds()->get() as $r)<p class="text-slate-600">Reembolso de <strong>{{ cop($r->amount) }}</strong> el {{ fecha($r->created_at, 'd/m/Y') }}: {{ $r->reason }}.</p>@endforeach
+    </section>
+    @endif
+
     <section class="card mt-5 flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
         <p class="text-slate-600">¿Te arrepentiste o tuviste un problema? Tienes 5 días hábiles desde la entrega para el retracto.</p>
         <div class="flex flex-wrap gap-2">

@@ -2,16 +2,22 @@
 
 namespace App\Services\Orders;
 
+use App\Mail\OrderNoticeMail;
 use App\Mail\OrderShippedMail;
 use App\Mail\PaymentConfirmedMail;
 use App\Mail\SellerNewOrderMail;
+use App\Models\Coupon;
+use App\Models\EmailPriceCoupon;
 use App\Models\MerchantEntity;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Refund;
 use App\Models\SellerOrder;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\Campaigns\CampaignService;
+use App\Services\Marketing\MetaConversions;
 use App\Support\BusinessDays;
 use App\Support\Mailer;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +26,7 @@ use RuntimeException;
 
 class OrderService
 {
-    public function __construct(private Cart $cart, private CommissionCalculator $commissions) {}
+    public function __construct(private Cart $cart, private CommissionCalculator $commissions, private CampaignService $campaigns, private CouponService $couponRules) {}
 
     /**
      * Crea el pedido a partir del carrito: un subpedido por tienda, descuenta stock y guarda el titular vigente.
@@ -34,7 +40,7 @@ class OrderService
             throw new RuntimeException('El carrito está vacío.');
         }
 
-        return DB::transaction(function () use ($groups, $customer, $paymentMethod, $user, $ip) {
+        $order = DB::transaction(function () use ($groups, $customer, $paymentMethod, $user, $ip) {
             $merchant = MerchantEntity::current();
 
             $order = Order::create([
@@ -61,11 +67,16 @@ class OrderService
                 'terms_accepted_at' => now(),
                 'marketing_optin' => (bool) ($customer['marketing_optin'] ?? false),
                 'ip_address' => $ip,
+                'user_agent' => isset($customer['user_agent']) ? mb_substr((string) $customer['user_agent'], 0, 255) : null,
+                'fbp' => $customer['fbp'] ?? null,
+                'fbc' => $customer['fbc'] ?? null,
+                'analytics_consent' => (bool) ($customer['analytics_consent'] ?? false),
                 'access_token' => Str::random(40),
             ]);
 
             $subtotal = 0;
             $shippingTotal = 0;
+            [$coupon, $discounts] = $this->lockCoupon($groups, $order->email);
 
             foreach ($groups as $group) {
                 $store = $group['store'];
@@ -74,13 +85,16 @@ class OrderService
                     $method = 'envio';
                 }
                 $shipping = Cart::shippingCost($store, $method);
-                $money = $this->commissions->forSellerOrder($group['subtotal'], $shipping, $store);
+                $discount = (int) ($discounts[$store->id] ?? 0);
+                $money = $this->commissions->forSellerOrder($group['subtotal'], $shipping, $store, $discount, $coupon?->fundedBy() ?? 'marketcity', $coupon?->type === 'free_shipping');
 
                 $sellerOrder = $order->sellerOrders()->create([
                     'store_id' => $store->id,
                     'subtotal' => $group['subtotal'],
                     'shipping_method' => $method,
                     'shipping_total' => $shipping,
+                    'discount_total' => $discount,
+                    'discount_funded_by' => $discount ? $coupon->fundedBy() : null,
                     'commission_amount' => $money['commission'],
                     'seller_net' => $money['seller_net'],
                     'commission_rule' => $money['rule'],
@@ -93,17 +107,35 @@ class OrderService
                     if (! $product || $product->stock < $line['quantity']) {
                         throw new RuntimeException("No hay unidades suficientes de «{$line['product']->name}».");
                     }
+                    // Tope de unidades a precio de campaña (#77): se revisa otra vez con el producto bloqueado.
+                    $campaign = $this->campaigns->activeFor($product);
+                    if ($campaign && ($left = $this->campaigns->remaining($campaign)) !== null && $left < $line['quantity']) {
+                        throw new RuntimeException($left > 0
+                            ? "Solo quedan {$left} unidades de «{$product->name}» a precio {$campaign->campaign->name}. Ajusta la cantidad."
+                            : "«{$product->name}» ya vendió todas sus unidades a precio {$campaign->campaign->name}.");
+                    }
+                    // Límite por cliente de la oferta relámpago: por correo y, con sesión, también por cuenta.
+                    if ($campaign && ($limit = $campaign->campaign->per_customer_limit)
+                        && $this->campaigns->boughtBy($campaign, $order->email, $order->user_id) + $line['quantity'] > $limit) {
+                        throw new RuntimeException("«{$product->name}» tiene un máximo de {$limit} ".($limit === 1 ? 'unidad' : 'unidades').' por cliente a precio '.$campaign->campaign->name.'. Ajusta la cantidad.');
+                    }
+                    $emailCoupon = $this->useCoupon($line, $order, $product);
+                    $lineDiscount = $emailCoupon ? (int) $line['discount'] : 0;
+
                     $product->decrement('stock', $line['quantity']);
                     $product->increment('sales_count', $line['quantity']);
 
                     $order->items()->create([
                         'seller_order_id' => $sellerOrder->id,
                         'product_id' => $product->id,
+                        'campaign_id' => $campaign?->campaign_id,
+                        'coupon_id' => $emailCoupon?->id,
                         'name' => $product->name,
                         'sku' => $product->sku,
                         'unit_price' => $product->price,
                         'quantity' => $line['quantity'],
-                        'line_total' => $product->price * $line['quantity'],
+                        'line_total' => $product->price * $line['quantity'] - $lineDiscount,
+                        'discount_total' => $lineDiscount,
                     ]);
                 }
 
@@ -111,11 +143,68 @@ class OrderService
                 $shippingTotal += $shipping;
             }
 
-            $order->update(['subtotal' => $subtotal, 'shipping_total' => $shippingTotal, 'total' => $subtotal + $shippingTotal]);
-            $order->log('creado', 'Pedido creado con '.$groups->count().' '.Str::plural('vendedor', $groups->count()).'.');
+            $discountTotal = array_sum($discounts);
+            $order->update([
+                'subtotal' => $subtotal, 'shipping_total' => $shippingTotal, 'total' => max(0, $subtotal + $shippingTotal - $discountTotal),
+                'coupon_id' => $coupon?->id, 'coupon_code' => $coupon?->code, 'discount_total' => $discountTotal,
+            ]);
+            $order->log('creado', 'Pedido creado con '.$groups->count().' '.($groups->count() === 1 ? 'vendedor' : 'vendedores').'.'
+                .($coupon ? " Cupón {$coupon->code}: −".cop($discountTotal).' (lo asume '.($coupon->store_id ? 'la tienda' : 'MarketCity').').' : ''));
 
             return $order;
         });
+
+        $this->syncCampaigns($order);
+
+        return $order;
+    }
+
+    /**
+     * Cupón general del carrito, releído con bloqueo para que dos pedidos a la vez no pasen el tope de usos.
+     *
+     * @return array{0:?Coupon, 1:array<int,int>}
+     */
+    private function lockCoupon($groups, string $email): array
+    {
+        $coupon = $this->cart->generalCoupon();
+        if (! $coupon) {
+            return [null, []];
+        }
+        $coupon = Coupon::lockForUpdate()->find($coupon->id);
+        $result = $coupon ? $this->couponRules->evaluate($coupon, $groups, $this->cart->shippingByStore($groups), $email) : ['error' => 'Ese cupón ya no existe.'];
+        if ($result['error']) {
+            throw new RuntimeException('Cupón '.($coupon?->code ?? '').': '.$result['error'].' Quítalo del carrito para seguir.');
+        }
+
+        return [$coupon, $result['stores']];
+    }
+
+    /** Marca usado el cupón de precio con correo de la línea; solo vale con el mismo correo con que se pidió (#76). */
+    private function useCoupon(array $line, Order $order, Product $product): ?EmailPriceCoupon
+    {
+        if (empty($line['coupon'])) {
+            return null;
+        }
+        $coupon = EmailPriceCoupon::lockForUpdate()->find($line['coupon']->id);
+        if (! $coupon || ! $coupon->isUsable() || $coupon->product_id !== $product->id) {
+            throw new RuntimeException("El código de precio con correo de «{$product->name}» ya se usó o venció. Quítalo del carrito para seguir.");
+        }
+        if (! hash_equals($coupon->email_hash, EmailPriceCoupon::hashEmail($order->email))) {
+            throw new RuntimeException('El precio con correo solo sirve con el mismo correo con el que lo pediste. Usa ese correo en el pago.');
+        }
+        $coupon->update(['used_at' => now(), 'order_id' => $order->id]);
+
+        return $coupon;
+    }
+
+    /** Tras crear o cancelar un pedido se revisa el tope de las campañas de sus productos. */
+    private function syncCampaigns(Order $order): void
+    {
+        foreach ($order->items()->whereNotNull('campaign_id')->with('product')->get() as $item) {
+            if ($item->product) {
+                $this->campaigns->sync($item->product);
+            }
+        }
     }
 
     public function createPayment(Order $order): Payment
@@ -156,20 +245,23 @@ class OrderService
 
         if ($applied) {
             $order->refresh();
+            app(MetaConversions::class)->purchase($order);
             Mailer::send($order->email, new PaymentConfirmedMail($order));
             foreach ($order->sellerOrders()->with('store.user')->get() as $so) {
-                Mailer::send($so->store->notificationEmail(), new SellerNewOrderMail($so));
+                if ($so->store->wantsNewOrderEmail()) {
+                    Mailer::send($so->store->notificationEmail(), new SellerNewOrderMail($so));
+                }
             }
         }
     }
 
     /** Pago rechazado: el pedido queda cancelado y el stock vuelve. */
-    public function markFailed(Order $order, Payment $payment, array $payload = [], string $reason = 'Pago rechazado'): void
+    public function markFailed(Order $order, Payment $payment, array $payload = [], string $reason = 'Pago rechazado', bool $notify = true): void
     {
-        DB::transaction(function () use ($order, $payment, $payload, $reason) {
+        $applied = DB::transaction(function () use ($order, $payment, $payload, $reason) {
             $order = Order::lockForUpdate()->findOrFail($order->id);
             if ($order->payment_status !== 'pending') {
-                return;
+                return false;
             }
             $payment->update(['status' => 'declined', 'payload' => $payload]);
             $order->update(['payment_status' => 'failed']);
@@ -177,7 +269,23 @@ class OrderService
                 $this->cancel($so, null, $reason);
             }
             $order->log('pago', $reason.'. El pedido se canceló y las unidades volvieron al inventario.');
+
+            return true;
         });
+        // Correos «pago fallido» al cliente (con el plan B) y al equipo, como en WooCommerce.
+        if ($applied && $notify) {
+            $order->refresh();
+            Mailer::send($order->email, new OrderNoticeMail($order, 'payment-failed', $reason));
+            self::notifyAdmins(new OrderNoticeMail($order, 'admin-failed', $reason));
+        }
+    }
+
+    /** Avisos internos: a cada cuenta del equipo (rol administrador). */
+    public static function notifyAdmins(OrderNoticeMail $mail): void
+    {
+        foreach (User::where('role', User::ROLE_ADMIN)->pluck('email') as $admin) {
+            Mailer::send($admin, clone $mail);
+        }
     }
 
     public function advance(SellerOrder $so, string $to, ?User $by, ?string $carrier = null, ?string $tracking = null): void
@@ -208,6 +316,9 @@ class OrderService
         if ($to === 'despachado') {
             Mailer::send($so->order->email, new OrderShippedMail($so));
         }
+        if ($to === 'entregado') {
+            Mailer::send($so->order->email, new OrderNoticeMail($so->order, 'delivered', null, $so));
+        }
     }
 
     public function cancel(SellerOrder $so, ?User $by, string $reason): void
@@ -223,13 +334,53 @@ class OrderService
             }
         }
         $so->update(['status' => 'cancelado', 'commission_amount' => 0, 'seller_net' => 0]);
+        // El cupón de precio con correo vuelve a servir mientras no venza.
+        EmailPriceCoupon::whereIn('id', $so->items->pluck('coupon_id')->filter())->update(['used_at' => null, 'order_id' => null]);
         $so->order->log('estado', "{$so->store->name}: cancelado ({$reason}).", $so, $by);
+        $this->syncCampaigns($so->order);
+        // Cancelación hecha por una persona (tienda o equipo): se le cuenta al cliente. La del pago fallido tiene su propio correo.
+        if ($by) {
+            Mailer::send($so->order->email, new OrderNoticeMail($so->order, 'cancelled', $reason, $so));
+        }
     }
 
-    public function settle(SellerOrder $so, User $by, string $reference): void
+    /**
+     * Registra la transferencia al vendedor. Si la tienda tiene descuentos pendientes (reembolsos de
+     * ventas que ya se le habían pagado), se restan de este neto, del más antiguo al más nuevo; lo que
+     * no alcance queda para la siguiente liquidación.
+     */
+    public function settle(SellerOrder $so, User $by, string $reference): int
     {
-        $so->update(['settled_at' => now(), 'settlement_reference' => $reference]);
-        $so->order->log('liquidacion', "Liquidado a {$so->store->name}: ".cop($so->seller_net)." (ref. {$reference}).", $so, $by);
+        return DB::transaction(function () use ($so, $by, $reference) {
+            $so = SellerOrder::with('store', 'order')->lockForUpdate()->findOrFail($so->id);
+            if ($so->settled_at) {
+                throw new RuntimeException('Ya estaba liquidado.');
+            }
+            $available = (int) $so->seller_net;
+            $deducted = 0;
+            $applied = [];
+            foreach (Refund::undeductedFor($so->store_id)->lockForUpdate()->get() as $refund) {
+                if ($available <= 0) {
+                    break;
+                }
+                $take = min($available, $refund->deductionLeft());
+                $refund->deducted_amount += $take;
+                if ($refund->deductionLeft() === 0) {
+                    $refund->deducted_at = now();
+                }
+                $refund->save();
+                $available -= $take;
+                $deducted += $take;
+                $applied[] = cop($take).' del reembolso #'.$refund->id;
+            }
+
+            $so->update(['settled_at' => now(), 'settlement_reference' => $reference, 'settlement_deduction' => $deducted]);
+            $so->order->log('liquidacion', "Liquidado a {$so->store->name}: ".cop($so->seller_net)
+                .($deducted ? ' − descuentos por reembolsos '.cop($deducted).' ('.implode(', ', $applied).') = transferido '.cop($so->seller_net - $deducted) : '')
+                ." (ref. {$reference}).", $so, $by);
+
+            return $deducted;
+        });
     }
 
     private function nextNumber(): string

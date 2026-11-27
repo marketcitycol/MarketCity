@@ -4,15 +4,22 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Legacy as AdminLegacy;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Seller;
+use App\Http\Controllers\Shop\AccountController;
+use App\Http\Controllers\Shop\CampaignController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\CatalogController;
 use App\Http\Controllers\Shop\CheckoutController;
+use App\Http\Controllers\Shop\ContactController;
+use App\Http\Controllers\Shop\MessagesController;
 use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\PageController;
 use App\Http\Controllers\Shop\PaymentController;
 use App\Http\Controllers\Shop\PqrController;
+use App\Http\Controllers\Shop\ProductQuestionController;
 use App\Http\Controllers\Shop\SellerSignupController;
 use App\Http\Controllers\Shop\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -22,18 +29,27 @@ Route::get('/', [CatalogController::class, 'home'])->name('home');
 Route::get('/shop', [CatalogController::class, 'index'])->name('shop');
 Route::get('/categoria-producto/{category}', [CatalogController::class, 'category'])->name('category');
 Route::get('/producto/{product}', [CatalogController::class, 'product'])->name('product');
+Route::post('/producto/{product}/preguntas', [ProductQuestionController::class, 'store'])->middleware('throttle:5,10')->name('product.questions.store');
 Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
+Route::get('/campana/{campaign}', [CampaignController::class, 'show'])->name('campaign');
+Route::post('/producto/{product}/precio-con-correo', [CampaignController::class, 'emailPrice'])->middleware('throttle:5,10')->name('product.email-price');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/catalogo/productos.xml', [SitemapController::class, 'feed'])->name('feed');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/carrito', [CartController::class, 'update'])->name('cart.update');
+Route::post('/carrito/cupon', [CartController::class, 'coupon'])->middleware('throttle:10,1')->name('cart.coupon');
+Route::delete('/carrito/cupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+Route::get('/carrito/recuperar/{token}', [CartController::class, 'recover'])->middleware('throttle:20,1')->name('cart.recover');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
 Route::post('/checkout', [CheckoutController::class, 'place'])->middleware('throttle:20,1')->name('checkout.place');
+Route::post('/checkout/permisos', [CheckoutController::class, 'messages'])->middleware('throttle:30,1')->name('checkout.messages');
+Route::get('/mensajes/baja', [MessagesController::class, 'show'])->middleware(['signed', 'throttle:20,1'])->name('marketing.unsubscribe');
+Route::post('/mensajes/baja', [MessagesController::class, 'unsubscribe'])->middleware(['signed', 'throttle:20,1']);
 
 Route::get('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandbox'])->name('payments.sandbox');
 Route::post('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandboxDecide'])->name('payments.sandbox.decide');
@@ -42,10 +58,13 @@ Route::get('/pagos/regreso/{gateway}/{order}', [PaymentController::class, 'retur
 Route::get('/pedido/{order}/gracias', [OrderController::class, 'thanks'])->name('orders.thanks');
 Route::get('/pedido/{order}', [OrderController::class, 'show'])->name('orders.show');
 Route::get('/rastrear-pedido', [OrderController::class, 'trackForm'])->name('track');
-Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:10,1')->name('track.lookup');
+Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:30,1')->name('track.lookup');
 
 Route::get('/pqrs', [PqrController::class, 'create'])->name('pqrs.create');
 Route::post('/pqrs', [PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
+Route::get('/contacto', [ContactController::class, 'show'])->name('contact');
+Route::get('/compra-ahora-paga-despues', [PageController::class, 'bnpl'])->name('bnpl');
+Route::post('/contacto', [ContactController::class, 'store'])->middleware('throttle:5,10')->name('contact.store');
 Route::get('/pqrs/estado', [PqrController::class, 'status'])->name('pqrs.status');
 Route::post('/pqrs/consultar', [PqrController::class, 'lookup'])->middleware('throttle:10,1')->name('pqrs.lookup');
 
@@ -58,14 +77,45 @@ Route::post('/ingresar', [AuthController::class, 'login'])->middleware('throttle
 Route::get('/registro', [AuthController::class, 'registerForm'])->name('register');
 Route::post('/registro', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/salir', [AuthController::class, 'logout'])->name('logout');
+Route::get('/ingresar/google', [GoogleController::class, 'redirect'])->middleware('throttle:20,1')->name('login.google');
+Route::get('/ingresar/google/regreso', [GoogleController::class, 'callback'])->middleware('throttle:20,1')->name('login.google.callback');
+Route::get('/ingresar/verificacion', [TwoFactorController::class, 'challengeForm'])->name('two-factor.challenge');
+Route::post('/ingresar/verificacion', [TwoFactorController::class, 'challenge'])->middleware('throttle:6,1');
+Route::middleware('auth')->prefix('seguridad/dos-pasos')->name('two-factor.')->controller(TwoFactorController::class)->group(function () {
+    Route::post('/', 'start')->middleware('throttle:10,1')->name('start');
+    Route::post('/confirmar', 'confirm')->middleware('throttle:10,1')->name('confirm');
+    Route::post('/codigos', 'regenerate')->middleware('throttle:10,1')->name('codes');
+    Route::delete('/', 'disable')->middleware('throttle:10,1')->name('disable');
+});
 Route::get('/olvide-mi-contrasena', [PasswordController::class, 'requestForm'])->middleware('guest')->name('password.request');
 Route::post('/olvide-mi-contrasena', [PasswordController::class, 'sendLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
 Route::get('/restablecer-contrasena/{token}', [PasswordController::class, 'resetForm'])->middleware('guest')->name('password.reset');
 Route::post('/restablecer-contrasena', [PasswordController::class, 'reset'])->middleware(['guest', 'throttle:10,1'])->name('password.update');
 Route::post('/mi-cuenta/verificar-correo', [EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
 Route::get('/verificar-correo/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
-Route::get('/mi-cuenta', [AuthController::class, 'account'])->middleware('auth')->name('account');
 Route::put('/mi-cuenta/contrasena', [PasswordController::class, 'update'])->middleware(['auth', 'throttle:5,1'])->name('password.change');
+Route::post('/pedido/{order}/crear-cuenta', [OrderController::class, 'createAccount'])->middleware('throttle:5,10')->name('orders.account');
+Route::post('/pedido/{order}/pagar-con-otro-medio', [OrderController::class, 'retry'])->middleware('throttle:10,1')->name('orders.retry');
+
+// --- Mi cuenta (#48, #49, #79) ---
+Route::prefix('mi-cuenta')->middleware('auth')->controller(AccountController::class)->group(function () {
+    Route::get('/', 'index')->name('account');
+    Route::get('/pedidos', 'orders')->name('account.orders');
+    Route::get('/direcciones', 'addresses')->name('account.addresses');
+    Route::post('/direcciones', 'storeAddress')->middleware('throttle:20,1')->name('account.addresses.store');
+    Route::put('/direcciones/{address}', 'updateAddress')->name('account.addresses.update');
+    Route::post('/direcciones/{address}/principal', 'defaultAddress')->name('account.addresses.default');
+    Route::delete('/direcciones/{address}', 'destroyAddress')->name('account.addresses.destroy');
+    Route::get('/datos', 'details')->name('account.details');
+    Route::put('/datos', 'updateDetails')->name('account.details.update');
+    Route::get('/seguridad', 'security')->name('account.security');
+    Route::delete('/', 'destroy')->middleware('throttle:5,10')->name('account.destroy');
+    Route::get('/favoritos', 'favorites')->name('account.favorites');
+    Route::get('/notificaciones', 'notifications')->name('account.notifications');
+    Route::put('/notificaciones', 'updateNotifications')->name('account.notifications.update');
+    Route::get('/consultas', 'inquiries')->name('account.inquiries');
+});
+Route::post('/favoritos/{product}', [AccountController::class, 'toggleFavorite'])->middleware(['auth', 'throttle:60,1'])->name('favorites.toggle');
 
 // --- Seller Center ---
 Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:seller'])->group(function () {
@@ -75,24 +125,30 @@ Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:selle
     Route::get('/pedidos/{sellerOrder}', [Seller\OrderController::class, 'show'])->name('orders.show');
     Route::post('/pedidos/{sellerOrder}/estado', [Seller\OrderController::class, 'advance'])->name('orders.advance');
     Route::get('/liquidaciones', [Seller\DashboardController::class, 'settlements'])->name('settlements');
+    Route::get('/preguntas', [Seller\QuestionController::class, 'index'])->name('questions');
+    Route::post('/preguntas/{question}', [Seller\QuestionController::class, 'answer'])->middleware('throttle:30,1')->name('questions.answer');
     Route::get('/tienda', [Seller\DashboardController::class, 'editStore'])->name('store.edit');
     Route::put('/tienda', [Seller\DashboardController::class, 'updateStore'])->name('store.update');
     Route::get('/datos-legales', [Seller\LegalController::class, 'show'])->name('legal');
     Route::put('/datos-legales', [Seller\LegalController::class, 'updateLegal'])->name('legal.update');
     Route::post('/cuenta-bancaria', [Seller\LegalController::class, 'requestBankChange'])->middleware('throttle:5,10')->name('legal.bank');
+    Route::get('/seguridad', [Seller\DashboardController::class, 'security'])->name('security');
 });
 
 // --- Backoffice ---
-Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin', '2fa'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/pedidos', [Admin\OrderController::class, 'index'])->name('orders');
     Route::get('/pedidos/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');
     Route::post('/pedidos/{order}/pago-recibido', [Admin\OrderController::class, 'markPaid'])->name('orders.paid');
+    Route::post('/pedidos/{order}/reembolso', [Admin\OrderController::class, 'refund'])->name('orders.refund');
+    Route::post('/pedidos/{order}/nota', [Admin\OrderController::class, 'note'])->middleware('throttle:20,1')->name('orders.note');
     Route::post('/subpedidos/{sellerOrder}/estado', [Admin\OrderController::class, 'advance'])->name('orders.advance');
     Route::post('/subpedidos/{sellerOrder}/cancelar', [Admin\OrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/vendedores', [Admin\StoreController::class, 'index'])->name('stores');
     Route::get('/vendedores/{store}', [Admin\StoreController::class, 'edit'])->name('stores.edit');
     Route::put('/vendedores/{store}', [Admin\StoreController::class, 'update'])->name('stores.update');
+    Route::post('/vendedores/{store}/directorio', [Admin\StoreController::class, 'directory'])->name('stores.directory');
     Route::post('/vendedores/{store}/estado', [Admin\StoreController::class, 'status'])->name('stores.status');
     Route::post('/vendedores/{store}/cuenta/{account}/aprobar', [Admin\StoreLegalController::class, 'approve'])->name('stores.bank.approve');
     Route::post('/vendedores/{store}/cuenta/{account}/rechazar', [Admin\StoreLegalController::class, 'reject'])->name('stores.bank.reject');
@@ -101,6 +157,10 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::get('/productos', [Admin\StoreController::class, 'products'])->name('products');
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');
     Route::get('/liquidaciones', [Admin\SettlementController::class, 'index'])->name('settlements');
+    Route::get('/preguntas', [Admin\QuestionController::class, 'index'])->name('questions');
+    Route::get('/contacto', [Admin\ContactController::class, 'index'])->name('contact');
+    Route::post('/contacto/{message}', [Admin\ContactController::class, 'handle'])->name('contact.handle');
+    Route::post('/preguntas/{question}/visibilidad', [Admin\QuestionController::class, 'toggle'])->name('questions.toggle');
     Route::post('/liquidaciones/{sellerOrder}', [Admin\SettlementController::class, 'settle'])->name('settlements.settle');
     Route::get('/importar', [AdminLegacy\CatalogImportController::class, 'show'])->name('import');
     Route::post('/importar', [AdminLegacy\CatalogImportController::class, 'store'])->name('import.store');
@@ -124,6 +184,24 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/paginas/importar', [Admin\PageController::class, 'import'])->name('pages.import');
     Route::get('/paginas/{page}', [Admin\PageController::class, 'edit'])->name('pages.edit');
     Route::put('/paginas/{page}', [Admin\PageController::class, 'update'])->name('pages.update');
+    Route::get('/campanas', [Admin\CampaignController::class, 'index'])->name('campaigns');
+    Route::get('/campanas/nueva', [Admin\CampaignController::class, 'create'])->name('campaigns.create');
+    Route::post('/campanas', [Admin\CampaignController::class, 'store'])->name('campaigns.store');
+    Route::put('/campanas/corte-de-despacho', [Admin\CampaignController::class, 'cutoff'])->name('campaigns.cutoff');
+    Route::get('/campanas/{campaign}', [Admin\CampaignController::class, 'edit'])->name('campaigns.edit');
+    Route::put('/campanas/{campaign}', [Admin\CampaignController::class, 'update'])->name('campaigns.update');
+    Route::post('/campanas/{campaign}/productos', [Admin\CampaignController::class, 'addProduct'])->name('campaigns.products');
+    Route::delete('/campanas/{campaign}/productos/{item}', [Admin\CampaignController::class, 'removeProduct'])->name('campaigns.products.remove');
+    Route::get('/cupones', [Admin\CouponController::class, 'index'])->name('coupons');
+    Route::get('/cupones/nuevo', [Admin\CouponController::class, 'create'])->name('coupons.create');
+    Route::post('/cupones', [Admin\CouponController::class, 'store'])->name('coupons.store');
+    Route::get('/cupones/{coupon}', [Admin\CouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/cupones/{coupon}', [Admin\CouponController::class, 'update'])->name('coupons.update');
+    Route::get('/mensajes', [Admin\MessagesController::class, 'index'])->name('messages');
+    Route::put('/mensajes', [Admin\MessagesController::class, 'update'])->name('messages.update');
+    Route::post('/mensajes/baja', [Admin\MessagesController::class, 'revoke'])->name('messages.revoke');
+    Route::get('/mensajes/permisos.csv', [Admin\MessagesController::class, 'csv'])->name('messages.csv');
+    Route::post('/mensajes/carritos/{cart}/whatsapp', [Admin\MessagesController::class, 'whatsappSent'])->name('messages.whatsapp');
     Route::get('/plugins', [Admin\PluginController::class, 'index'])->name('plugins');
     Route::get('/plugins/{plugin}', [Admin\PluginController::class, 'edit'])->name('plugins.edit');
     Route::put('/plugins/{plugin}', [Admin\PluginController::class, 'update'])->name('plugins.update');

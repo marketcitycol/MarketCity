@@ -6,22 +6,57 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Store;
+use App\Services\Campaigns\CampaignService;
+use App\Services\Campaigns\EmailPriceService;
 use App\Services\Catalog\StoreDirectory;
 use App\Services\Content\BrandAssets;
+use App\Services\Content\CoverageMap;
+use App\Services\Orders\Cart;
+use App\Services\Payments\PaymentRegistry;
+use App\Support\SearchQuery;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
     public function home()
     {
+        // Rotación del inicio (#45): cada sección trae un grupo más grande de su mismo criterio
+        // (el doble, máximo 8 más) y en cada visita muestra una selección al azar del tamaño de siempre,
+        // sin repetir un producto en dos secciones cuando hay otros disponibles.
+        $rotate = (bool) Setting::get('home_rotation', '1');
+        $pool = fn (int $size) => $rotate ? $size + min($size, 8) : $size;
+        $shown = [];
+        $pick = function ($products, int $size, bool $keepOrder = false) use ($rotate, &$shown) {
+            if ($rotate) {
+                $fresh = $products->reject(fn ($p) => isset($shown[$p->id]));
+                $chosen = $fresh->shuffle()->take($size);
+                if ($chosen->count() < $size) {
+                    $chosen = $chosen->concat($products->diff($chosen)->shuffle()->take($size - $chosen->count()));
+                }
+                $products = $keepOrder ? $products->filter(fn ($p) => $chosen->contains('id', $p->id))->values() : $chosen->values();
+            }
+            foreach ($products as $p) {
+                $shown[$p->id] = true;
+            }
+
+            return $products;
+        };
+
+        $offers = Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take($pool(10))->get();
+        $bestsellers = Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take($pool(10))->get();
+        $featured = Product::visible()->with('store')->where('featured', true)->latest('id')->take($pool(8))->get();
+        $newest = Product::visible()->with('store')->latest('id')->take($pool(10))->get();
+
         return view('shop.home', [
-            'featured' => Product::visible()->with('store')->where('featured', true)->latest('id')->take(8)->get(),
-            'offers' => Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take(10)->get(),
-            'bestsellers' => Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take(10)->get(),
-            'newest' => Product::visible()->with('store')->latest('id')->take(10)->get(),
-            'stores' => Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('products_count')->get(),
+            'offers' => $pick($offers, 10),
+            'bestsellers' => $pick($bestsellers, 10, keepOrder: true), // se muestra con su puesto (1, 2, 3…)
+            'featured' => $pick($featured, 8),
+            'newest' => $pick($newest, 10, keepOrder: true),
+            'stores' => Store::where('status', 'active')->where('directory_hidden', false)->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('featured')->orderByDesc('products_count')->get(),
             'categories' => BrandAssets::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get()),
+            'coverage' => CoverageMap::points(),
         ]);
     }
 
@@ -51,9 +86,19 @@ class CatalogController extends Controller
         } elseif ($request->filled('categoria')) {
             $q->whereHas('category', fn ($c) => $c->where('slug', $request->string('categoria')));
         }
-        if ($term = trim((string) $request->input('q'))) {
-            $q->where(fn ($w) => $w->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%")
-                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$term}%")));
+        // La búsqueda entiende precios («audífonos menos de 80 mil») y busca cada palabra por separado.
+        $search = SearchQuery::parse(mb_substr((string) $request->input('q'), 0, 120));
+        foreach (array_slice(array_filter(explode(' ', str_replace(['%', '_'], '', $search['term'])), fn ($w) => mb_strlen($w) >= 2), 0, 6) as $word) {
+            $like = '%'.str_replace(['%', '_'], '', $word).'%';
+            $q->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('sku', 'like', $like)
+                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', $like))
+                ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $like)));
+        }
+        if ($search['min'] !== null) {
+            $q->where('price', '>=', $search['min']);
+        }
+        if ($search['max'] !== null) {
+            $q->where('price', '<=', $search['max']);
         }
         if ($request->filled('marca')) {
             $q->whereHas('brand', fn ($b) => $b->where('slug', $request->string('marca')));
@@ -84,18 +129,35 @@ class CatalogController extends Controller
 
         return view('shop.listing', [
             'title' => $title,
+            'search' => $search,
             'category' => $category,
             'products' => $q->paginate(12)->withQueryString(),
             'brands' => Brand::whereHas('products', fn ($p) => $p->where('status', 'active'))->orderBy('name')->get(),
         ]);
     }
 
-    public function product(Product $product)
+    public function product(Request $request, Product $product, CampaignService $campaigns, EmailPriceService $emailPrices, Cart $cart, PaymentRegistry $payments)
     {
         abort_unless($product->status === 'active' && $product->price >= Product::MIN_PRICE && $product->store->isActive(), 404);
+        // Enlace del correo de precio con correo (?cupon=CODIGO): se aplica al carrito y lleva allá.
+        if ($request->filled('cupon')) {
+            $error = $cart->applyCoupon((string) $request->query('cupon'));
+
+            return redirect()->route($error ? 'product' : 'cart', $error ? $product : [])->with($error ? 'error' : 'success', $error ?? 'Aplicamos tu precio con correo a 1 unidad.');
+        }
+        $campaign = $campaigns->activeFor($product);
 
         return view('shop.product', [
             'product' => $product->load('store', 'category', 'brand'),
+            'campaign' => $campaign,
+            'remaining' => $campaign ? $campaigns->remaining($campaign) : null,
+            'emailOffer' => $emailPrices->offerFor($product),
+            'cutoff' => $campaign ? null : CampaignService::dispatchCutoff(),
+            'maxQty' => $cart->maxFor($product),
+            'isFavorite' => (bool) $request->user()?->hasFavorite($product),
+            // «Lo que debes saber» (#14): solo los medios que esta tienda acepta hoy.
+            'paymentLabels' => collect($payments->forStores([$product->store]))->except('sandbox')->map->label()->values(),
+            'questions' => $product->questions()->public()->latest('answered_at')->take(10)->get(),
             'related' => Product::visible()->with('store')->where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)->take(4)->get(),
         ]);

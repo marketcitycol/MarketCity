@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
+use App\Services\Campaigns\CampaignService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -37,7 +39,7 @@ class ProductController extends Controller
         $data = $this->validated($request);
         $data['slug'] = $this->uniqueSlug($data['name']);
         $data['store_id'] = $request->user()->store->id;
-        Product::create($data);
+        $this->syncGallery($request, Product::create($data));
 
         return redirect()->route('seller.products.index')->with('success', 'Producto creado.');
     }
@@ -52,7 +54,9 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $this->own($request, $product);
-        $product->update($this->validated($request, $product));
+        // Durante una campaña, el precio que escribe el vendedor queda como precio normal (#77).
+        $product->update(app(CampaignService::class)->protectBasePrice($product, $this->validated($request, $product)));
+        $this->syncGallery($request, $product);
 
         return redirect()->route('seller.products.index')->with('success', 'Producto actualizado.');
     }
@@ -68,6 +72,12 @@ class ProductController extends Controller
 
     private function validated(Request $request, ?Product $product = null): array
     {
+        // Precios en pesos (#74): «1.200.000» o «$ 1,200,000» se guardan como 1200000, nunca como 1,2.
+        foreach (['price', 'regular_price'] as $k) {
+            if (is_string($request->input($k)) && preg_match('/^\s*\$?\s*\d{1,3}([.,]\d{3})+\s*$/', $request->input($k))) {
+                $request->merge([$k => preg_replace('/\D/', '', $request->input($k))]);
+            }
+        }
         $data = $request->validate([
             'name' => 'required|string|max:150',
             'sku' => 'nullable|string|max:64',
@@ -81,14 +91,32 @@ class ProductController extends Controller
             'color' => 'nullable|string|max:40',
             'status' => ['required', Rule::in(['active', 'draft', 'paused'])],
             'image' => 'nullable|image|max:4096',
+            'gallery' => 'nullable|array|max:'.ProductImage::MAX_PER_PRODUCT,
+            'gallery.*' => 'image|max:4096',
+            'remove_images' => 'nullable|array',
+            'remove_images.*' => 'integer',
         ], ['regular_price.gt' => 'El precio antes debe ser mayor que el precio de venta.']);
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('productos', 'public');
         }
-        unset($data['image']);
+        unset($data['image'], $data['gallery'], $data['remove_images']);
 
         return $data;
+    }
+
+    /** Galería: borra las fotos marcadas y agrega las nuevas, hasta 8 adicionales por producto. */
+    private function syncGallery(Request $request, Product $product): void
+    {
+        $remove = array_map('intval', (array) $request->input('remove_images', []));
+        if ($remove) {
+            $product->images()->whereIn('id', $remove)->delete();
+        }
+        $room = ProductImage::MAX_PER_PRODUCT - $product->images()->count();
+        $next = (int) $product->images()->max('position') + 1;
+        foreach (array_slice((array) $request->file('gallery', []), 0, max(0, $room)) as $file) {
+            $product->images()->create(['path' => $file->store('productos', 'public'), 'position' => $next++]);
+        }
     }
 
     private function uniqueSlug(string $name): string

@@ -2,6 +2,9 @@
 
 @section('content')
 <h1 class="text-2xl font-bold">Resumen</h1>
+@unless (auth()->user()->hasTwoFactor())
+    <p class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">Tu cuenta maneja pedidos, liquidaciones y datos bancarios. <a href="{{ route('account.security') }}#segundo-factor" class="font-semibold underline">Activa la verificación en dos pasos</a>: además de la contraseña te pedimos un código del celular.</p>
+@endunless
 <p class="text-sm text-slate-500">Titular vigente del comercio: <strong>{{ $merchant?->legal_name ?? 'sin definir' }}</strong> ({{ $merchant?->personTypeLabel() }}) · <a href="{{ route('admin.settings') }}" class="text-brand-600 hover:underline">cambiar</a></p>
 
 <div class="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">

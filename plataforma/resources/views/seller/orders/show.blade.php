@@ -20,10 +20,12 @@
             <dl class="mt-4 ml-auto max-w-xs space-y-1 text-sm">
                 <div class="flex justify-between"><dt>Productos</dt><dd>{{ cop($so->subtotal) }}</dd></div>
                 <div class="flex justify-between"><dt>{{ $so->shipping_method === 'recogida' ? 'Recogida' : 'Envío' }}</dt><dd>{{ cop($so->shipping_total) }}</dd></div>
-                @if ($so->discount_total)<div class="flex justify-between text-emerald-700"><dt>Cupón ({{ $so->discount_funded_by === 'tienda' ? 'lo asume tu tienda' : 'lo asume MarketCity' }})</dt><dd>− {{ cop($so->discount_total) }}</dd></div>@endif
+                @if ($so->discount_total && $so->discount_funded_by === 'tienda')<div class="flex justify-between text-red-700"><dt>Cupón de tu tienda</dt><dd>− {{ cop($so->discount_total) }}</dd></div>@endif
                 <div class="flex justify-between text-red-700"><dt>Comisión MarketCity</dt><dd>− {{ cop($so->commission_amount) }}</dd></div>
+                @php($refundAdjust = $so->status === 'cancelado' ? 0 : max(0, $so->subtotal + $so->shipping_total - ($so->discount_funded_by === 'tienda' ? (int) $so->discount_total : 0) - $so->commission_amount - $so->seller_net))
+                @if ($refundAdjust)<div class="flex justify-between text-red-700"><dt>Reembolso a tu cargo</dt><dd>− {{ cop($refundAdjust) }}</dd></div>@endif
                 <div class="flex justify-between border-t border-slate-200 pt-1 font-bold"><dt>Tu neto</dt><dd>{{ cop($so->seller_net) }}</dd></div>
-                @if ($so->refunded_total)<div class="flex justify-between text-rose-700"><dt>Reembolsado al cliente</dt><dd>{{ cop($so->refunded_total) }}</dd></div>@endif
+                @if ($so->discount_total && $so->discount_funded_by !== 'tienda')<p class="text-xs text-slate-500">El cliente usó el cupón {{ $so->order->coupon_code }} (−{{ cop($so->discount_total) }}). Lo asume MarketCity: no cambia tu neto.</p>@endif
                 @if ($so->settlement_due_on)<div class="flex justify-between text-slate-500"><dt>Liquidación</dt><dd>{{ $so->settled_at ? 'Pagada '.fecha($so->settled_at, 'd/m/Y') : 'Programada '.$so->settlement_due_on->format('d/m/Y') }}</dd></div>@endif
             </dl>
         </section>

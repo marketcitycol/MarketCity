@@ -19,12 +19,13 @@
             <ul class="mt-2 text-sm text-slate-600">@foreach ($so->items as $i)<li>{{ $i->quantity }} × {{ $i->name }} ({{ $i->sku }}) — {{ cop($i->line_total) }}</li>@endforeach</ul>
             <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-4">
                 <div><dt class="text-xs text-slate-500">Productos</dt><dd>{{ cop($so->subtotal) }}</dd></div>
-                <div><dt class="text-xs text-slate-500">Envío</dt><dd>{{ cop($so->shipping_total) }}@if ($so->discount_total)<br><span class="text-xs text-emerald-700">Cupón −{{ cop($so->discount_total) }} ({{ $so->discount_funded_by === 'tienda' ? 'tienda' : 'MarketCity' }})</span>@endif</dd></div>
+                <div><dt class="text-xs text-slate-500">Envío</dt><dd>{{ cop($so->shipping_total) }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Comisión</dt><dd>{{ cop($so->commission_amount) }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Neto vendedor</dt><dd class="font-semibold">{{ cop($so->seller_net) }}</dd></div>
             </dl>
             @if (isset($so->commission_rule['percent']))<p class="mt-1 text-xs text-slate-500">Regla aplicada: {{ $so->commission_rule['percent'] }} % + {{ cop($so->commission_rule['fixed'] ?? 0) }} ({{ $so->commission_rule['source'] ?? '' }})</p>@elseif ($so->commission_rule)<p class="mt-1 text-xs text-slate-500">{{ $so->commission_rule['nota'] ?? 'Pedido histórico' }}</p>@endif
             @if ($so->settlement_due_on)<p class="mt-1 text-xs text-slate-500">Liquidación: {{ $so->settled_at ? 'pagada '.fecha($so->settled_at, 'd/m/Y').' · '.$so->settlement_reference : 'programada '.$so->settlement_due_on->format('d/m/Y') }}</p>@endif
+            @if ($so->discount_total)<p class="mt-1 text-xs text-emerald-700">Cupón {{ $order->coupon_code }}: −{{ cop($so->discount_total) }}, lo asume {{ $so->discount_funded_by === 'tienda' ? 'la tienda (ya restado del neto)' : 'MarketCity (no cambia el neto del vendedor)' }}</p>@endif
             @if ($so->refunded_total)<p class="mt-1 text-xs text-rose-700">Reembolsado: {{ cop($so->refunded_total) }}</p>@endif
             @if ($so->tracking_number)<p class="mt-1 text-sm">Guía: {{ $so->carrierName() }} {{ $so->tracking_number }}</p>@endif
             @if (! in_array($so->status, ['entregado', 'cancelado']))

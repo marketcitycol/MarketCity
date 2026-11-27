@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderNoticeMail;
 use App\Models\Order;
 use App\Models\SellerOrder;
 use App\Services\Orders\OrderService;
+use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use RuntimeException;
@@ -63,5 +65,15 @@ class OrderController extends Controller
         $orders->cancel($sellerOrder, $request->user(), $data['reason']);
 
         return back()->with('success', 'Subpedido cancelado y unidades devueltas al inventario.');
+    }
+
+    /** Nota al cliente (en WooCommerce: «Nota para el cliente»): queda en el historial y le llega por correo. */
+    public function note(Request $request, Order $order)
+    {
+        $data = $request->validate(['note' => 'required|string|max:1000']);
+        $order->log('nota', 'Nota al cliente: '.$data['note'], null, $request->user());
+        $sent = Mailer::send($order->email, new OrderNoticeMail($order, 'note', $data['note']));
+
+        return back()->with($sent ? 'success' : 'error', $sent ? 'Nota enviada al cliente.' : 'La nota quedó en el historial, pero el correo no salió. Revisa el correo del servidor.');
     }
 }

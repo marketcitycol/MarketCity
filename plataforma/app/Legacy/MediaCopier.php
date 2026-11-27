@@ -3,6 +3,7 @@
 namespace App\Legacy;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -42,13 +43,50 @@ class MediaCopier
         if ($failedNow) {
             Setting::put('legacy_media_failed', json_encode(array_values(array_unique([...$this->failed(), ...$failedNow]))));
         }
+        // Con el lote de fotos principales terminado, siguen las de la galería.
+        $left = $limit - $copied - count($failedNow);
+        if ($left > 0) {
+            $copied += $this->copyGalleryBatch($left);
+        }
 
-        return ['copied' => $copied, 'failed' => count($this->failed()), 'remaining' => $this->pendingQuery()->count()];
+        return ['copied' => $copied, 'failed' => count($this->failed()) + count($this->failedGallery()), 'remaining' => $this->pendingQuery()->count() + $this->pendingGalleryQuery()->count()];
+    }
+
+    public function pendingGalleryQuery()
+    {
+        return ProductImage::where('path', 'like', 'http%')->whereNotIn('id', $this->failedGallery());
+    }
+
+    private function copyGalleryBatch(int $limit): int
+    {
+        $copied = 0;
+        $failedNow = [];
+        foreach ($this->pendingGalleryQuery()->orderBy('id')->take($limit)->get() as $image) {
+            $path = $this->copy((string) $image->path);
+            if ($path) {
+                $image->update(['path' => $path]);
+                $copied++;
+            } else {
+                $failedNow[] = $image->id;
+            }
+        }
+        if ($failedNow) {
+            Setting::put('legacy_gallery_failed', json_encode(array_values(array_unique([...$this->failedGallery(), ...$failedNow]))));
+        }
+
+        return $copied;
+    }
+
+    /** @return list<int> */
+    public function failedGallery(): array
+    {
+        return array_map('intval', json_decode((string) Setting::get('legacy_gallery_failed', '[]'), true) ?: []);
     }
 
     public function retryFailed(): void
     {
         Setting::put('legacy_media_failed', '[]');
+        Setting::put('legacy_gallery_failed', '[]');
     }
 
     /** @return list<int> */

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
 use App\Models\User;
+use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,6 +56,7 @@ class AuthController extends Controller
         ], ['terms.accepted' => 'Debes aceptar la política de tratamiento de datos.']);
 
         $user = User::create($data + ['role' => 'customer']);
+        Mailer::send($user->email, new WelcomeMail($user));
         Auth::login($user);
         $request->session()->regenerate();
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderNoticeMail;
 use App\Mail\OrderPlacedMail;
 use App\Services\Marketing\AbandonedCarts;
 use App\Services\Marketing\MessagingPermissions;
@@ -91,12 +92,13 @@ class CheckoutController extends Controller
             $next = $this->payments->get($order->payment_method)->start($order, $payment);
         } catch (RuntimeException $e) {
             // La pasarela no respondió: el pedido se cancela y las unidades vuelven, para no dejar stock tomado.
-            $orders->markFailed($order, $payment, ['error' => $e->getMessage()], 'La pasarela no respondió');
+            $orders->markFailed($order, $payment, ['error' => $e->getMessage()], 'La pasarela no respondió', notify: false);
 
             return redirect()->route('cart')->with('error', $e->getMessage());
         }
         $this->cart->clear();
         Mailer::send($order->email, new OrderPlacedMail($order->fresh()));
+        OrderService::notifyAdmins(new OrderNoticeMail($order->fresh(), 'admin-new'));
 
         return redirect()->to($next);
     }

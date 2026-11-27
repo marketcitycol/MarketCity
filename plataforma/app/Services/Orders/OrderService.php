@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Mail\OrderNoticeMail;
 use App\Mail\OrderShippedMail;
 use App\Mail\PaymentConfirmedMail;
 use App\Mail\SellerNewOrderMail;
@@ -219,12 +220,12 @@ class OrderService
     }
 
     /** Pago rechazado: el pedido queda cancelado y el stock vuelve. */
-    public function markFailed(Order $order, Payment $payment, array $payload = [], string $reason = 'Pago rechazado'): void
+    public function markFailed(Order $order, Payment $payment, array $payload = [], string $reason = 'Pago rechazado', bool $notify = true): void
     {
-        DB::transaction(function () use ($order, $payment, $payload, $reason) {
+        $applied = DB::transaction(function () use ($order, $payment, $payload, $reason) {
             $order = Order::lockForUpdate()->findOrFail($order->id);
             if ($order->payment_status !== 'pending') {
-                return;
+                return false;
             }
             $payment->update(['status' => 'declined', 'payload' => $payload]);
             $order->update(['payment_status' => 'failed']);
@@ -232,7 +233,23 @@ class OrderService
                 $this->cancel($so, null, $reason);
             }
             $order->log('pago', $reason.'. El pedido se canceló y las unidades volvieron al inventario.');
+
+            return true;
         });
+        // Correos «pago fallido» al cliente (con el plan B) y al equipo, como en WooCommerce.
+        if ($applied && $notify) {
+            $order->refresh();
+            Mailer::send($order->email, new OrderNoticeMail($order, 'payment-failed', $reason));
+            self::notifyAdmins(new OrderNoticeMail($order, 'admin-failed', $reason));
+        }
+    }
+
+    /** Avisos internos: a cada cuenta del equipo (rol administrador). */
+    public static function notifyAdmins(OrderNoticeMail $mail): void
+    {
+        foreach (User::where('role', User::ROLE_ADMIN)->pluck('email') as $admin) {
+            Mailer::send($admin, clone $mail);
+        }
     }
 
     public function advance(SellerOrder $so, string $to, ?User $by, ?string $carrier = null, ?string $tracking = null): void
@@ -263,6 +280,9 @@ class OrderService
         if ($to === 'despachado') {
             Mailer::send($so->order->email, new OrderShippedMail($so));
         }
+        if ($to === 'entregado') {
+            Mailer::send($so->order->email, new OrderNoticeMail($so->order, 'delivered', null, $so));
+        }
     }
 
     public function cancel(SellerOrder $so, ?User $by, string $reason): void
@@ -282,6 +302,10 @@ class OrderService
         EmailPriceCoupon::whereIn('id', $so->items->pluck('coupon_id')->filter())->update(['used_at' => null, 'order_id' => null]);
         $so->order->log('estado', "{$so->store->name}: cancelado ({$reason}).", $so, $by);
         $this->syncCampaigns($so->order);
+        // Cancelación hecha por una persona (tienda o equipo): se le cuenta al cliente. La del pago fallido tiene su propio correo.
+        if ($by) {
+            Mailer::send($so->order->email, new OrderNoticeMail($so->order, 'cancelled', $reason, $so));
+        }
     }
 
     public function settle(SellerOrder $so, User $by, string $reference): void

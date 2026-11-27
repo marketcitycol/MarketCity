@@ -23,11 +23,11 @@
 </div>
 
 @php($copier = app(\App\Legacy\MediaCopier::class))
-@php($remaining = $copier->pendingQuery()->count())
-@php($failed = count($copier->failed()))
+@php($remaining = $copier->pendingQuery()->count() + $copier->pendingGalleryQuery()->count())
+@php($failed = count($copier->failed()) + count($copier->failedGallery()))
 <section class="card mt-6 max-w-2xl p-5 text-sm">
     <h2 class="font-semibold">Fotos del sitio anterior</h2>
-    <p class="mt-1 text-slate-600">{{ $remaining }} productos todavía muestran la foto desde marketcity.co. Cópialas aquí antes de apagar WordPress; se hace por lotes de 15 y la página sigue sola.@if ($failed) {{ $failed }} no se pudieron copiar (enlace roto o archivo que no es imagen).@endif</p>
+    <p class="mt-1 text-slate-600">{{ $remaining }} fotos (principales y de galería) todavía se cargan desde marketcity.co. Cópialas aquí antes de apagar WordPress; se hace por lotes de 15 y la página sigue sola.@if ($failed) {{ $failed }} no se pudieron copiar (enlace roto o archivo que no es imagen).@endif</p>
     <form method="post" action="{{ route('admin.import.media') }}" class="mt-3 flex flex-wrap items-center gap-3" id="mc-media-form">
         @csrf
         <button class="btn-primary" @disabled(! $remaining && ! $failed)>Copiar fotos</button>

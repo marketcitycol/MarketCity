@@ -120,6 +120,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::get('/pedidos', [Admin\OrderController::class, 'index'])->name('orders');
     Route::get('/pedidos/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');
     Route::post('/pedidos/{order}/pago-recibido', [Admin\OrderController::class, 'markPaid'])->name('orders.paid');
+    Route::post('/pedidos/{order}/nota', [Admin\OrderController::class, 'note'])->middleware('throttle:20,1')->name('orders.note');
     Route::post('/subpedidos/{sellerOrder}/estado', [Admin\OrderController::class, 'advance'])->name('orders.advance');
     Route::post('/subpedidos/{sellerOrder}/cancelar', [Admin\OrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/vendedores', [Admin\StoreController::class, 'index'])->name('stores');

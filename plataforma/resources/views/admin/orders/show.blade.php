@@ -45,6 +45,14 @@
                 @foreach ($order->events as $e)<li><span class="text-slate-500">{{ fecha($e->created_at) }}</span> · {{ $e->message }} @if ($e->user)<span class="text-xs text-slate-500">({{ $e->user->name }})</span>@endif</li>@endforeach
             </ul>
         </section>
+
+        <form method="post" action="{{ route('admin.orders.note', $order) }}" class="card space-y-2 p-5 text-sm">
+            @csrf
+            <label for="note" class="font-semibold">Nota para el cliente</label>
+            <textarea id="note" name="note" rows="3" maxlength="1000" class="input" required placeholder="Ej.: Tu pedido sale mañana porque la transportadora no recogió hoy."></textarea>
+            <p class="text-xs text-slate-500">Le llega por correo a {{ $order->email }} y queda en el historial.</p>
+            <button class="btn-ghost btn-sm">Enviar nota</button>
+        </form>
     </div>
 
     <aside class="space-y-5">

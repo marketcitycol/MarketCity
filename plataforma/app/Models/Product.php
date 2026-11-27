@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -61,6 +62,21 @@ class Product extends Model
     public function inStock(): bool
     {
         return $this->stock > 0;
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('position')->orderBy('id');
+    }
+
+    /**
+     * Fotos para la galería de la ficha: la principal primero y luego las adicionales, sin repetir.
+     *
+     * @return list<string>
+     */
+    public function galleryUrls(): array
+    {
+        return collect([$this->imageUrl()])->merge($this->images->map->url())->filter()->unique()->values()->all();
     }
 
     public function imageUrl(): ?string

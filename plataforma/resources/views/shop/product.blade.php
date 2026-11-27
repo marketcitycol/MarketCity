@@ -14,6 +14,7 @@
 @if ($product->brand)<meta property="product:brand" content="{{ $product->brand->name }}">@endif
 <script type="application/ld+json">{!! json_encode([
     '@'.'context' => 'https://schema.org', '@type' => 'Product', 'name' => $product->name, 'sku' => $product->sku,
+    'image' => array_map(fn ($u) => url($u), $product->galleryUrls()) ?: null,
     'brand' => $product->brand ? ['@type' => 'Brand', 'name' => $product->brand->name] : null,
     'offers' => ['@type' => 'Offer', 'priceCurrency' => 'COP', 'price' => $product->price, 'url' => route('product', $product),
         'availability' => $product->inStock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -30,7 +31,25 @@
 </nav>
 
 <div class="mt-4 grid gap-8 lg:grid-cols-2">
-    <div class="card aspect-square overflow-hidden">@include('partials.product-image', ['size' => 'text-9xl'])</div>
+    @php($photos = $product->galleryUrls())
+    <div>
+        <div class="card aspect-square overflow-hidden">
+            @if (count($photos) > 1)
+                <img src="{{ $photos[0] }}" alt="{{ $product->name }}" class="h-full w-full object-cover" data-gallery-main>
+            @else
+                @include('partials.product-image', ['size' => 'text-9xl'])
+            @endif
+        </div>
+        @if (count($photos) > 1)
+            {{-- Galería: las miniaturas cambian la foto grande (sin recargar). --}}
+            <div class="mt-3 flex gap-2 overflow-x-auto" role="list" aria-label="Fotos del producto">
+                @foreach ($photos as $i => $url)
+                    <button type="button" role="listitem" data-gallery-thumb="{{ $url }}" aria-label="Ver foto {{ $i + 1 }} de {{ count($photos) }}" @if ($i === 0) aria-current="true" @endif
+                        class="h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 {{ $i === 0 ? 'border-brand-500' : 'border-transparent' }}"><img src="{{ $url }}" alt="" class="h-full w-full object-cover" loading="lazy"></button>
+                @endforeach
+            </div>
+        @endif
+    </div>
 
     <div>
         <h1 class="text-2xl font-bold sm:text-3xl">{{ $product->name }}</h1>

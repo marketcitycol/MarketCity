@@ -311,3 +311,20 @@ if (sheet) {
         });
     });
 })();
+
+// Galería de la ficha: al tocar una miniatura cambia la foto grande.
+(function () {
+    const main = document.querySelector('[data-gallery-main]');
+    if (!main) return;
+    document.querySelectorAll('[data-gallery-thumb]').forEach((b) => {
+        b.addEventListener('click', () => {
+            main.src = b.dataset.galleryThumb;
+            document.querySelectorAll('[data-gallery-thumb]').forEach((o) => {
+                const on = o === b;
+                o.classList.toggle('border-brand-500', on);
+                o.classList.toggle('border-transparent', !on);
+                on ? o.setAttribute('aria-current', 'true') : o.removeAttribute('aria-current');
+            });
+        });
+    });
+})();

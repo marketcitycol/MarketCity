@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\Campaigns\CampaignService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,8 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $this->own($request, $product);
-        $product->update($this->validated($request, $product));
+        // Durante una campaña, el precio que escribe el vendedor queda como precio normal (#77).
+        $product->update(app(CampaignService::class)->protectBasePrice($product, $this->validated($request, $product)));
 
         return redirect()->route('seller.products.index')->with('success', 'Producto actualizado.');
     }
@@ -68,6 +70,12 @@ class ProductController extends Controller
 
     private function validated(Request $request, ?Product $product = null): array
     {
+        // Precios en pesos (#74): «1.200.000» o «$ 1,200,000» se guardan como 1200000, nunca como 1,2.
+        foreach (['price', 'regular_price'] as $k) {
+            if (is_string($request->input($k)) && preg_match('/^\s*\$?\s*\d{1,3}([.,]\d{3})+\s*$/', $request->input($k))) {
+                $request->merge([$k => preg_replace('/\D/', '', $request->input($k))]);
+            }
+        }
         $data = $request->validate([
             'name' => 'required|string|max:150',
             'sku' => 'nullable|string|max:64',

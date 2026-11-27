@@ -18,6 +18,16 @@
                 <div><label class="label" for="email">Correo</label><input class="input" type="email" id="email" name="email" value="{{ old('email', $user?->email) }}" required autocomplete="email"></div>
                 <div><label class="label" for="phone">Celular</label><input class="input" id="phone" name="phone" value="{{ old('phone', $user?->phone) }}" required inputmode="tel" autocomplete="tel" placeholder="300 123 4567"></div>
             </div>
+            {{-- Permisos de mensajes por canal (#82): opcionales, nada viene marcado. --}}
+            <fieldset class="mt-4 rounded-lg bg-surface p-3 text-xs text-slate-600" data-messages-consent data-url="{{ route('checkout.messages') }}">
+                <legend class="sr-only">Mensajes opcionales</legend>
+                <p>Si no terminas la compra, ¿te recordamos tu carrito y te contamos ofertas? Opcional:</p>
+                <div class="mt-2 flex flex-wrap gap-4">
+                    <label class="flex items-center gap-2"><input type="checkbox" name="messages[email]" value="1" @checked(old('messages.email'))> Correo</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="messages[whatsapp]" value="1" @checked(old('messages.whatsapp'))> WhatsApp</label>
+                </div>
+                <p class="mt-2 text-[11px] leading-4 text-slate-500">Te escribimos máximo una vez al día, de lunes a viernes de 7 a. m. a 7 p. m. y sábados de 8 a. m. a 3 p. m. Puedes retirarte desde cualquier mensaje. Responsable: {{ \App\Models\MerchantEntity::current()?->legal_name ?? 'MarketCity' }}. Tus derechos y la política están en <a class="underline" href="{{ url('/politica-de-privacidad') }}">Política de privacidad</a> (Ley 1581 de 2012 y Ley 2300 de 2023).</p>
+            </fieldset>
         </section>
 
         <section class="card p-5">
@@ -65,6 +75,7 @@
                 <p class="font-medium">{{ $g['store']->name }}</p>
                 @foreach ($g['lines'] as $line)
                     <p class="flex justify-between text-slate-600"><span>{{ $line['quantity'] }} × {{ \Illuminate\Support\Str::limit($line['product']->name, 32) }}</span><span>{{ cop($line['line_total']) }}</span></p>
+                    @if ($line['discount'])<p class="flex justify-between text-xs text-emerald-700"><span>Precio con correo (1 unidad, código {{ $line['coupon']->code }})</span><span>−{{ cop($line['discount']) }}</span></p>@endif
                 @endforeach
                 <p class="flex justify-between text-slate-500"><span>{{ $method === 'recogida' ? 'Recogida en tienda' : 'Envío' }}</span><span>{{ $ship ? cop($ship) : 'Gratis' }}</span></p>
                 <input type="hidden" name="shipping[{{ $g['store']->id }}]" value="{{ $method }}">
@@ -75,8 +86,6 @@
 
         <label class="mt-4 flex items-start gap-2 text-xs text-slate-600"><input type="checkbox" name="terms" value="1" class="mt-0.5" @checked(old('terms')) required>
             <span>Acepto los términos y condiciones y autorizo el tratamiento de mis datos personales según la política de privacidad (Ley 1581 de 2012).</span></label>
-        <label class="mt-2 flex items-start gap-2 text-xs text-slate-600"><input type="checkbox" name="marketing_optin" value="1" class="mt-0.5" @checked(old('marketing_optin'))>
-            <span>Quiero recibir ofertas por correo y WhatsApp (puedo retirarme cuando quiera).</span></label>
         <button class="btn-primary mt-4 w-full">Realizar el pedido</button>
     </aside>
 </form>

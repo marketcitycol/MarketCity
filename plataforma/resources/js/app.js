@@ -225,3 +225,45 @@ if (sheet) {
     if (choice === 'granted') load();
     else if (!choice && banner) banner.classList.remove('hidden');
 })();
+
+// Permisos de mensajes en el pago (#82 y #83): cada cambio de casilla se guarda al instante, siempre con el
+// último estado, para poder recordar el carrito si el cliente no termina la compra. Nada viene marcado.
+(function () {
+    const box = document.querySelector('[data-messages-consent]');
+    const form = box && box.closest('form');
+    if (!box || !form) return;
+    const token = form.querySelector('input[name="_token"]');
+    let timer = null;
+    let busy = false;
+    let again = false;
+
+    function payload() {
+        const v = (n) => (form.querySelector(`[name="${n}"]`) || {}).value || '';
+        const c = (n) => !!(form.querySelector(`[name="messages[${n}]"]`) || {}).checked;
+        return { email: v('email'), phone: v('phone'), first_name: v('first_name'), messages: { email: c('email'), whatsapp: c('whatsapp') } };
+    }
+
+    async function sync(retry = true) {
+        if (busy) { again = true; return; }
+        busy = true;
+        try {
+            const r = await fetch(box.dataset.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': token ? token.value : '' },
+                body: JSON.stringify(payload()),
+            });
+            if (r.status >= 500 && retry) { busy = false; return sync(false); }
+        } catch (e) {
+            if (retry) { busy = false; return sync(false); }
+        }
+        busy = false;
+        if (again) { again = false; sync(); }
+    }
+
+    const anyChecked = () => !!box.querySelector('input[type="checkbox"]:checked');
+    box.addEventListener('change', () => { clearTimeout(timer); timer = setTimeout(sync, 250); });
+    ['email', 'phone'].forEach((n) => {
+        const el = form.querySelector(`[name="${n}"]`);
+        if (el) el.addEventListener('change', () => { if (anyChecked()) sync(); });
+    });
+})();

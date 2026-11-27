@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\Marketing\MessagingPermissions;
 use App\Services\Orders\OrderService;
 use App\Services\Payments\BankTransferGateway;
 use App\Services\Payments\PaymentRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class OrderController extends Controller
 {
@@ -73,13 +75,46 @@ class OrderController extends Controller
         return view('shop.track');
     }
 
+    /**
+     * Rastreo seguro (traslado del snippet #65): número de pedido + correo o celular de la compra.
+     * Mismo mensaje si el pedido no existe o si el dato no coincide. Límites: 15 fallos por IP en
+     * 15 minutos y 5 fallos con celular por pedido en 24 horas (con el correo se puede seguir).
+     */
     public function track(Request $request)
     {
-        $data = $request->validate(['number' => 'required|string|max:20', 'email' => 'required|email']);
-        $order = Order::where('number', strtoupper(trim($data['number'])))->where('email', $data['email'])->first();
+        $data = $request->validate([
+            'number' => 'required|string|max:20',
+            'contact' => 'required_without:email|nullable|string|max:120',
+            'email' => 'nullable|string|max:120',
+            'website' => 'nullable|max:0',
+        ]);
+        $ipKey = 'track-ip:'.sha1((string) $request->ip());
+        if (RateLimiter::tooManyAttempts($ipKey, 15)) {
+            return back()->withInput()->with('error', 'Hiciste muchos intentos. Espera 15 minutos y vuelve a probar.');
+        }
 
-        if (! $order) {
-            return back()->withInput()->with('error', 'No encontramos un pedido con ese número y ese correo.');
+        $digits = preg_replace('/\D+/', '', $data['number']);
+        $number = $digits === '' ? '' : 'MC-'.str_pad(ltrim($digits, '0') ?: '0', 6, '0', STR_PAD_LEFT);
+        $order = $number ? Order::where('number', $number)->first() : null;
+        $contact = trim((string) ($data['contact'] ?? $data['email']));
+        $isEmail = str_contains($contact, '@');
+        $phoneKey = $order ? 'track-phone:'.$order->id : null;
+
+        $match = false;
+        if ($order && $isEmail) {
+            $match = hash_equals(mb_strtolower(trim($order->email)), mb_strtolower($contact));
+        } elseif ($order && ! RateLimiter::tooManyAttempts($phoneKey, 5)) {
+            $given = MessagingPermissions::normalizePhone($contact);
+            $match = $given !== null && $given === MessagingPermissions::normalizePhone($order->phone);
+            if (! $match) {
+                RateLimiter::hit($phoneKey, 24 * 3600);
+            }
+        }
+
+        if (! $match) {
+            RateLimiter::hit($ipKey, 15 * 60);
+
+            return back()->withInput()->with('error', 'No encontramos un pedido con ese número y ese correo o celular.');
         }
 
         return redirect()->route('orders.show', [$order, 't' => $order->access_token]);

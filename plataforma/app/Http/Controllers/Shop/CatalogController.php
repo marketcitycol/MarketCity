@@ -7,8 +7,11 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
+use App\Services\Campaigns\CampaignService;
+use App\Services\Campaigns\EmailPriceService;
 use App\Services\Catalog\StoreDirectory;
 use App\Services\Content\BrandAssets;
+use App\Services\Orders\Cart;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -90,12 +93,24 @@ class CatalogController extends Controller
         ]);
     }
 
-    public function product(Product $product)
+    public function product(Request $request, Product $product, CampaignService $campaigns, EmailPriceService $emailPrices, Cart $cart)
     {
         abort_unless($product->status === 'active' && $product->price >= Product::MIN_PRICE && $product->store->isActive(), 404);
+        // Enlace del correo de precio con correo (?cupon=CODIGO): se aplica al carrito y lleva allá.
+        if ($request->filled('cupon')) {
+            $error = $cart->applyCoupon((string) $request->query('cupon'));
+
+            return redirect()->route($error ? 'product' : 'cart', $error ? $product : [])->with($error ? 'error' : 'success', $error ?? 'Aplicamos tu precio con correo a 1 unidad.');
+        }
+        $campaign = $campaigns->activeFor($product);
 
         return view('shop.product', [
             'product' => $product->load('store', 'category', 'brand'),
+            'campaign' => $campaign,
+            'remaining' => $campaign ? $campaigns->remaining($campaign) : null,
+            'emailOffer' => $emailPrices->offerFor($product),
+            'cutoff' => $campaign ? null : CampaignService::dispatchCutoff(),
+            'maxQty' => $cart->maxFor($product),
             'related' => Product::visible()->with('store')->where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)->take(4)->get(),
         ]);

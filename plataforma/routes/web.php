@@ -6,9 +6,11 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Seller;
+use App\Http\Controllers\Shop\CampaignController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\CatalogController;
 use App\Http\Controllers\Shop\CheckoutController;
+use App\Http\Controllers\Shop\MessagesController;
 use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\PageController;
 use App\Http\Controllers\Shop\PaymentController;
@@ -25,15 +27,22 @@ Route::get('/producto/{product}', [CatalogController::class, 'product'])->name('
 Route::get('/tiendas', [CatalogController::class, 'stores'])->name('stores');
 Route::get('/tienda/{store}', [CatalogController::class, 'store'])->name('store');
 Route::get('/ofertas-relampago', [CatalogController::class, 'offers'])->name('offers');
+Route::get('/campana/{campaign}', [CampaignController::class, 'show'])->name('campaign');
+Route::post('/producto/{product}/precio-con-correo', [CampaignController::class, 'emailPrice'])->middleware('throttle:5,10')->name('product.email-price');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/catalogo/productos.xml', [SitemapController::class, 'feed'])->name('feed');
 
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/carrito', [CartController::class, 'update'])->name('cart.update');
+Route::post('/carrito/cupon', [CartController::class, 'coupon'])->middleware('throttle:10,1')->name('cart.coupon');
+Route::get('/carrito/recuperar/{token}', [CartController::class, 'recover'])->middleware('throttle:20,1')->name('cart.recover');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
 Route::post('/checkout', [CheckoutController::class, 'place'])->middleware('throttle:20,1')->name('checkout.place');
+Route::post('/checkout/permisos', [CheckoutController::class, 'messages'])->middleware('throttle:30,1')->name('checkout.messages');
+Route::get('/mensajes/baja', [MessagesController::class, 'show'])->middleware(['signed', 'throttle:20,1'])->name('marketing.unsubscribe');
+Route::post('/mensajes/baja', [MessagesController::class, 'unsubscribe'])->middleware(['signed', 'throttle:20,1']);
 
 Route::get('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandbox'])->name('payments.sandbox');
 Route::post('/pedido/{order}/pago-de-prueba', [OrderController::class, 'sandboxDecide'])->name('payments.sandbox.decide');
@@ -42,7 +51,7 @@ Route::get('/pagos/regreso/{gateway}/{order}', [PaymentController::class, 'retur
 Route::get('/pedido/{order}/gracias', [OrderController::class, 'thanks'])->name('orders.thanks');
 Route::get('/pedido/{order}', [OrderController::class, 'show'])->name('orders.show');
 Route::get('/rastrear-pedido', [OrderController::class, 'trackForm'])->name('track');
-Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:10,1')->name('track.lookup');
+Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('throttle:30,1')->name('track.lookup');
 
 Route::get('/pqrs', [PqrController::class, 'create'])->name('pqrs.create');
 Route::post('/pqrs', [PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
@@ -124,6 +133,19 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/paginas/importar', [Admin\PageController::class, 'import'])->name('pages.import');
     Route::get('/paginas/{page}', [Admin\PageController::class, 'edit'])->name('pages.edit');
     Route::put('/paginas/{page}', [Admin\PageController::class, 'update'])->name('pages.update');
+    Route::get('/campanas', [Admin\CampaignController::class, 'index'])->name('campaigns');
+    Route::get('/campanas/nueva', [Admin\CampaignController::class, 'create'])->name('campaigns.create');
+    Route::post('/campanas', [Admin\CampaignController::class, 'store'])->name('campaigns.store');
+    Route::put('/campanas/corte-de-despacho', [Admin\CampaignController::class, 'cutoff'])->name('campaigns.cutoff');
+    Route::get('/campanas/{campaign}', [Admin\CampaignController::class, 'edit'])->name('campaigns.edit');
+    Route::put('/campanas/{campaign}', [Admin\CampaignController::class, 'update'])->name('campaigns.update');
+    Route::post('/campanas/{campaign}/productos', [Admin\CampaignController::class, 'addProduct'])->name('campaigns.products');
+    Route::delete('/campanas/{campaign}/productos/{item}', [Admin\CampaignController::class, 'removeProduct'])->name('campaigns.products.remove');
+    Route::get('/mensajes', [Admin\MessagesController::class, 'index'])->name('messages');
+    Route::put('/mensajes', [Admin\MessagesController::class, 'update'])->name('messages.update');
+    Route::post('/mensajes/baja', [Admin\MessagesController::class, 'revoke'])->name('messages.revoke');
+    Route::get('/mensajes/permisos.csv', [Admin\MessagesController::class, 'csv'])->name('messages.csv');
+    Route::post('/mensajes/carritos/{cart}/whatsapp', [Admin\MessagesController::class, 'whatsappSent'])->name('messages.whatsapp');
     Route::get('/plugins', [Admin\PluginController::class, 'index'])->name('plugins');
     Route::get('/plugins/{plugin}', [Admin\PluginController::class, 'edit'])->name('plugins.edit');
     Route::put('/plugins/{plugin}', [Admin\PluginController::class, 'update'])->name('plugins.update');

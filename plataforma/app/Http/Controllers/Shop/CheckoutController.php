@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Mail\OrderPlacedMail;
+use App\Services\Marketing\AbandonedCarts;
+use App\Services\Marketing\MessagingPermissions;
 use App\Services\Orders\Cart;
 use App\Services\Orders\OrderService;
 use App\Services\Payments\PaymentRegistry;
@@ -47,7 +49,9 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:500',
             'payment_method' => ['required', Rule::in($allowed)],
             'terms' => 'accepted',
-            'marketing_optin' => 'nullable|boolean',
+            'messages' => 'nullable|array',
+            'messages.email' => 'nullable|boolean',
+            'messages.whatsapp' => 'nullable|boolean',
             'shipping' => 'nullable|array',
         ], [
             'terms.accepted' => 'Debes aceptar los términos y la política de tratamiento de datos.',
@@ -60,6 +64,14 @@ class CheckoutController extends Controller
             $this->cart->setShippingChoices(array_map(fn ($v) => $v === 'recogida' ? 'recogida' : 'envio', $data['shipping']));
         }
 
+        $channels = ['email' => (bool) ($data['messages']['email'] ?? false), 'whatsapp' => (bool) ($data['messages']['whatsapp'] ?? false)];
+        $data['marketing_optin'] = in_array(true, $channels, true);
+        // Para la compra de Meta por la API de conversiones (#85), solo con consentimiento de medición.
+        $data['user_agent'] = $request->userAgent();
+        $data['analytics_consent'] = $request->cookie('mc_consent') === 'granted';
+        $data['fbp'] = $data['analytics_consent'] ? $this->cookieValue($request, '_fbp', 120) : null;
+        $data['fbc'] = $data['analytics_consent'] ? $this->cookieValue($request, '_fbc', 255) : null;
+
         try {
             $order = $orders->place($data, $data['payment_method'], $request->user(), $request->ip());
         } catch (RuntimeException $e) {
@@ -67,6 +79,11 @@ class CheckoutController extends Controller
         }
 
         session()->push('my_orders', $order->number);
+        // Se guarda lo que quedó marcado o desmarcado al pagar (lo desmarcado se retira).
+        app(MessagingPermissions::class)->record($order->email, $order->phone, $channels, [
+            'source' => 'checkout', 'ip' => $request->ip(), 'user_agent' => $request->userAgent(), 'order_id' => $order->id, 'user_id' => $request->user()?->id, 'session_only' => true,
+        ]);
+        app(AbandonedCarts::class)->attachOrder($request->session()->getId(), $order);
 
         $payment = $orders->createPayment($order);
         try {
@@ -81,5 +98,38 @@ class CheckoutController extends Controller
         Mailer::send($order->email, new OrderPlacedMail($order->fresh()));
 
         return redirect()->to($next);
+    }
+
+    /**
+     * Casillas de mensajes marcadas o desmarcadas antes de pagar (#82 y #83): se registra el permiso
+     * y, si hay alguno, se guarda una copia del carrito para recordárselo si no termina la compra.
+     */
+    public function messages(Request $request, MessagingPermissions $permissions, AbandonedCarts $carts)
+    {
+        $data = $request->validate([
+            'email' => 'nullable|string|max:120',
+            'phone' => 'nullable|string|max:20',
+            'first_name' => 'nullable|string|max:80',
+            'messages' => 'nullable|array',
+            'messages.email' => 'nullable|boolean',
+            'messages.whatsapp' => 'nullable|boolean',
+        ]);
+        $channels = ['email' => (bool) ($data['messages']['email'] ?? false), 'whatsapp' => (bool) ($data['messages']['whatsapp'] ?? false)];
+        $email = MessagingPermissions::normalizeEmail($data['email'] ?? null);
+        $phone = MessagingPermissions::normalizePhone($data['phone'] ?? null);
+        if (($channels['email'] && ! $email) || ($channels['whatsapp'] && ! $phone)) {
+            return response()->json(['ok' => false, 'message' => $channels['email'] && ! $email ? 'Escribe tu correo para recibir mensajes por correo.' : 'Escribe un celular válido para recibir mensajes por WhatsApp.'], 422);
+        }
+        $permissions->record($email, $phone, $channels, ['source' => 'checkout', 'ip' => $request->ip(), 'user_agent' => $request->userAgent(), 'user_id' => $request->user()?->id, 'session_only' => true]);
+        $carts->capture($email, $phone, $data['first_name'] ?? null, $channels, $request->session()->getId(), $request->user()?->id);
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function cookieValue(Request $request, string $name, int $max): ?string
+    {
+        $v = (string) $request->cookie($name, '');
+
+        return preg_match('/^fb\.\d\.\d+\.[\w\-]+$/', $v) ? mb_substr($v, 0, $max) : null;
     }
 }

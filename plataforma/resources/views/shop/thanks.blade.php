@@ -72,7 +72,8 @@
         </div>
     @endif
 </div>
-@if ($order->payment_status !== 'failed')
+{{-- La compra se mide solo con el pago confirmado (#85); si llega después, se envía desde el servidor. --}}
+@if ($order->payment_status === 'paid')
 @include('partials.track', ['event' => 'purchase', 'params' => [
     'transaction_id' => $order->number,
     'currency' => 'COP',

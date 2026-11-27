@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Product;
@@ -108,6 +109,11 @@ class LegacyRedirects
 
         if ($path === '') {
             return $this->fromQuery($query);
+        }
+
+        // La página de campaña de WordPress (#78) va a la campaña propia si existe; si no, a las ofertas.
+        if ($path === 'black-city' && Campaign::where('slug', 'black-city')->where('active', true)->exists()) {
+            return '/campana/black-city';
         }
 
         if (array_key_exists($path, self::EXACT)) {

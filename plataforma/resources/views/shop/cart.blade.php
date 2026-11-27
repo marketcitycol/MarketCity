@@ -28,7 +28,8 @@
                             <div class="flex-1">
                                 <a href="{{ route('product', $p) }}" class="font-medium hover:text-brand-600">{{ $p->name }}</a>
                                 <p class="text-sm text-slate-500">{{ cop($p->price) }} c/u</p>
-                                @if ($line['requested'] > $line['quantity'])<p class="text-xs text-amber-700">Solo hay {{ $p->stock }} unidades: ajustamos la cantidad.</p>@endif
+                                @if ($line['requested'] > $line['quantity'])<p class="text-xs text-amber-700">{{ $line['quantity'] < $p->stock ? 'Quedan '.$line['quantity'].' unidades a precio de campaña' : 'Solo hay '.$p->stock.' unidades' }}: ajustamos la cantidad.</p>@endif
+                                @if ($line['discount'])<p class="text-xs font-semibold text-emerald-700">Precio con correo en 1 unidad (código {{ $line['coupon']->code }}): −{{ cop($line['discount']) }}</p>@endif
                                 <div class="mt-2 flex items-center gap-2">
                                     <label for="qty-{{ $p->id }}" class="sr-only">Cantidad</label>
                                     <input id="qty-{{ $p->id }}" type="number" name="qty[{{ $p->id }}]" value="{{ $line['quantity'] }}" min="0" max="{{ $p->stock }}" class="input w-20">
@@ -50,6 +51,13 @@
         @endforeach
         <button class="btn-ghost">Actualizar carrito</button>
     </div>
+    @push('after-cart')
+    <form method="post" action="{{ route('cart.coupon') }}" class="card mt-4 flex flex-wrap items-end gap-2 p-4 text-sm">
+        @csrf
+        <div class="flex-1"><label for="code" class="label">¿Tienes un código de precio con correo?</label><input id="code" name="code" class="input" maxlength="20" autocomplete="off" placeholder="MCXXXXXXXX"></div>
+        <button class="btn-ghost">Aplicar</button>
+    </form>
+    @endpush
 
     <aside class="card h-fit p-5">
         @php($shipping = $groups->sum(fn ($g) => \App\Services\Orders\Cart::shippingCost($g['store'], $cart->shippingChoice($g['store']->id))))
@@ -64,4 +72,5 @@
     </aside>
 </form>
 @endif
+@stack('after-cart')
 @endsection

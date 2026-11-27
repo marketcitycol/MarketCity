@@ -34,6 +34,11 @@ return [
         'webhook_secret' => env('MP_WEBHOOK_SECRET'),
     ],
 
+    // API de conversiones de Meta (#85). El píxel se configura en Backoffice → Plugins → Medición.
+    'meta' => [
+        'capi_token' => env('META_CAPI_TOKEN'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

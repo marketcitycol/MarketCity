@@ -13,7 +13,7 @@ class Order extends Model
 
     protected function casts(): array
     {
-        return ['paid_at' => 'datetime', 'terms_accepted_at' => 'datetime', 'marketing_optin' => 'boolean'];
+        return ['paid_at' => 'datetime', 'terms_accepted_at' => 'datetime', 'marketing_optin' => 'boolean', 'analytics_consent' => 'boolean', 'meta_purchase_sent_at' => 'datetime'];
     }
 
     public function getRouteKeyName(): string

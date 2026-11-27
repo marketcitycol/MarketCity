@@ -16,4 +16,5 @@
     </form>
     <p class="mt-3 text-xs text-slate-500">Al cambiarla se cierra la sesión en los demás equipos. Usa una contraseña que no uses en otro sitio: con ella se manejan tus ventas y tu cuenta bancaria.</p>
 </section>
+@include('partials.two-factor-settings')
 @endsection

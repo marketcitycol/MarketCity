@@ -27,23 +27,23 @@ Leyenda: **HECHO** = ya existía en v1 · **S1/S2/S3** = ola de este traslado ·
 | 30, 34, 36, 37 | Ocultar tecnología y Blackout | Activos | NO APLICA (sin WordPress no hay huellas que ocultar; v1 ya envía cabeceras de seguridad) |
 | 31, 44, 50 | Login con estilo | Activos | HECHO (ingreso propio) |
 | 32, 63 | Rendimiento y retraso de Google/Meta | Activos | NO APLICA (v1 no carga terceros sin consentimiento) |
-| 33 | Mapa de cobertura sin datos de clientes | Activo | S3 |
-| 35 | Login secreto | Activo | NO APLICA (Backoffice protegido por rol; recomendado: segundo factor, S3) |
+| 33 | Mapa de cobertura sin datos de clientes | Activo | **S3 HECHO** (`CoverageMap`) |
+| 35 | Login secreto | Activo | Reemplazado por verificación en dos pasos (**S3 HECHO**) |
 | 39 | Rechazo de cookies recordado | Activo | HECHO (aviso de cookies) |
 | 43 | Títulos y meta | Activo | HECHO |
-| 45 | Rotar productos del inicio | Activo (vista previa) | S3 |
+| 45 | Rotar productos del inicio | Activo (vista previa) | **S3 HECHO** (Configuración) |
 | 46 | Arreglos QA ronda 3 | Activo | NO APLICA |
 | 47 | Crear cuenta si el correo no existe | Activo | **S2** |
 | 48, 49, 79 | Mi cuenta (detalles, rediseño, «Universo») | Activos (#79 publicado) | **S2**: inicio, pedidos, direcciones, datos, seguridad (con eliminar cuenta), favoritos, notificaciones y consultas. Diseño del manual de marca: ola visual |
 | 52 | Fundaciones SEO y redirecciones | Activo | HECHO (redirecciones 301 propias) |
 | 54 | Carrito lateral | Publicado | HECHO (panel «Agregado al carrito»). El descuento por medio de pago de ELEX queda como DECISIÓN |
 | 57 | Checkout guiado | Publicado | HECHO (checkout propio en una página) |
-| 59 | Páginas de servicio (404, simulador, rastreo) | Publicado | 404: HECHO · simulador de cuotas: S3 |
+| 59 | Páginas de servicio (404, simulador, rastreo) | Publicado | 404: HECHO · simulador de cuotas: **S3 HECHO** |
 | 61 | Sin contraentrega, políticas, buscador | Publicado | HECHO |
 | 62 | Compra sin cuenta y página de gracias | Publicado | HECHO (cédula enmascarada, transferencia con «Copiar») + **S2** «Crear cuenta con un toque» en gracias |
-| 64 | Modo oscuro | Publicado | S3 |
+| 64 | Modo oscuro | Publicado | **S3 HECHO** |
 | 65 | Rastreo seguro | Vista previa | **S1** |
-| 66 | Servicio y limpieza (contacto con copia por correo) | Vista previa | S3 (formulario de contacto) |
+| 66 | Servicio y limpieza (contacto con copia por correo) | Vista previa | **S3 HECHO** (formulario de contacto) |
 | 67 | Accesibilidad lote C | Vista previa | NO APLICA (v1 propia) |
 | 68 | Directorio de tiendas | Publicado | HECHO (/tiendas) + **S2** «Destacar» y «Ocultar del directorio» |
 | 69 | Perfil de vendedor | Vista previa | HECHO tienda, datos legales y cuenta bancaria + **S2** logística, notificaciones y seguridad. Equipo (varios usuarios por tienda): S3 |
@@ -109,9 +109,25 @@ Después de publicar: `php artisan migrate` crea `addresses`, `favorites` y las 
 
 Después de publicar: `php artisan migrate` crea `coupons` y `refunds`, y agrega columnas a `orders`, `seller_orders` y `campaigns`.
 
-Pendiente: los 20 cupones de WooCommerce no se copian solos; se crean en Backoffice → Cupones (o se leen del admin en vivo, solo lectura, y se cargan). Liquidaciones todavía no resta los descuentos pendientes por reembolsos de subpedidos ya pagados: se ven en el pedido.
+Pendiente: los 20 cupones de WooCommerce no se copian solos; se crean en Backoffice → Cupones (o se leen del admin en vivo, solo lectura, y se cargan).
+
+## Ola S3 y resto de P1 (sin decisiones pendientes)
+
+| Pendiente | Qué hace ahora la plataforma | Dónde |
+|---|---|---|
+| Liquidaciones con reembolsos | Lo reembolsado de una venta ya pagada a la tienda se resta de sus siguientes liquidaciones, del más antiguo al más nuevo; lo que no alcanza queda para la próxima. El Backoffice muestra cuánto transferir; el vendedor ve el descuento pendiente y lo transferido. Un pedido reembolsado del todo a cargo de MarketCity sigue apareciendo para liquidar. | `OrderService::settle`, `Refund::undeductedFor` |
+| Preguntas al vendedor (WCFM «Consultas») | Formulario en la ficha del producto; correo a la tienda; respuesta desde Seller Center → Preguntas; correo al cliente y publicación en la ficha. Sin teléfonos, correos ni enlaces. Backoffice → Preguntas para ocultar. | `ProductQuestion`, `Support\ContactGuard` |
+| Contacto (#66) | /contacto con formulario, copia al remitente, «¿Cómo nos conociste?» opcional, trampa y límite por IP. Llega al correo del pie de página; Backoffice → Contacto para marcar atendidos. | `Shop\ContactController` |
+| Mapa de cobertura (#33) | Leaflet + OpenStreetMap en la sección «Explora nuestra cobertura» del inicio, cargado al acercarse. Un punto por ciudad con pedidos pagados; el número solo desde 3. Coordenadas de 498 municipios en `resources/data`. | `Services\Content\CoverageMap` |
+| Rotación del inicio (#45) | Cada sección elige al azar entre un grupo más grande de su mismo criterio y evita repetir productos entre secciones. «Más vendidos» conserva su orden. Se apaga en Configuración. | `CatalogController::home` |
+| Compra ahora, paga después (#59) | /compra-ahora-paga-despues con pasos, simulador (valor ÷ cuotas), aliados y preguntas. Avisa si Addi y Sistecrédito aún no están en el pago. | `shop/bnpl.blade.php` |
+| Modo oscuro (#64) | Botón luna/sol; se recuerda en el navegador y se aplica antes de pintar. Pago, pedido y gracias siempre en claro. | `app.css` (`html[data-theme=dark]`) |
+| Verificación en dos pasos (reemplaza #35) | Seguridad → activar con app autenticadora (QR), 8 códigos de recuperación de un uso. Se pide al ingresar (también con Google). Configuración → «Exigir verificación en dos pasos para entrar al Backoffice». | `Support\Totp`, `Auth\TwoFactorController` |
+| Ingreso con Google | Botón en Ingresar y Registro cuando hay `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en `.env`. Vincula por correo verificado o crea la cuenta de cliente. | `Auth\GoogleController` |
+
+Después de publicar: `php artisan migrate` (tablas `product_questions` y `contact_messages`; columnas en `refunds`, `seller_orders` y `users`). Para Google: crear el «ID de cliente de OAuth» con la URI de redirección `https://<dominio>/ingresar/google/regreso`.
 
 ## Pendientes y decisiones
 
 - **DECISIÓN:** juegos y premios (#28/#29), descuento por medio de pago (ELEX: Addi 5 %, Bold 10 %), y si la «Compra directa» del #87 se activa.
-- **S3:** equipo de la tienda (#69), MarketTurbo (#70), mapa de cobertura (#33), simulador de cuotas (#59), rotación del inicio (#45), modo oscuro (#64), formulario de contacto (#66), segundo factor para el Backoffice.
+- **S3 que falta:** equipo de la tienda (#69, varios usuarios por tienda), MarketTurbo (#70, espera las credenciales del proveedor), inventario por bodega.

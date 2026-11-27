@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\LegacyRedirects;
+use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['role' => EnsureRole::class]);
+        $middleware->alias(['role' => EnsureRole::class, '2fa' => RequireTwoFactor::class]);
         // Los avisos de las pasarelas no traen token CSRF: se validan con su firma.
         // Cookies que escriben scripts del navegador (aviso de cookies y píxel de Meta): no van cifradas.
         $middleware->encryptCookies(except: ['mc_consent', '_fbp', '_fbc']);

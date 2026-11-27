@@ -398,3 +398,9 @@ document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
     });
     btn.addEventListener('mc:paint', paint);
 });
+
+// Código QR del segundo factor (se descarga solo en esa pantalla).
+document.querySelectorAll('canvas[data-qr]').forEach(async (canvas) => {
+    const { default: QRCode } = await import('qrcode');
+    QRCode.toCanvas(canvas, canvas.dataset.qr, { width: 180, margin: 1 });
+});

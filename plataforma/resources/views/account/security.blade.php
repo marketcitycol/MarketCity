@@ -16,6 +16,7 @@
         <p class="text-xs text-slate-500">Se cierra la sesión en los demás equipos. ¿No recuerdas la actual? Cierra sesión y usa «¿Olvidaste tu contraseña?».</p>
     </form>
 </section>
+@include('partials.two-factor-settings')
 
 @if ($user->role === \App\Models\User::ROLE_CUSTOMER)
 <details class="card mt-6 max-w-xl border-red-200 p-5" @if ($errors->hasAny(['confirm'])) open @endif>

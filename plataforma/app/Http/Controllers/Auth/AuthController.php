@@ -30,14 +30,32 @@ class AuthController extends Controller
             return back()->withInput($request->only('email'))->with('login_failed', true)->with('error', 'El correo o la contraseña no coinciden.');
         }
 
-        $request->session()->regenerate();
         $user = $request->user();
+        if ($user->hasTwoFactor()) {
+            // La contraseña es correcta, pero falta el código de la app: se cierra la sesión hasta verificarlo.
+            Auth::logout();
+            $request->session()->regenerate();
+            $request->session()->put([
+                TwoFactorController::SESSION_USER => $user->id,
+                TwoFactorController::SESSION_REMEMBER => $request->boolean('remember'),
+                TwoFactorController::SESSION_AT => now()->timestamp,
+            ]);
 
-        return redirect()->intended(match ($user->role) {
+            return redirect()->route('two-factor.challenge');
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(self::home($user));
+    }
+
+    public static function home(User $user): string
+    {
+        return match ($user->role) {
             'admin' => route('admin.dashboard'),
             'seller' => route('seller.dashboard'),
             default => route('account'),
-        });
+        };
     }
 
     public function registerForm(Request $request)

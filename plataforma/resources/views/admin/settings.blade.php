@@ -18,6 +18,8 @@
         </div>
         <input type="hidden" name="home_rotation" value="0">
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="home_rotation" value="1" @checked($s('home_rotation', '1') === '1')> Rotar los productos de las secciones del inicio en cada visita</label>
+        <input type="hidden" name="admin_requires_2fa" value="0">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="admin_requires_2fa" value="1" @checked($s('admin_requires_2fa', '0') === '1')> Exigir verificación en dos pasos para entrar al Backoffice</label>
         <fieldset>
             <legend class="label">Medios de pago activos</legend>
             @foreach ($gateways as $key => $g)

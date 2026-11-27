@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Legacy as AdminLegacy;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Seller;
 use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\CampaignController;
@@ -75,6 +77,16 @@ Route::post('/ingresar', [AuthController::class, 'login'])->middleware('throttle
 Route::get('/registro', [AuthController::class, 'registerForm'])->name('register');
 Route::post('/registro', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/salir', [AuthController::class, 'logout'])->name('logout');
+Route::get('/ingresar/google', [GoogleController::class, 'redirect'])->middleware('throttle:20,1')->name('login.google');
+Route::get('/ingresar/google/regreso', [GoogleController::class, 'callback'])->middleware('throttle:20,1')->name('login.google.callback');
+Route::get('/ingresar/verificacion', [TwoFactorController::class, 'challengeForm'])->name('two-factor.challenge');
+Route::post('/ingresar/verificacion', [TwoFactorController::class, 'challenge'])->middleware('throttle:6,1');
+Route::middleware('auth')->prefix('seguridad/dos-pasos')->name('two-factor.')->controller(TwoFactorController::class)->group(function () {
+    Route::post('/', 'start')->middleware('throttle:10,1')->name('start');
+    Route::post('/confirmar', 'confirm')->middleware('throttle:10,1')->name('confirm');
+    Route::post('/codigos', 'regenerate')->middleware('throttle:10,1')->name('codes');
+    Route::delete('/', 'disable')->middleware('throttle:10,1')->name('disable');
+});
 Route::get('/olvide-mi-contrasena', [PasswordController::class, 'requestForm'])->middleware('guest')->name('password.request');
 Route::post('/olvide-mi-contrasena', [PasswordController::class, 'sendLink'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
 Route::get('/restablecer-contrasena/{token}', [PasswordController::class, 'resetForm'])->middleware('guest')->name('password.reset');
@@ -124,7 +136,7 @@ Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:selle
 });
 
 // --- Backoffice ---
-Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin', '2fa'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/pedidos', [Admin\OrderController::class, 'index'])->name('orders');
     Route::get('/pedidos/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');

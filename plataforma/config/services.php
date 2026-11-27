@@ -42,6 +42,13 @@ return [
         'events_secret' => env('WOMPI_EVENTS_SECRET'),
     ],
 
+    // Ingreso con Google (OAuth). Credenciales en Google Cloud → APIs y servicios → Credenciales →
+    // «ID de cliente de OAuth» (aplicación web), con la URI de redirección {APP_URL}/ingresar/google/regreso.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    ],
+
     // API de conversiones de Meta (#85). El píxel se configura en Backoffice → Plugins → Medición.
     'meta' => [
         'capi_token' => env('META_CAPI_TOKEN'),

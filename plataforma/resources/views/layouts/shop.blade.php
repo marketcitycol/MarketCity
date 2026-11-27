@@ -21,6 +21,9 @@
     @if (\App\Support\Analytics::active())@include('plugins.analytics-head')@endif
     <link rel="icon" href="{{ asset(ltrim(\App\Services\Content\BrandAssets::ISOTIPO, '/')) }}" type="image/webp">
     <meta name="theme-color" content="#0b2a6f">
+    {{-- Modo oscuro (#64): se aplica antes de pintar, sin parpadeo. Pago, pedido y gracias siempre en claro. --}}
+    @php($lightOnly = request()->routeIs('checkout*', 'payments.*', 'orders.*'))
+    @unless ($lightOnly)<script>try{if(localStorage.getItem('mc-theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>@endunless
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>

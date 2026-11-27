@@ -77,8 +77,48 @@
 .mc-coverage .mc-dot { filter: drop-shadow(0 0 6px rgba(217, 184, 113, .8)); animation: mc-pulse 2.6s ease-in-out infinite; }
 @keyframes mc-pulse { 50% { opacity: .65; } }
 @media (prefers-reduced-motion: reduce) { .mc-coverage .mc-dot { animation: none; } }
-.mc-coverage .leaflet-tooltip.mc-tip { background: rgba(6, 18, 46, .94); color: #fff; border: 1px solid rgba(217, 184, 113, .6); border-radius: 10px; font-size: 12px; }
+.mc-coverage .leaflet-tooltip.leaflet-tooltip.mc-tip { background: rgba(6, 18, 46, .94); color: #fff; border: 1px solid rgba(217, 184, 113, .6); border-radius: 10px; font-size: 12px; }
 .mc-coverage .leaflet-tooltip-top.mc-tip::before { border-top-color: rgba(217, 184, 113, .6); }
-.mc-coverage .leaflet-control-attribution { background: rgba(6, 18, 46, .7); color: #aab; font-size: 10px; }
+.mc-coverage .leaflet-control-attribution.leaflet-control { background: rgba(6, 18, 46, .7); color: #aab; font-size: 10px; }
 .mc-coverage .leaflet-control-attribution a { color: #cdd; }
-.mc-coverage .leaflet-control-zoom a { background: rgba(6, 18, 46, .9); color: #fff; border-color: rgba(217, 184, 113, .35); }
+.mc-coverage.leaflet-container .leaflet-control-zoom.leaflet-bar a { background: rgba(6, 18, 46, .9); color: #fff; border-color: rgba(217, 184, 113, .35); }
+
+/*
+ * Modo oscuro (#64). Todo vive bajo html[data-theme="dark"]: en claro la página no cambia.
+ * Va fuera de las capas de Tailwind para ganarles a las utilidades sin !important.
+ * Islas claras: logos e imágenes sobre fondo blanco (.bg-white con una imagen dentro, .keep-light).
+ */
+html[data-theme='dark'] {
+    color-scheme: dark;
+    --dk-bg: #0b1020;
+    --dk-surface: #121a2e;
+    --dk-surface-2: #19223a;
+    --dk-line: #273250;
+    --dk-text: #eef1f8;
+    --dk-text-2: #c3c9d8;
+    --dk-text-3: #9aa3b8;
+}
+html[data-theme='dark'] body { background-color: var(--dk-bg); color: var(--dk-text-2); }
+html[data-theme='dark'] :is(.bg-white, .card, .input, .btn-ghost) { background-color: var(--dk-surface); }
+html[data-theme='dark'] :is(.bg-surface, .bg-slate-50) { background-color: var(--dk-bg); }
+html[data-theme='dark'] :is(.bg-slate-100, .bg-slate-200, .hover\:bg-slate-50:hover, .hover\:bg-slate-100:hover, .hover\:bg-white:hover) { background-color: var(--dk-surface-2); }
+html[data-theme='dark'] :is(.bg-brand-50, .bg-credit-50, .bg-offer-50, .bg-success-50, .hover\:bg-brand-100:hover) { background-color: #18234a; }
+html[data-theme='dark'] :is(.bg-emerald-50, .bg-amber-50, .bg-red-50) { background-color: var(--dk-surface-2); }
+html[data-theme='dark'] :is(.text-slate-900, .text-slate-800, .text-ink-900, .text-night-900) { color: var(--dk-text); }
+html[data-theme='dark'] :is(.text-slate-700, .text-slate-600, .text-ink-700, .content) { color: var(--dk-text-2); }
+html[data-theme='dark'] :is(.text-slate-500, .text-slate-400, .text-ink-500, .text-ink-400) { color: var(--dk-text-3); }
+html[data-theme='dark'] :is(.text-brand-700, .text-brand-600, .text-electric-600, .content a) { color: #7ea3ff; }
+html[data-theme='dark'] .text-credit-600 { color: #b3a4f5; }
+html[data-theme='dark'] :is(.text-amber-900, .text-amber-800, .text-emerald-800, .text-red-800) { color: var(--dk-text); }
+html[data-theme='dark'] :is(.border-slate-100, .border-slate-200, .border-slate-300, .border-line, .divide-slate-200 > *, .input, .btn-ghost, .card) { border-color: var(--dk-line); }
+html[data-theme='dark'] :is(.border-amber-200, .border-emerald-200, .border-red-200) { border-color: var(--dk-line); }
+html[data-theme='dark'] :is(.content h1, .content h2, .content h3, .content h4) { color: var(--dk-text); }
+html[data-theme='dark'] .input::placeholder { color: #6f7891; }
+html[data-theme='dark'] #mc-header input { background-color: var(--dk-surface); color: var(--dk-text); border-color: var(--dk-line); }
+html[data-theme='dark'] :is(.bg-white:has(> img), img.bg-white, .keep-light) { background-color: #fff; }
+html[data-theme='dark'] #mc-header img[alt='MarketCity'] { filter: brightness(0) invert(1); }
+html[data-theme='dark'] :is(.bg-\[\#f3f5f8\], .bg-\[\#eef1f5\], .bg-\[\#eaf1ff\], .bg-\[\#e8f0ff\], .hover\:bg-\[\#e9edf3\]:hover, .bg-\[\#e9edf3\]) { background-color: var(--dk-surface-2); }
+html[data-theme='dark'] :is(.text-\[\#1e293b\], .text-\[\#080b12\], .label) { color: var(--dk-text); }
+html[data-theme='dark'] :is(.text-\[\#64748b\], .text-\[\#6b7189\], .text-\[\#8a90a6\], .table-std th) { color: var(--dk-text-3); }
+html[data-theme='dark'] :is(.border-\[\#eef0f4\], .border-\[\#e3e8f2\], .border-\[\#d6dae3\], .border-\[\#8a90a6\], .table-std th, .table-std td) { border-color: var(--dk-line); }
+html[data-theme='dark'] .text-\[\#047a3a\] { color: #3ccf7e; }

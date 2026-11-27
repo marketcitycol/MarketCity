@@ -64,4 +64,11 @@ class HomeCoverageTest extends TestCase
         rsort($sorted);
         $this->assertSame($sorted, $ranked); // los más vendidos conservan su orden
     }
+
+    public function test_dark_mode_toggle_is_offered_except_in_checkout_and_pagination_is_in_spanish(): void
+    {
+        $this->get('/')->assertSee('data-theme-toggle', false)->assertSee("localStorage.getItem('mc-theme')", false);
+        $this->get('/checkout')->assertDontSee('data-theme-toggle', false)->assertDontSee("localStorage.getItem('mc-theme')", false);
+        $this->get('/shop')->assertSee('Mostrando')->assertDontSee('Showing');
+    }
 }

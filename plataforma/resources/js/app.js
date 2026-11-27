@@ -376,3 +376,25 @@ if (sim) {
     value.addEventListener('input', update);
     count.addEventListener('change', update);
 }
+
+// Modo oscuro (#64): botón luna/sol; se recuerda en este navegador ("mc-theme") y avisa con "mc:tema".
+document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
+    const root = document.documentElement;
+    const paint = () => {
+        const dark = root.dataset.theme === 'dark';
+        btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+        btn.setAttribute('aria-label', dark ? 'Modo claro' : 'Modo oscuro');
+        btn.title = btn.getAttribute('aria-label');
+        btn.querySelector('.mcdk-moon')?.classList.toggle('hidden', dark);
+        btn.querySelector('.mcdk-sun')?.classList.toggle('hidden', !dark);
+    };
+    paint();
+    btn.addEventListener('click', () => {
+        const dark = root.dataset.theme !== 'dark';
+        if (dark) root.dataset.theme = 'dark'; else delete root.dataset.theme;
+        store.set('mc-theme', dark ? 'dark' : 'light');
+        document.querySelectorAll('[data-theme-toggle]').forEach((b) => b.dispatchEvent(new Event('mc:paint')));
+        document.dispatchEvent(new CustomEvent('mc:tema', { detail: { tema: dark ? 'dark' : 'light' } }));
+    });
+    btn.addEventListener('mc:paint', paint);
+});

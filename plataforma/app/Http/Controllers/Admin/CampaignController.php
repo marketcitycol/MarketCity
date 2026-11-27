@@ -108,6 +108,7 @@ class CampaignController extends Controller
             'starts_at' => 'required|date_format:Y-m-d\TH:i',
             'ends_at' => 'required|date_format:Y-m-d\TH:i|after:starts_at',
             'unit_cap' => 'nullable|integer|min:1|max:100000',
+            'per_customer_limit' => 'nullable|integer|min:1|max:1000',
             'active' => 'nullable|boolean',
             'email_price_enabled' => 'nullable|boolean',
         ]);

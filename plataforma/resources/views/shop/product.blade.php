@@ -59,7 +59,7 @@
 
         @if ($campaign)
             <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-ink-900 px-3 py-1 text-xs font-bold tracking-wide text-white">{{ $campaign->campaign->badge ?: mb_strtoupper($campaign->campaign->name) }}
-                @if ($remaining !== null && $remaining <= 5)<span class="text-accent-400">· quedan {{ $remaining }} a este precio</span>@endif</p>
+                @if ($remaining !== null && $remaining <= 5)<span class="text-accent-400">· quedan {{ $remaining }} a este precio</span>@endif @if ($campaign->campaign->per_customer_limit)<span>· máximo {{ $campaign->campaign->per_customer_limit }} por cliente</span>@endif</p>
             {{-- Cuenta regresiva real: termina cuando termina la campaña (#16). --}}
             <p class="mt-2 text-sm font-semibold text-offer-600" role="timer">⏱ La oferta termina en <span class="font-mono" data-countdown="{{ $campaign->campaign->ends_at->getTimestamp() }}">{{ (int) now()->diffInHours($campaign->campaign->ends_at) }} h</span></p>
         @elseif ($cutoff)

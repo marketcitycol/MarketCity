@@ -54,9 +54,16 @@
     @push('after-cart')
     <form method="post" action="{{ route('cart.coupon') }}" class="card mt-4 flex flex-wrap items-end gap-2 p-4 text-sm">
         @csrf
-        <div class="flex-1"><label for="code" class="label">¿Tienes un código de precio con correo?</label><input id="code" name="code" class="input" maxlength="20" autocomplete="off" placeholder="MCXXXXXXXX"></div>
+        <div class="flex-1"><label for="code" class="label">¿Tienes un cupón o un código de precio con correo?</label><input id="code" name="code" class="input" maxlength="40" autocomplete="off" placeholder="Escribe el código"></div>
         <button class="btn-ghost">Aplicar</button>
     </form>
+    @if ($couponDiscount['coupon'])
+    <form method="post" action="{{ route('cart.coupon.remove') }}" class="card mt-2 flex flex-wrap items-center justify-between gap-2 p-4 text-sm">
+        @csrf @method('delete')
+        <p>Cupón <strong>{{ $couponDiscount['coupon']->code }}</strong>: @if ($couponDiscount['total'] > 0)<span class="text-emerald-700">−{{ cop($couponDiscount['total']) }}</span>@else<span class="text-amber-700">{{ $couponDiscount['error'] }}</span>@endif</p>
+        <button class="btn-ghost btn-sm">Quitar cupón</button>
+    </form>
+    @endif
     @endpush
 
     <aside class="card h-fit p-5">
@@ -65,7 +72,8 @@
         <dl class="mt-3 space-y-2 text-sm">
             <div class="flex justify-between"><dt>Productos</dt><dd>{{ cop($groups->sum('subtotal')) }}</dd></div>
             <div class="flex justify-between"><dt>Envío ({{ $groups->count() }} {{ $groups->count() === 1 ? 'tienda' : 'tiendas' }})</dt><dd>{{ $shipping ? cop($shipping) : 'Gratis' }}</dd></div>
-            <div class="flex justify-between border-t border-slate-200 pt-2 text-base font-bold"><dt>Total</dt><dd>{{ cop($groups->sum('subtotal') + $shipping) }}</dd></div>
+            @if ($couponDiscount['total'] > 0)<div class="flex justify-between font-semibold text-emerald-700"><dt>Cupón {{ $couponDiscount['coupon']->code }}</dt><dd>−{{ cop($couponDiscount['total']) }}</dd></div>@endif
+            <div class="flex justify-between border-t border-slate-200 pt-2 text-base font-bold"><dt>Total</dt><dd>{{ cop(max(0, $groups->sum('subtotal') + $shipping - $couponDiscount['total'])) }}</dd></div>
         </dl>
         <button name="next" value="checkout" class="btn-primary mt-4 w-full">Continuar con la compra</button>
         <a href="{{ route('shop') }}" class="mt-2 block text-center text-sm text-brand-600 hover:underline">Seguir comprando</a>

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\AbandonedCart;
+use App\Models\Coupon;
 use App\Models\Product;
+use App\Services\Campaigns\CampaignService;
 use App\Services\Marketing\AbandonedCarts;
 use App\Services\Orders\Cart;
 use App\Support\Analytics;
@@ -16,7 +18,9 @@ class CartController extends Controller
 
     public function index()
     {
-        return view('shop.cart', ['groups' => $this->cart->groups(), 'cart' => $this->cart]);
+        $groups = $this->cart->groups();
+
+        return view('shop.cart', ['groups' => $groups, 'cart' => $this->cart, 'couponDiscount' => $this->cart->couponDiscount($groups)]);
     }
 
     public function add(Request $request)
@@ -31,7 +35,9 @@ class CartController extends Controller
         }
 
         if ($this->cart->maxFor($product) < 1) {
-            $msg = 'Este producto ya vendió todas sus unidades a precio de campaña. Vuelve en unos minutos.';
+            $msg = app(CampaignService::class)->customerAllowance($product, $request->user()) === 0
+                ? 'Ya llevaste el máximo de unidades por cliente de esta oferta.'
+                : 'Este producto ya vendió todas sus unidades a precio de campaña. Vuelve en unos minutos.';
 
             return $request->expectsJson() ? response()->json(['ok' => false, 'message' => $msg], 422) : back()->with('error', $msg);
         }
@@ -75,13 +81,25 @@ class CartController extends Controller
         return redirect()->route($request->input('next') === 'checkout' ? 'checkout' : 'cart');
     }
 
-    /** Código de precio con correo escrito en el carrito o traído desde el correo (#76). */
+    /** Cupón general o código de precio con correo (#76) escrito en el carrito. */
     public function coupon(Request $request)
     {
-        $data = $request->validate(['code' => 'required|string|max:20']);
+        $data = $request->validate(['code' => 'required|string|max:40']);
+        if ($coupon = Coupon::where('code', Coupon::normalize($data['code']))->first()) {
+            $error = $this->cart->applyGeneralCoupon($coupon);
+
+            return $error ? back()->with('error', $error) : redirect()->route('cart')->with('success', "Aplicamos el cupón {$coupon->code}.");
+        }
         $error = $this->cart->applyCoupon($data['code']);
 
         return $error ? back()->with('error', $error) : redirect()->route('cart')->with('success', 'Aplicamos tu precio con correo a 1 unidad. Paga con el mismo correo con el que lo pediste.');
+    }
+
+    public function removeCoupon()
+    {
+        $this->cart->removeGeneralCoupon();
+
+        return redirect()->route('cart')->with('success', 'Quitamos el cupón.');
     }
 
     /** Enlace de un recordatorio (#83): rehace el carrito en cualquier dispositivo y lleva al pago. */

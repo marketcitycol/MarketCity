@@ -13,7 +13,7 @@ class Campaign extends Model
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime', 'ends_at' => 'datetime', 'active' => 'boolean', 'email_price_enabled' => 'boolean', 'unit_cap' => 'integer'];
+        return ['starts_at' => 'datetime', 'ends_at' => 'datetime', 'active' => 'boolean', 'email_price_enabled' => 'boolean', 'unit_cap' => 'integer', 'per_customer_limit' => 'integer'];
     }
 
     public function getRouteKeyName(): string

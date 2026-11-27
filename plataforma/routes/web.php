@@ -37,6 +37,7 @@ Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/carrito', [CartController::class, 'update'])->name('cart.update');
 Route::post('/carrito/cupon', [CartController::class, 'coupon'])->middleware('throttle:10,1')->name('cart.coupon');
+Route::delete('/carrito/cupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 Route::get('/carrito/recuperar/{token}', [CartController::class, 'recover'])->middleware('throttle:20,1')->name('cart.recover');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
@@ -120,6 +121,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::get('/pedidos', [Admin\OrderController::class, 'index'])->name('orders');
     Route::get('/pedidos/{order}', [Admin\OrderController::class, 'show'])->name('orders.show');
     Route::post('/pedidos/{order}/pago-recibido', [Admin\OrderController::class, 'markPaid'])->name('orders.paid');
+    Route::post('/pedidos/{order}/reembolso', [Admin\OrderController::class, 'refund'])->name('orders.refund');
     Route::post('/pedidos/{order}/nota', [Admin\OrderController::class, 'note'])->middleware('throttle:20,1')->name('orders.note');
     Route::post('/subpedidos/{sellerOrder}/estado', [Admin\OrderController::class, 'advance'])->name('orders.advance');
     Route::post('/subpedidos/{sellerOrder}/cancelar', [Admin\OrderController::class, 'cancel'])->name('orders.cancel');
@@ -166,6 +168,11 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::put('/campanas/{campaign}', [Admin\CampaignController::class, 'update'])->name('campaigns.update');
     Route::post('/campanas/{campaign}/productos', [Admin\CampaignController::class, 'addProduct'])->name('campaigns.products');
     Route::delete('/campanas/{campaign}/productos/{item}', [Admin\CampaignController::class, 'removeProduct'])->name('campaigns.products.remove');
+    Route::get('/cupones', [Admin\CouponController::class, 'index'])->name('coupons');
+    Route::get('/cupones/nuevo', [Admin\CouponController::class, 'create'])->name('coupons.create');
+    Route::post('/cupones', [Admin\CouponController::class, 'store'])->name('coupons.store');
+    Route::get('/cupones/{coupon}', [Admin\CouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/cupones/{coupon}', [Admin\CouponController::class, 'update'])->name('coupons.update');
     Route::get('/mensajes', [Admin\MessagesController::class, 'index'])->name('messages');
     Route::put('/mensajes', [Admin\MessagesController::class, 'update'])->name('messages.update');
     Route::post('/mensajes/baja', [Admin\MessagesController::class, 'revoke'])->name('messages.revoke');

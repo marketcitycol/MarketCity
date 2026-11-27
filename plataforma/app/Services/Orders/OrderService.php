@@ -6,6 +6,7 @@ use App\Mail\OrderNoticeMail;
 use App\Mail\OrderShippedMail;
 use App\Mail\PaymentConfirmedMail;
 use App\Mail\SellerNewOrderMail;
+use App\Models\Coupon;
 use App\Models\EmailPriceCoupon;
 use App\Models\MerchantEntity;
 use App\Models\Order;
@@ -24,7 +25,7 @@ use RuntimeException;
 
 class OrderService
 {
-    public function __construct(private Cart $cart, private CommissionCalculator $commissions, private CampaignService $campaigns) {}
+    public function __construct(private Cart $cart, private CommissionCalculator $commissions, private CampaignService $campaigns, private CouponService $couponRules) {}
 
     /**
      * Crea el pedido a partir del carrito: un subpedido por tienda, descuenta stock y guarda el titular vigente.
@@ -74,6 +75,7 @@ class OrderService
 
             $subtotal = 0;
             $shippingTotal = 0;
+            [$coupon, $discounts] = $this->lockCoupon($groups, $order->email);
 
             foreach ($groups as $group) {
                 $store = $group['store'];
@@ -82,13 +84,16 @@ class OrderService
                     $method = 'envio';
                 }
                 $shipping = Cart::shippingCost($store, $method);
-                $money = $this->commissions->forSellerOrder($group['subtotal'], $shipping, $store);
+                $discount = (int) ($discounts[$store->id] ?? 0);
+                $money = $this->commissions->forSellerOrder($group['subtotal'], $shipping, $store, $discount, $coupon?->fundedBy() ?? 'marketcity', $coupon?->type === 'free_shipping');
 
                 $sellerOrder = $order->sellerOrders()->create([
                     'store_id' => $store->id,
                     'subtotal' => $group['subtotal'],
                     'shipping_method' => $method,
                     'shipping_total' => $shipping,
+                    'discount_total' => $discount,
+                    'discount_funded_by' => $discount ? $coupon->fundedBy() : null,
                     'commission_amount' => $money['commission'],
                     'seller_net' => $money['seller_net'],
                     'commission_rule' => $money['rule'],
@@ -108,8 +113,13 @@ class OrderService
                             ? "Solo quedan {$left} unidades de «{$product->name}» a precio {$campaign->campaign->name}. Ajusta la cantidad."
                             : "«{$product->name}» ya vendió todas sus unidades a precio {$campaign->campaign->name}.");
                     }
-                    $coupon = $this->useCoupon($line, $order, $product);
-                    $discount = $coupon ? (int) $line['discount'] : 0;
+                    // Límite por cliente de la oferta relámpago: por correo y, con sesión, también por cuenta.
+                    if ($campaign && ($limit = $campaign->campaign->per_customer_limit)
+                        && $this->campaigns->boughtBy($campaign, $order->email, $order->user_id) + $line['quantity'] > $limit) {
+                        throw new RuntimeException("«{$product->name}» tiene un máximo de {$limit} ".($limit === 1 ? 'unidad' : 'unidades').' por cliente a precio '.$campaign->campaign->name.'. Ajusta la cantidad.');
+                    }
+                    $emailCoupon = $this->useCoupon($line, $order, $product);
+                    $lineDiscount = $emailCoupon ? (int) $line['discount'] : 0;
 
                     $product->decrement('stock', $line['quantity']);
                     $product->increment('sales_count', $line['quantity']);
@@ -118,13 +128,13 @@ class OrderService
                         'seller_order_id' => $sellerOrder->id,
                         'product_id' => $product->id,
                         'campaign_id' => $campaign?->campaign_id,
-                        'coupon_id' => $coupon?->id,
+                        'coupon_id' => $emailCoupon?->id,
                         'name' => $product->name,
                         'sku' => $product->sku,
                         'unit_price' => $product->price,
                         'quantity' => $line['quantity'],
-                        'line_total' => $product->price * $line['quantity'] - $discount,
-                        'discount_total' => $discount,
+                        'line_total' => $product->price * $line['quantity'] - $lineDiscount,
+                        'discount_total' => $lineDiscount,
                     ]);
                 }
 
@@ -132,8 +142,13 @@ class OrderService
                 $shippingTotal += $shipping;
             }
 
-            $order->update(['subtotal' => $subtotal, 'shipping_total' => $shippingTotal, 'total' => $subtotal + $shippingTotal]);
-            $order->log('creado', 'Pedido creado con '.$groups->count().' '.Str::plural('vendedor', $groups->count()).'.');
+            $discountTotal = array_sum($discounts);
+            $order->update([
+                'subtotal' => $subtotal, 'shipping_total' => $shippingTotal, 'total' => max(0, $subtotal + $shippingTotal - $discountTotal),
+                'coupon_id' => $coupon?->id, 'coupon_code' => $coupon?->code, 'discount_total' => $discountTotal,
+            ]);
+            $order->log('creado', 'Pedido creado con '.$groups->count().' '.($groups->count() === 1 ? 'vendedor' : 'vendedores').'.'
+                .($coupon ? " Cupón {$coupon->code}: −".cop($discountTotal).' (lo asume '.($coupon->store_id ? 'la tienda' : 'MarketCity').').' : ''));
 
             return $order;
         });
@@ -141,6 +156,26 @@ class OrderService
         $this->syncCampaigns($order);
 
         return $order;
+    }
+
+    /**
+     * Cupón general del carrito, releído con bloqueo para que dos pedidos a la vez no pasen el tope de usos.
+     *
+     * @return array{0:?Coupon, 1:array<int,int>}
+     */
+    private function lockCoupon($groups, string $email): array
+    {
+        $coupon = $this->cart->generalCoupon();
+        if (! $coupon) {
+            return [null, []];
+        }
+        $coupon = Coupon::lockForUpdate()->find($coupon->id);
+        $result = $coupon ? $this->couponRules->evaluate($coupon, $groups, $this->cart->shippingByStore($groups), $email) : ['error' => 'Ese cupón ya no existe.'];
+        if ($result['error']) {
+            throw new RuntimeException('Cupón '.($coupon?->code ?? '').': '.$result['error'].' Quítalo del carrito para seguir.');
+        }
+
+        return [$coupon, $result['stores']];
     }
 
     /** Marca usado el cupón de precio con correo de la línea; solo vale con el mismo correo con que se pidió (#76). */

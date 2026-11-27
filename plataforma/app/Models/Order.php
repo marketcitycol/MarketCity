@@ -36,6 +36,21 @@ class Order extends Model
         return $this->hasMany(OrderEvent::class)->latest('id');
     }
 
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class)->latest('id');
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
+    public function refundable(): int
+    {
+        return $this->payment_status === 'paid' ? max(0, $this->total - (int) $this->refunded_total) : 0;
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

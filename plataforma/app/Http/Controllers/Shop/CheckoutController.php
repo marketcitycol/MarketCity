@@ -25,8 +25,11 @@ class CheckoutController extends Controller
             return redirect()->route('cart');
         }
 
+        $groups = $this->cart->groups();
+
         return view('shop.checkout', [
-            'groups' => $this->cart->groups(),
+            'groups' => $groups,
+            'couponDiscount' => $this->cart->couponDiscount($groups, $request->user()?->email),
             'cart' => $this->cart,
             'gateways' => $this->payments->forStores($this->cart->groups()->pluck('store')),
             'user' => $request->user(),

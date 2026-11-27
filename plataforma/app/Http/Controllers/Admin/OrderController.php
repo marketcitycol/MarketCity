@@ -7,6 +7,7 @@ use App\Mail\OrderNoticeMail;
 use App\Models\Order;
 use App\Models\SellerOrder;
 use App\Services\Orders\OrderService;
+use App\Services\Orders\RefundService;
 use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -30,7 +31,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        return view('admin.orders.show', ['order' => $order->load('sellerOrders.store', 'sellerOrders.items', 'events.user', 'payments', 'merchantEntity')]);
+        return view('admin.orders.show', ['order' => $order->load('sellerOrders.store', 'sellerOrders.items', 'events.user', 'payments', 'merchantEntity', 'refunds.user', 'refunds.sellerOrder.store')]);
     }
 
     /** Para transferencia: el operador registra que el dinero llegó, con la referencia del banco. */
@@ -75,5 +76,27 @@ class OrderController extends Controller
         $sent = Mailer::send($order->email, new OrderNoticeMail($order, 'note', $data['note']));
 
         return back()->with($sent ? 'success' : 'error', $sent ? 'Nota enviada al cliente.' : 'La nota quedó en el historial, pero el correo no salió. Revisa el correo del servidor.');
+    }
+
+    /** Reembolso total o parcial, de un subpedido o del pedido, con su referencia en la pasarela o el banco. */
+    public function refund(Request $request, Order $order, RefundService $refunds)
+    {
+        $data = $request->validate([
+            'seller_order_id' => ['nullable', 'integer', Rule::exists('seller_orders', 'id')->where('order_id', $order->id)],
+            'amount' => 'required|integer|min:1',
+            'reason' => 'required|string|max:300',
+            'charged_to' => ['required', Rule::in(['tienda', 'marketcity'])],
+            'restock' => 'nullable|boolean',
+            'reference' => 'nullable|string|max:120',
+        ]);
+        $so = isset($data['seller_order_id']) ? SellerOrder::find($data['seller_order_id']) : null;
+        try {
+            $refund = $refunds->refund($order, $so, (int) $data['amount'], $data['reason'], $data['charged_to'], (bool) ($data['restock'] ?? false), $data['reference'] ?? null, $request->user());
+        } catch (RuntimeException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Reembolso de '.cop($refund->amount).' registrado y avisado al cliente.'
+            .($refund->pending_deduction ? ' El subpedido ya estaba liquidado: descuenta '.cop($refund->seller_debit).' en la próxima liquidación.' : ''));
     }
 }

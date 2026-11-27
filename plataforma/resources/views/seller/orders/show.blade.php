@@ -20,8 +20,10 @@
             <dl class="mt-4 ml-auto max-w-xs space-y-1 text-sm">
                 <div class="flex justify-between"><dt>Productos</dt><dd>{{ cop($so->subtotal) }}</dd></div>
                 <div class="flex justify-between"><dt>{{ $so->shipping_method === 'recogida' ? 'Recogida' : 'Envío' }}</dt><dd>{{ cop($so->shipping_total) }}</dd></div>
+                @if ($so->discount_total)<div class="flex justify-between text-emerald-700"><dt>Cupón ({{ $so->discount_funded_by === 'tienda' ? 'lo asume tu tienda' : 'lo asume MarketCity' }})</dt><dd>− {{ cop($so->discount_total) }}</dd></div>@endif
                 <div class="flex justify-between text-red-700"><dt>Comisión MarketCity</dt><dd>− {{ cop($so->commission_amount) }}</dd></div>
                 <div class="flex justify-between border-t border-slate-200 pt-1 font-bold"><dt>Tu neto</dt><dd>{{ cop($so->seller_net) }}</dd></div>
+                @if ($so->refunded_total)<div class="flex justify-between text-rose-700"><dt>Reembolsado al cliente</dt><dd>{{ cop($so->refunded_total) }}</dd></div>@endif
                 @if ($so->settlement_due_on)<div class="flex justify-between text-slate-500"><dt>Liquidación</dt><dd>{{ $so->settled_at ? 'Pagada '.fecha($so->settled_at, 'd/m/Y') : 'Programada '.$so->settlement_due_on->format('d/m/Y') }}</dd></div>@endif
             </dl>
         </section>

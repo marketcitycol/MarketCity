@@ -98,6 +98,19 @@ Leyenda: **HECHO** = ya existía en v1 · **S1/S2/S3** = ola de este traslado ·
 
 Después de publicar: `php artisan migrate` crea `addresses`, `favorites` y las columnas nuevas de `stores`. Los enlaces viejos `/my-account/orders`, `edit-address` y `edit-account` llevan a la sección nueva.
 
+## P1 tras la revisión (cupones, reembolsos, búsqueda y ofertas)
+
+| Pendiente | Qué hace ahora la plataforma | Dónde |
+|---|---|---|
+| Cupones (WooCommerce → Marketing → Cupones) | Backoffice → Cupones: porcentaje (con tope opcional), valor fijo o envío gratis; compra mínima, fechas, usos totales y por cliente (por correo), sin productos en oferta. Sin tienda lo asume MarketCity (la comisión va sobre el valor de lista y el neto del vendedor no cambia). Con tienda solo vale para sus productos, baja la base de la comisión y sale del neto de esa tienda. Un cupón por carrito; los pedidos cancelados liberan el uso. El tope de usos se revisa con el cupón bloqueado al crear el pedido. | `Coupon`, `CouponService`, `Admin\CouponController` |
+| Reembolsos | En el pedido del Backoffice: «Registrar reembolso» total o parcial, de un subpedido o general, con motivo, referencia y quién lo asume. Sin entregar y con «devolver unidades», el subpedido se cancela. Entregado y a cargo de la tienda: se le devuelve la comisión de lo reembolsado y el resto sale de su neto; si ya estaba liquidado, queda como descuento pendiente. Correo «Te reembolsamos» al cliente. Al completar el total el pedido queda «Reembolsado». No mueve dinero: la devolución se hace en la pasarela o el banco. | `RefundService`, `Admin\OrderController::refund` |
+| Buscador con precios | «audífonos menos de 80 mil», «celular hasta $1.200.000», «tenis entre 100 y 200 mil», «reloj más de 50k», «portátil por debajo de 2 millones». Las medidas («50 pulgadas», «128 GB») no se leen como precio. Cada palabra se busca por separado en nombre, SKU, marca y categoría. | `Support\SearchQuery` |
+| Ofertas relámpago: máximo por cliente | Campañas → «Máximo por cliente en cada producto». Con sesión el carrito no deja pasar del máximo; sin sesión se revisa con el correo al pagar. La ficha muestra «máximo N por cliente». | `CampaignService::customerAllowance` |
+
+Después de publicar: `php artisan migrate` crea `coupons` y `refunds`, y agrega columnas a `orders`, `seller_orders` y `campaigns`.
+
+Pendiente: los 20 cupones de WooCommerce no se copian solos; se crean en Backoffice → Cupones (o se leen del admin en vivo, solo lectura, y se cargan). Liquidaciones todavía no resta los descuentos pendientes por reembolsos de subpedidos ya pagados: se ven en el pedido.
+
 ## Pendientes y decisiones
 
 - **DECISIÓN:** juegos y premios (#28/#29), descuento por medio de pago (ELEX: Addi 5 %, Bold 10 %), y si la «Compra directa» del #87 se activa.

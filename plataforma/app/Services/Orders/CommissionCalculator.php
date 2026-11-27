@@ -26,16 +26,26 @@ class CommissionCalculator
         ];
     }
 
-    /** @return array{commission:int, seller_net:int, rule:array} */
-    public function forSellerOrder(int $subtotal, int $shipping, ?Store $store = null): array
+    /**
+     * Un cupón de MarketCity no toca al vendedor: la comisión va sobre el valor de lista y el descuento
+     * lo pone MarketCity. Un cupón de la tienda baja la base de la comisión y sale del neto del vendedor.
+     *
+     * @return array{commission:int, seller_net:int, rule:array}
+     */
+    public function forSellerOrder(int $subtotal, int $shipping, ?Store $store = null, int $discount = 0, string $fundedBy = 'marketcity', bool $onShipping = false): array
     {
         $rule = $this->rule($store);
-        $commission = (int) round($subtotal * $rule['percent'] / 100) + $rule['fixed'];
-        $commission = min($commission, $subtotal);
+        $byStore = $discount > 0 && $fundedBy === 'tienda';
+        $base = $byStore && ! $onShipping ? max(0, $subtotal - $discount) : $subtotal;
+        $commission = (int) round($base * $rule['percent'] / 100) + $rule['fixed'];
+        $commission = min($commission, $base);
+        if ($discount > 0) {
+            $rule['descuento'] = ['valor' => $discount, 'asume' => $fundedBy, 'sobre' => $onShipping ? 'envio' : 'productos'];
+        }
 
         return [
             'commission' => $commission,
-            'seller_net' => $subtotal + $shipping - $commission,
+            'seller_net' => max(0, $subtotal + $shipping - $commission - ($byStore ? $discount : 0)),
             'rule' => $rule,
         ];
     }

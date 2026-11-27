@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Models\Coupon;
 use App\Models\EmailPriceCoupon;
 use App\Models\Product;
 use App\Models\Store;
@@ -18,7 +19,9 @@ class Cart
 
     private const COUPONS = 'cart.coupons';
 
-    public function __construct(private CampaignService $campaigns, private EmailPriceService $emailPrices) {}
+    private const CODE = 'cart.code';
+
+    public function __construct(private CampaignService $campaigns, private EmailPriceService $emailPrices, private CouponService $couponRules) {}
 
     public function add(Product $product, int $qty = 1): void
     {
@@ -32,8 +35,11 @@ class Cart
     {
         $max = max(1, $product->stock);
         $left = $this->campaigns->maxQuantity($product);
+        $max = $left === null ? $max : max(0, min($max, $left));
+        // Límite por cliente de la oferta: con sesión se descuenta lo que ya compró; sin sesión se revisa al pagar con el correo.
+        $perCustomer = $this->campaigns->customerAllowance($product, auth()->user());
 
-        return $left === null ? $max : max(0, min($max, $left));
+        return $perCustomer === null ? $max : max(0, min($max, $perCustomer));
     }
 
     /** Aplica un código de precio con correo (#76). Devuelve el mensaje de error o null si quedó aplicado. */
@@ -58,6 +64,62 @@ class Cart
         return session(self::COUPONS, []);
     }
 
+    /** Cupón general: se guarda en el carrito si hoy aplica. Devuelve el error o null. */
+    public function applyGeneralCoupon(Coupon $coupon): ?string
+    {
+        $groups = $this->groups();
+        $result = $this->couponRules->evaluate($coupon, $groups, $this->shippingByStore($groups));
+        if ($result['error']) {
+            return $result['error'];
+        }
+        session([self::CODE => $coupon->code]);
+
+        return null;
+    }
+
+    public function generalCoupon(): ?Coupon
+    {
+        $code = session(self::CODE);
+
+        return $code ? Coupon::where('code', $code)->first() : null;
+    }
+
+    public function removeGeneralCoupon(): void
+    {
+        session()->forget(self::CODE);
+    }
+
+    /**
+     * Descuento del cupón general con el carrito de hoy (o el motivo por el que ya no aplica).
+     *
+     * @return array{coupon:?Coupon, error:?string, total:int, stores:array<int,int>}
+     */
+    public function couponDiscount(?Collection $groups = null, ?string $email = null): array
+    {
+        $coupon = $this->generalCoupon();
+        if (! $coupon) {
+            return ['coupon' => null, 'error' => null, 'total' => 0, 'stores' => []];
+        }
+        $groups ??= $this->groups();
+
+        return ['coupon' => $coupon] + $this->couponRules->evaluate($coupon, $groups, $this->shippingByStore($groups), $email);
+    }
+
+    /** @return array<int,int> envío por tienda con lo elegido en el carrito */
+    public function shippingByStore(?Collection $groups = null): array
+    {
+        $out = [];
+        foreach ($groups ?? $this->groups() as $g) {
+            $method = $this->shippingChoice($g['store']->id);
+            if ($method === 'recogida' && ! $g['store']->pickup_enabled) {
+                $method = 'envio';
+            }
+            $out[$g['store']->id] = self::shippingCost($g['store'], $method);
+        }
+
+        return $out;
+    }
+
     public function update(int $productId, int $qty): void
     {
         $items = $this->raw();
@@ -71,7 +133,7 @@ class Cart
 
     public function clear(): void
     {
-        session()->forget([self::KEY, 'cart.shipping', self::COUPONS]);
+        session()->forget([self::KEY, 'cart.shipping', self::COUPONS, self::CODE]);
     }
 
     /** Rehace el carrito desde una copia guardada (enlace de un recordatorio). */

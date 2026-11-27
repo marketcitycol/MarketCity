@@ -71,7 +71,7 @@
         @php($wa = preg_replace('/\D/', '', (string) (\App\Services\Content\Plugins::config('whatsapp')['number'] ?? '')))
         @if ($wa)
             {{-- Pago claro (#87): ayuda por WhatsApp con productos, total y medio elegido; sin datos personales. --}}
-            @php($waText = "Hola MarketCity, tengo una duda para pagar:\n".$groups->flatMap(fn ($g) => $g['lines']->map(fn ($l) => '- '.$l['quantity'].' × '.\Illuminate\Support\Str::limit($l['product']->name, 60)))->join("\n")."\nTotal: ".cop($groups->sum('subtotal') + $groups->sum(fn ($g) => \App\Services\Orders\Cart::shippingCost($g['store'], $cart->shippingChoice($g['store']->id)))))
+            @php($waText = "Hola MarketCity, tengo una duda para pagar:\n".$groups->flatMap(fn ($g) => $g['lines']->map(fn ($l) => '- '.$l['quantity'].' × '.\Illuminate\Support\Str::limit($l['product']->name, 60)))->join("\n")."\nTotal: ".cop(max(0, $groups->sum('subtotal') + $groups->sum(fn ($g) => \App\Services\Orders\Cart::shippingCost($g['store'], $cart->shippingChoice($g['store']->id))) - $couponDiscount['total'])))
             <p class="text-sm text-slate-600">¿Dudas con el pago? <a class="font-semibold text-brand-600 hover:underline" target="_blank" rel="noopener" data-track="whatsapp_click" data-checkout-whatsapp="{{ $wa }}" data-text="{{ $waText }}" href="https://wa.me/{{ $wa }}?text={{ rawurlencode($waText) }}">Escríbenos por WhatsApp</a> y te ayudamos antes de pagar.</p>
         @endif
     </div>
@@ -94,7 +94,13 @@
             </div>
         @endforeach
         <p class="mt-2 text-xs"><a href="{{ route('cart') }}" class="text-brand-600 hover:underline">Cambiar productos o entrega</a></p>
-        <div class="mt-4 flex justify-between border-t border-slate-200 pt-3 text-lg font-bold"><span>Total</span><span>{{ cop($groups->sum('subtotal') + $shippingTotal) }}</span></div>
+        @if ($couponDiscount['coupon'] && $couponDiscount['total'] > 0)
+            <p class="mt-3 flex justify-between text-sm font-semibold text-emerald-700"><span>Cupón {{ $couponDiscount['coupon']->code }}</span><span>−{{ cop($couponDiscount['total']) }}</span></p>
+        @elseif ($couponDiscount['coupon'])
+            <p class="mt-3 rounded-lg bg-amber-50 p-2 text-xs text-amber-800">El cupón {{ $couponDiscount['coupon']->code }} ya no aplica: {{ $couponDiscount['error'] }} <a href="{{ route('cart') }}" class="font-semibold underline">Quitarlo en el carrito</a>.</p>
+        @endif
+        <div class="mt-4 flex justify-between border-t border-slate-200 pt-3 text-lg font-bold"><span>Total</span><span>{{ cop(max(0, $groups->sum('subtotal') + $shippingTotal - $couponDiscount['total'])) }}</span></div>
+        @if ($couponDiscount['coupon'] && $couponDiscount['coupon']->usage_limit_per_customer)<p class="mt-1 text-xs text-slate-500">El cupón se revisa con tu correo al realizar el pedido.</p>@endif
 
         <label class="mt-4 flex items-start gap-2 text-xs text-slate-600"><input type="checkbox" name="terms" value="1" class="mt-0.5" @checked(old('terms')) required>
             <span>Acepto los términos y condiciones y autorizo el tratamiento de mis datos personales según la política de privacidad (Ley 1581 de 2012).</span></label>

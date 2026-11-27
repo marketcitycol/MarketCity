@@ -13,6 +13,7 @@ use App\Services\Catalog\StoreDirectory;
 use App\Services\Content\BrandAssets;
 use App\Services\Orders\Cart;
 use App\Services\Payments\PaymentRegistry;
+use App\Support\SearchQuery;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -55,9 +56,19 @@ class CatalogController extends Controller
         } elseif ($request->filled('categoria')) {
             $q->whereHas('category', fn ($c) => $c->where('slug', $request->string('categoria')));
         }
-        if ($term = trim((string) $request->input('q'))) {
-            $q->where(fn ($w) => $w->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%")
-                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$term}%")));
+        // La búsqueda entiende precios («audífonos menos de 80 mil») y busca cada palabra por separado.
+        $search = SearchQuery::parse(mb_substr((string) $request->input('q'), 0, 120));
+        foreach (array_slice(array_filter(explode(' ', str_replace(['%', '_'], '', $search['term'])), fn ($w) => mb_strlen($w) >= 2), 0, 6) as $word) {
+            $like = '%'.str_replace(['%', '_'], '', $word).'%';
+            $q->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('sku', 'like', $like)
+                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', $like))
+                ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $like)));
+        }
+        if ($search['min'] !== null) {
+            $q->where('price', '>=', $search['min']);
+        }
+        if ($search['max'] !== null) {
+            $q->where('price', '<=', $search['max']);
         }
         if ($request->filled('marca')) {
             $q->whereHas('brand', fn ($b) => $b->where('slug', $request->string('marca')));
@@ -88,6 +99,7 @@ class CatalogController extends Controller
 
         return view('shop.listing', [
             'title' => $title,
+            'search' => $search,
             'category' => $category,
             'products' => $q->paginate(12)->withQueryString(),
             'brands' => Brand::whereHas('products', fn ($p) => $p->where('status', 'active'))->orderBy('name')->get(),

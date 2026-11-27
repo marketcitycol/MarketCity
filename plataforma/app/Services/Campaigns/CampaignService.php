@@ -7,6 +7,7 @@ use App\Models\CampaignProduct;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\User;
 use App\Support\ColombiaCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -115,6 +116,37 @@ class CampaignService
         $item = $this->activeFor($product);
 
         return $item ? $this->remaining($item) : null;
+    }
+
+    /**
+     * Unidades de una oferta que ya compró un cliente (por correo o por su cuenta) en pedidos vigentes.
+     * Sirve para el límite por cliente de las ofertas relámpago.
+     */
+    public function boughtBy(CampaignProduct $item, ?string $email, ?int $userId = null): int
+    {
+        $email = $email ? mb_strtolower(trim($email)) : null;
+        if (! $email && ! $userId) {
+            return 0;
+        }
+
+        return (int) OrderItem::where('campaign_id', $item->campaign_id)->where('product_id', $item->product_id)
+            ->whereHas('order', fn ($o) => $o->whereIn('payment_status', ['pending', 'paid'])
+                ->where(fn ($w) => $w->when($email, fn ($q) => $q->whereRaw('LOWER(email) = ?', [$email]))
+                    ->when($userId, fn ($q) => $q->orWhere('user_id', $userId))))
+            ->whereHas('sellerOrder', fn ($s) => $s->where('status', '!=', 'cancelado'))
+            ->sum('quantity');
+    }
+
+    /** Unidades que todavía puede llevar este cliente a precio de oferta, o null si la oferta no tiene límite. */
+    public function customerAllowance(Product $product, ?User $user = null, ?string $email = null): ?int
+    {
+        $item = $this->activeFor($product);
+        $limit = $item?->campaign->per_customer_limit;
+        if (! $limit) {
+            return null;
+        }
+
+        return max(0, $limit - $this->boughtBy($item, $email ?? $user?->email, $user?->id));
     }
 
     /** Cuando un vendedor cambia el precio durante la campaña, el cambio queda como precio normal. */

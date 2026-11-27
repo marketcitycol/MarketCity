@@ -27,7 +27,7 @@
             <li>Abre Google Authenticator, Microsoft Authenticator u otra app autenticadora y escanea este código.</li>
             <li>Escribe el código de 6 dígitos que aparece.</li>
         </ol>
-        <div class="keep-light mt-3 inline-block rounded-xl border border-slate-200 bg-white p-2"><canvas data-qr="{{ $uri }}" width="180" height="180" aria-label="Código QR para la app autenticadora"></canvas></div>
+        <div class="keep-light mt-3 inline-block rounded-xl border border-slate-200 bg-white p-2"><div class="h-[180px] w-[180px]" data-qr="{{ $uri }}" data-lib="{{ asset('vendor/qrcode/qrcode.js') }}" role="img" aria-label="Código QR para la app autenticadora"></div></div>
         <p class="mt-2 text-xs text-slate-500">¿No puedes escanear? Escribe esta clave en la app: <code class="font-mono break-all select-all">{{ trim(chunk_split($secret, 4, ' ')) }}</code></p>
         <form method="post" action="{{ route('two-factor.confirm') }}" class="mt-3 flex gap-2">@csrf
             <input class="input max-w-40 text-center tracking-widest" name="code" required inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" aria-label="Código de 6 dígitos">

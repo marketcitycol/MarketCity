@@ -329,12 +329,22 @@ if (sheet) {
     });
 })();
 
+// Carga un script o una hoja de estilo una sola vez (librerías en public/vendor, sin CDN).
+const loaded = {};
+const loadAsset = (url) => loaded[url] ??= new Promise((ok, fail) => {
+    const el = url.endsWith('.css') ? Object.assign(document.createElement('link'), { rel: 'stylesheet', href: url }) : Object.assign(document.createElement('script'), { src: url, async: true });
+    el.onload = ok; el.onerror = fail;
+    document.head.appendChild(el);
+});
+
 // Mapa de cobertura (#33): Leaflet + OpenStreetMap, sin claves. Se descarga solo cuando la sección
 // se acerca a la pantalla. Los puntos son ciudades con totales agregados (nunca datos de clientes).
 const coverage = document.querySelector('[data-coverage-map]');
 if (coverage) {
     const draw = async () => {
-        const [{ default: L }] = await Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]);
+        const base = coverage.dataset.lib;
+        await Promise.all([loadAsset(`${base}/leaflet.css`), loadAsset(`${base}/leaflet.js`)]);
+        const L = window.L;
         const points = JSON.parse(coverage.dataset.points || '[]');
         const map = L.map(coverage, { scrollWheelZoom: false, zoomSnap: 0.25, attributionControl: true }).setView([4.6, -74.2], 5);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -399,8 +409,11 @@ document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('mc:paint', paint);
 });
 
-// Código QR del segundo factor (se descarga solo en esa pantalla).
-document.querySelectorAll('canvas[data-qr]').forEach(async (canvas) => {
-    const { default: QRCode } = await import('qrcode');
-    QRCode.toCanvas(canvas, canvas.dataset.qr, { width: 180, margin: 1 });
+// Código QR del segundo factor (la librería se descarga solo en esa pantalla).
+document.querySelectorAll('[data-qr]').forEach(async (box) => {
+    await loadAsset(box.dataset.lib);
+    const qr = window.qrcode(0, 'M');
+    qr.addData(box.dataset.qr);
+    qr.make();
+    box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
 });

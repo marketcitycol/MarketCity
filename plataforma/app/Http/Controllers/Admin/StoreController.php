@@ -48,6 +48,14 @@ class StoreController extends Controller
         return redirect()->route('admin.stores')->with('success', "Condiciones de «{$store->name}» guardadas. Aplican a pedidos nuevos.");
     }
 
+    /** Directorio /tiendas (#68): destacar la tienda o sacarla del directorio (p. ej. una tienda de prueba). */
+    public function directory(Request $request, Store $store)
+    {
+        $store->update(['featured' => $request->boolean('featured'), 'directory_hidden' => $request->boolean('directory_hidden')]);
+
+        return back()->with('success', "Directorio: «{$store->name}» ".($store->directory_hidden ? 'queda oculta' : ($store->featured ? 'sale destacada' : 'sale normal')).'.');
+    }
+
     public function status(Request $request, Store $store)
     {
         $data = $request->validate(['status' => ['required', Rule::in(['active', 'suspended', 'pending'])]]);

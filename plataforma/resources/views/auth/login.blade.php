@@ -3,6 +3,17 @@
 @section('content')
 <div class="mx-auto max-w-sm">
     <h1 class="text-2xl font-bold">Ingresar</h1>
+    @if (session('login_failed'))
+        {{-- #47: si el correo no tiene cuenta, se ofrece crearla con ese mismo correo. --}}
+        <div class="card mt-5 border-brand-200 bg-brand-50 p-4 text-sm">
+            <p class="font-semibold">¿Es tu primera vez en MarketCity?</p>
+            <p class="mt-1 text-slate-600">Si aún no tienes cuenta con <strong>{{ old('email') }}</strong>, créala en un minuto. Si ya la tienes, revisa la contraseña o recupérala.</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <a href="{{ route('register') }}" class="btn-primary btn-sm">Crear mi cuenta con este correo</a>
+                <a href="{{ route('password.request') }}" class="btn-ghost btn-sm">Recuperar contraseña</a>
+            </div>
+        </div>
+    @endif
     <form method="post" action="{{ route('login') }}" class="card mt-5 space-y-4 p-5">
         @csrf
         <div><label class="label" for="email">Correo</label><input class="input" type="email" id="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"></div>

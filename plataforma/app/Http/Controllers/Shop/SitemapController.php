@@ -18,7 +18,7 @@ class SitemapController extends Controller
 
         $urls = $urls
             ->concat(Category::all()->map(fn ($c) => ['loc' => route('category', $c), 'lastmod' => $c->updated_at]))
-            ->concat(Store::where('status', 'active')->get()->map(fn ($s) => ['loc' => route('store', $s), 'lastmod' => $s->updated_at]))
+            ->concat(Store::where('status', 'active')->where('directory_hidden', false)->get()->map(fn ($s) => ['loc' => route('store', $s), 'lastmod' => $s->updated_at]))
             ->concat(Page::where('status', 'published')->get()->map(fn ($p) => ['loc' => route('page', $p), 'lastmod' => $p->updated_at]))
             ->concat(Product::visible()->select('id', 'slug', 'updated_at')->get()->map(fn ($p) => ['loc' => route('product', $p), 'lastmod' => $p->updated_at]));
 

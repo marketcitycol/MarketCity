@@ -20,6 +20,22 @@
         <label class="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" name="pickup_enabled" value="1" @checked(old('pickup_enabled', $store->pickup_enabled))> Permitir recogida en la tienda</label>
         <div class="mt-2"><label class="label" for="pickup_fee">Costo de la recogida (COP)</label><input class="input" type="number" id="pickup_fee" name="pickup_fee" min="0" step="100" value="{{ old('pickup_fee', $store->pickup_fee) }}"></div>
     </fieldset>
+    <fieldset class="rounded-lg border border-slate-200 p-4">
+        <legend class="px-1 text-sm font-semibold">Logística</legend>
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div><label class="label" for="dispatch_days">Despachas en máximo (días hábiles con el pago confirmado)</label><input class="input" type="number" id="dispatch_days" name="dispatch_days" min="1" max="15" required value="{{ old('dispatch_days', $store->dispatch_days ?? 2) }}"></div>
+            <div><label class="label" for="carriers">Transportadoras (opcional)</label><input class="input" id="carriers" name="carriers" maxlength="150" value="{{ old('carriers', $store->carriers) }}" placeholder="Servientrega, Interrapidísimo"></div>
+        </div>
+        <p class="mt-2 text-xs text-slate-500">Se muestra en cada producto en «Lo que debes saber». Promete solo lo que cumples: el cliente lo puede reclamar (Ley 1480).</p>
+    </fieldset>
+    <fieldset class="rounded-lg border border-slate-200 p-4">
+        <legend class="px-1 text-sm font-semibold">Notificaciones</legend>
+        <div><label class="label" for="notify_email">Correo para avisos (vacío = {{ $store->user?->email }})</label><input class="input" type="email" id="notify_email" name="notify_email" maxlength="120" value="{{ old('notify_email', $store->notify_email) }}">
+            @error('notify_email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+        <input type="hidden" name="notify_new_order" value="0">
+        <label class="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" name="notify_new_order" value="1" @checked(old('notify_new_order', $store->notify_new_order ?? true))> Avisarme por correo cada pedido pagado</label>
+        <p class="mt-2 text-xs text-slate-500">Las PQRS siempre te llegan a este correo: tienen plazos legales de respuesta.</p>
+    </fieldset>
     <button class="btn-primary">Guardar</button>
 </form>
 @endsection

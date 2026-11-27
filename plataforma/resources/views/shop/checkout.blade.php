@@ -1,8 +1,9 @@
 @extends('layouts.shop', ['title' => 'Completa tu pedido'])
 
 @section('content')
+@php($addr = $user?->defaultAddress())
 <h1 class="text-2xl font-bold">Completa tu pedido</h1>
-<form method="post" action="{{ route('checkout.place') }}" data-checkout-form class="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
+<form method="post" action="{{ route('checkout.place') }}" data-checkout-form @guest data-remember-fields @endguest class="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
     @csrf
     <div class="space-y-6">
         <section class="card p-5">
@@ -31,18 +32,23 @@
         </section>
 
         <section class="card p-5">
-            <h2 class="font-semibold">2. Dirección de entrega</h2>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-semibold">2. Dirección de entrega</h2>
+                @if ($user && $user->addresses()->count() > 1)
+                    <a href="{{ route('account.addresses') }}" class="text-xs text-brand-600 hover:underline">Usar otra dirección guardada</a>
+                @endif
+            </div>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 <div><label class="label" for="department">Departamento</label>
                     <select class="input" id="department" name="department" required>
                         <option value="">Elige…</option>
-                        @foreach (array_keys(config('colombia.departments')) as $d)<option @selected(old('department') === $d)>{{ $d }}</option>@endforeach
+                        @foreach (array_keys(config('colombia.departments')) as $d)<option @selected(old('department', $addr?->department) === $d)>{{ $d }}</option>@endforeach
                     </select></div>
                 <div><label class="label" for="city">Ciudad o municipio</label>
-                    <input class="input" id="city" name="city" list="cities" value="{{ old('city') }}" required>
+                    <input class="input" id="city" name="city" list="cities" value="{{ old('city', $addr?->city) }}" required>
                     <datalist id="cities">@foreach (collect(config('colombia.departments'))->flatten()->sort() as $c)<option value="{{ $c }}">@endforeach</datalist></div>
-                <div class="sm:col-span-2"><label class="label" for="address">Dirección</label><input class="input" id="address" name="address" value="{{ old('address') }}" required placeholder="Calle 00 # 00-00" autocomplete="street-address"></div>
-                <div class="sm:col-span-2"><label class="label" for="address_2">Apartamento, barrio o indicaciones (opcional)</label><input class="input" id="address_2" name="address_2" value="{{ old('address_2') }}"></div>
+                <div class="sm:col-span-2"><label class="label" for="address">Dirección</label><input class="input" id="address" name="address" value="{{ old('address', $addr?->address) }}" required placeholder="Calle 00 # 00-00" autocomplete="street-address"></div>
+                <div class="sm:col-span-2"><label class="label" for="address_2">Apartamento, barrio o indicaciones (opcional)</label><input class="input" id="address_2" name="address_2" value="{{ old('address_2', $addr?->address_2) }}"></div>
                 <div class="sm:col-span-2"><label class="label" for="notes">Notas del pedido (opcional)</label><textarea class="input" id="notes" name="notes" rows="2">{{ old('notes') }}</textarea></div>
             </div>
         </section>
@@ -62,6 +68,12 @@
                 <p class="pt-1 text-xs text-slate-500">Ningún medio viene marcado: elige el que prefieras. Nunca te pediremos datos de tarjeta en MarketCity.</p>
             </div>
         </section>
+        @php($wa = preg_replace('/\D/', '', (string) (\App\Services\Content\Plugins::config('whatsapp')['number'] ?? '')))
+        @if ($wa)
+            {{-- Pago claro (#87): ayuda por WhatsApp con productos, total y medio elegido; sin datos personales. --}}
+            @php($waText = "Hola MarketCity, tengo una duda para pagar:\n".$groups->flatMap(fn ($g) => $g['lines']->map(fn ($l) => '- '.$l['quantity'].' × '.\Illuminate\Support\Str::limit($l['product']->name, 60)))->join("\n")."\nTotal: ".cop($groups->sum('subtotal') + $groups->sum(fn ($g) => \App\Services\Orders\Cart::shippingCost($g['store'], $cart->shippingChoice($g['store']->id)))))
+            <p class="text-sm text-slate-600">¿Dudas con el pago? <a class="font-semibold text-brand-600 hover:underline" target="_blank" rel="noopener" data-track="whatsapp_click" data-checkout-whatsapp="{{ $wa }}" data-text="{{ $waText }}" href="https://wa.me/{{ $wa }}?text={{ rawurlencode($waText) }}">Escríbenos por WhatsApp</a> y te ayudamos antes de pagar.</p>
+        @endif
     </div>
 
     <aside class="card h-fit p-5 lg:sticky lg:top-32">

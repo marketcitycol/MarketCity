@@ -2,7 +2,16 @@
 @section('title', $product->name)
 @section('description', \Illuminate\Support\Str::limit($product->short_description, 150))
 @section('canonical', route('product', $product))
+@section('og_type', 'product')
+@if ($product->imageUrl())
+    @section('og_image', url($product->imageUrl()))
+@endif
 @push('head')
+{{-- Open Graph de producto (#11): precio y disponibilidad para WhatsApp, Facebook y el catálogo de Meta. --}}
+<meta property="product:price:amount" content="{{ (int) $product->price }}">
+<meta property="product:price:currency" content="COP">
+<meta property="product:availability" content="{{ $product->inStock() ? 'in stock' : 'out of stock' }}">
+@if ($product->brand)<meta property="product:brand" content="{{ $product->brand->name }}">@endif
 <script type="application/ld+json">{!! json_encode([
     '@'.'context' => 'https://schema.org', '@type' => 'Product', 'name' => $product->name, 'sku' => $product->sku,
     'brand' => $product->brand ? ['@type' => 'Brand', 'name' => $product->brand->name] : null,
@@ -83,15 +92,31 @@
             <p class="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Se vendieron todas las unidades a precio de campaña. Vuelve en unos minutos para comprarlo a su precio normal.</p>
         @endif
 
-        <div class="card mt-6 divide-y divide-slate-100 text-sm">
-            <a href="{{ route('store', $product->store) }}" class="flex items-center gap-3 p-4 hover:bg-slate-50">
-                <span class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-700">{{ $product->store->initials() }}</span>
-                <span><span class="block text-xs text-slate-500">Vendido y despachado por</span><span class="font-semibold">{{ $product->store->name }}</span> · {{ $product->store->city }}</span>
+        @auth
+            <form method="post" action="{{ route('favorites.toggle', $product) }}" class="mt-3">@csrf
+                <button class="text-sm font-medium {{ $isFavorite ? 'text-red-600' : 'text-slate-600' }} hover:underline" aria-pressed="{{ $isFavorite ? 'true' : 'false' }}">{{ $isFavorite ? '♥ En tus favoritos (quitar)' : '♡ Guardar en favoritos' }}</button>
+            </form>
+        @else
+            <a href="{{ route('login') }}" class="mt-3 inline-block text-sm text-slate-600 hover:underline">♡ Ingresa para guardarlo en favoritos</a>
+        @endauth
+
+        @php($st = $product->store)
+        {{-- «Lo que debes saber» (#14): vendedor, envío, despacho, pagos, garantía, retracto y reversión. --}}
+        <section class="card mt-6 text-sm" aria-labelledby="debes-saber">
+            <a href="{{ route('store', $st) }}" class="flex items-center gap-3 border-b border-slate-100 p-4 hover:bg-slate-50">
+                <span class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-700">{{ $st->initials() }}</span>
+                <span><span class="block text-xs text-slate-500">Vendido y despachado por</span><span class="font-semibold">{{ $st->name }}</span> · {{ $st->city }}@if ($st->isVerified()) · <span class="text-emerald-700">Tienda verificada</span>@endif</span>
             </a>
-            <p class="p-4">🚚 {{ $product->store->free_shipping ? 'Envío gratis' : 'Envío '.cop($product->store->shipping_fee) }} a los 32 departamentos y Bogotá.
-                @if ($product->store->pickup_enabled) También puedes recogerlo en la tienda. @endif</p>
-            <p class="p-4">🛡️ Garantía legal y derecho de retracto según el Estatuto del Consumidor (Ley 1480 de 2011).</p>
-        </div>
+            <h2 id="debes-saber" class="px-4 pt-4 font-semibold">Lo que debes saber</h2>
+            <ul class="space-y-2 p-4 pt-2 text-slate-600">
+                <li>🚚 <strong>Envío:</strong> {{ $st->free_shipping ? 'gratis' : cop($st->shipping_fee) }} a los 32 departamentos y Bogotá.@if ($st->pickup_enabled) También puedes recogerlo en {{ $st->city }}{{ $st->pickup_fee ? ' ('.cop($st->pickup_fee).')' : ' sin costo' }}.@endif</li>
+                <li>📦 <strong>Despacho:</strong> sale en máximo {{ $st->dispatch_days }} {{ $st->dispatch_days === 1 ? 'día hábil' : 'días hábiles' }} después de confirmado el pago{{ $st->carriers ? ', con '.$st->carriers : '' }}. Te avisamos por correo con la guía.</li>
+                @if ($paymentLabels->isNotEmpty())<li>💳 <strong>Pagas con:</strong> {{ $paymentLabels->join(', ', ' o ') }}. Lo eliges al pagar.</li>@endif
+                <li>🛡️ <strong>Garantía legal:</strong> la que indique el fabricante; si no la indica, 1 año para productos nuevos (Ley 1480 de 2011, art. 8).</li>
+                <li>↩️ <strong>Retracto:</strong> tienes 5 días hábiles desde que lo recibes para devolverlo sin dar razones (art. 47). <a href="{{ route('pqrs.create', ['tipo' => 'retracto']) }}" class="text-brand-600 hover:underline">Cómo hacerlo</a></li>
+                <li>🔁 <strong>Reversión del pago:</strong> si pagaste con tarjeta, PSE u otro medio electrónico y hubo fraude, no llegó o no es lo que pediste (art. 51). <a href="{{ route('pqrs.create', ['tipo' => 'reversion']) }}" class="text-brand-600 hover:underline">Solicitarla</a></li>
+            </ul>
+        </section>
 
         @if ($product->description)
             <div class="mt-6">

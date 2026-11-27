@@ -15,12 +15,12 @@ Leyenda: **HECHO** = ya existía en v1 · **S1/S2/S3** = ola de este traslado ·
 | 4 | Año actual (shortcode) | Activo | HECHO (el pie usa el año del servidor) |
 | 5 | Skip Cart | Activo | HECHO («Comprar ahora» va al pago) |
 | 6, 8, 9, 41 | Textos y traducciones | Activos | HECHO (v1 está en español) |
-| 7 | Etiqueta de Google Ads | Activo | S2 (ID de Google Ads en el plugin de Medición, con consentimiento) |
+| 7 | Etiqueta de Google Ads | Activo | **S2** (ID y conversión de compra en el plugin de Medición, con consentimiento) |
 | 10 | «Por: tienda» en tarjetas | Activo | HECHO |
-| 11 | Open Graph de producto | Activo | S2 |
+| 11 | Open Graph de producto | Activo | **S2** |
 | 12 | Vende aquí | Activo | HECHO (/vender con aprobación en Backoffice) |
 | 13, 15, 17–27, 38, 40, 51, 53, 55, 56, 58, 60, 80, 84 | Ajustes visuales del tema, rendimiento y vista previa | Activos | NO APLICA (ola visual de v1) |
-| 14 | Ficha: «Lo que debes saber» | Activo | S2 |
+| 14 | Ficha: «Lo que debes saber» | Activo | **S2** |
 | 16 | Temporizador real | Activo | **S1**: cuenta regresiva de la campaña y hora de corte de despacho configurable |
 | 20 | Logos de pago y redes | Activo | HECHO (pie con medios de pago) |
 | 28, 29, 42 | Juego de cajas y juegos | Activos (vista previa) | DECISIÓN (Q-010: ¿premios reales con cupones?) |
@@ -33,25 +33,25 @@ Leyenda: **HECHO** = ya existía en v1 · **S1/S2/S3** = ola de este traslado ·
 | 43 | Títulos y meta | Activo | HECHO |
 | 45 | Rotar productos del inicio | Activo (vista previa) | S3 |
 | 46 | Arreglos QA ronda 3 | Activo | NO APLICA |
-| 47 | Crear cuenta si el correo no existe | Activo | S2 |
-| 48, 49, 79 | Mi cuenta (detalles, rediseño, «Universo») | Activos (#79 publicado) | S2: pedidos, direcciones, datos, seguridad, favoritos y notificaciones |
+| 47 | Crear cuenta si el correo no existe | Activo | **S2** |
+| 48, 49, 79 | Mi cuenta (detalles, rediseño, «Universo») | Activos (#79 publicado) | **S2**: inicio, pedidos, direcciones, datos, seguridad (con eliminar cuenta), favoritos, notificaciones y consultas. Diseño del manual de marca: ola visual |
 | 52 | Fundaciones SEO y redirecciones | Activo | HECHO (redirecciones 301 propias) |
 | 54 | Carrito lateral | Publicado | HECHO (panel «Agregado al carrito»). El descuento por medio de pago de ELEX queda como DECISIÓN |
 | 57 | Checkout guiado | Publicado | HECHO (checkout propio en una página) |
 | 59 | Páginas de servicio (404, simulador, rastreo) | Publicado | 404: HECHO · simulador de cuotas: S3 |
 | 61 | Sin contraentrega, políticas, buscador | Publicado | HECHO |
-| 62 | Compra sin cuenta y página de gracias | Publicado | HECHO (cédula enmascarada, transferencia con «Copiar»). «Crear cuenta con un toque» en gracias: S2 |
+| 62 | Compra sin cuenta y página de gracias | Publicado | HECHO (cédula enmascarada, transferencia con «Copiar») + **S2** «Crear cuenta con un toque» en gracias |
 | 64 | Modo oscuro | Publicado | S3 |
 | 65 | Rastreo seguro | Vista previa | **S1** |
 | 66 | Servicio y limpieza (contacto con copia por correo) | Vista previa | S3 (formulario de contacto) |
 | 67 | Accesibilidad lote C | Vista previa | NO APLICA (v1 propia) |
-| 68 | Directorio de tiendas | Publicado | HECHO (/tiendas). Casillas «Destacar» y «Ocultar del directorio»: S2 |
-| 69 | Perfil de vendedor | Vista previa | Parcial HECHO (tienda, datos legales, cuenta bancaria con revisión). Logística, equipo, notificaciones y seguridad: S2 |
+| 68 | Directorio de tiendas | Publicado | HECHO (/tiendas) + **S2** «Destacar» y «Ocultar del directorio» |
+| 69 | Perfil de vendedor | Vista previa | HECHO tienda, datos legales y cuenta bancaria + **S2** logística, notificaciones y seguridad. Equipo (varios usuarios por tienda): S3 |
 | 70 | MarketTurbo (envío el mismo día) | Vista previa | S3 (adaptador de envío; credenciales del proveedor en .env) |
 | 71, 72 | Sub-URL y pantalla completa del Seller Center (WCFM) | Activos | NO APLICA |
 | 73 | Rescate del regreso de Wava | Vista previa | NO APLICA hasta integrar Wava |
 | 74 | Productos del Seller Center | Vista previa | **S1** (precios «1.200.000»); el resto ya estaba (validaciones y mínimo de $1.000) |
-| 75 | Verificación de dominio de Meta | Activo | S2 (campo en el plugin de Medición) |
+| 75 | Verificación de dominio de Meta | Activo | **S2** (campo en el plugin de Medición) |
 | 76 | Black Friday: precio con correo | Activo | **S1** |
 | 77 | Black City: tope de 10 unidades | Activo | **S1** |
 | 78 | Página de ofertas en cuadrícula | Activo | **S1** (/campana/{nombre}; /black-city redirige) |
@@ -60,7 +60,7 @@ Leyenda: **HECHO** = ya existía en v1 · **S1/S2/S3** = ola de este traslado ·
 | 83 | Recuperar carritos abandonados | Activo | **S1** |
 | 85 | Meta: compra solo con pedido pagado | Activo | **S1** |
 | 86 | TEMP diagnóstico Meta | Inactivo | NO APLICA |
-| 87 | Pago claro y WhatsApp | Vista previa | S2 (WhatsApp en el pago, plan B de pago fallido, envío visible) |
+| 87 | Pago claro y WhatsApp | Vista previa | **S2**: WhatsApp en el pago, plan B del pago rechazado, envío visible, recordar datos del invitado. «Compra directa»: DECISIÓN |
 
 ## Ola S1 (este cambio)
 
@@ -82,8 +82,23 @@ Leyenda: **HECHO** = ya existía en v1 · **S1/S2/S3** = ola de este traslado ·
 3. Opcional: `META_CAPI_TOKEN=` en el .env para la compra por la API de conversiones (el propietario lo pega; nunca en el chat).
 4. Backoffice → Mensajes llega en **Apagado**. Pasar a **Prueba** con los correos del equipo y, cuando se revise, a **Público**.
 
+## Ola S2
+
+| Snippet | Qué hace ahora la plataforma | Dónde |
+|---|---|---|
+| #48, #49, #79 | Mi cuenta con secciones: inicio, pedidos, direcciones (hasta 10, una principal que llena el pago; la primera compra con sesión la guarda sola), mis datos, seguridad, favoritos, notificaciones (correo y WhatsApp, con el mismo registro de permisos de S1) y consultas (PQRS). «Eliminar mi cuenta» con contraseña: borra cuenta, direcciones y favoritos, retira permisos y detiene recordatorios; los pedidos se conservan sin la cuenta por obligación legal. Solo clientes. | `Shop\AccountController`, vistas `account/*` |
+| #47 | Si el ingreso falla, ofrece «Crear mi cuenta con este correo» y llena el registro. El mensaje es igual exista o no la cuenta. | `AuthController::login` |
+| #62 | En gracias, a quien compró como invitado en ese navegador: «Crear mi cuenta». Crea la cuenta con los datos del pedido, la enlaza y envía «Crea tu contraseña». No inicia sesión: abrir el correo prueba que es suyo. Si ya hay cuenta, invita a ingresar. | `Shop\OrderController::createAccount` |
+| #87 | Pago rechazado: sin «¡Gracias!», «Pagar con otro medio» rearma el carrito y lleva al pago, y ayuda por WhatsApp. En el pago, enlace de WhatsApp con productos, total y medio elegido (sin datos personales). El invitado no pierde lo escrito si recarga (sessionStorage, nunca el documento ni el medio). | `OrderController::retry`, `resources/js/app.js` |
+| #69 | Mi tienda: días hábiles de despacho, transportadoras, correo para avisos y aviso de pedido pagado (las PQRS siempre llegan). Página Seguridad en el Seller Center. | `Seller\DashboardController` |
+| #14 | Ficha: «Lo que debes saber» con vendedor, envío, despacho, medios de pago de esa tienda, garantía legal, retracto y reversión con enlace a PQRS. | `shop/product` |
+| #11 | Open Graph y tarjeta de X en todas las páginas; en la ficha, tipo producto, imagen, precio y disponibilidad. | `layouts/shop` |
+| #7, #75 | Medición: ID de Google Ads y conversión de compra (después de «Aceptar»), y verificación de dominio de Meta (etiqueta sin rastreo, siempre visible si está llena). | `Support\Analytics`, Backoffice → Plugins |
+| #68 | Backoffice → Vendedores → tienda: «Destacar» (sale primero con sello) y «Ocultar del directorio» (fuera de /tiendas, del inicio y del mapa del sitio). | `Admin\StoreController::directory` |
+
+Después de publicar: `php artisan migrate` crea `addresses`, `favorites` y las columnas nuevas de `stores`. Los enlaces viejos `/my-account/orders`, `edit-address` y `edit-account` llevan a la sección nueva.
+
 ## Pendientes y decisiones
 
 - **DECISIÓN:** juegos y premios (#28/#29), descuento por medio de pago (ELEX: Addi 5 %, Bold 10 %), y si la «Compra directa» del #87 se activa.
-- **S2:** Mi cuenta completa (#48/#49/#79), perfil de vendedor completo (#69), crear cuenta desde el ingreso (#47) y en gracias (#62), pago claro (#87), Open Graph (#11), Google Ads y verificación de Meta (#7, #75), «Lo que debes saber» (#14), destacar/ocultar tiendas (#68).
-- **S3:** MarketTurbo (#70), mapa de cobertura (#33), simulador de cuotas (#59), rotación del inicio (#45), modo oscuro (#64), formulario de contacto (#66), segundo factor para el Backoffice.
+- **S3:** equipo de la tienda (#69), MarketTurbo (#70), mapa de cobertura (#33), simulador de cuotas (#59), rotación del inicio (#45), modo oscuro (#64), formulario de contacto (#66), segundo factor para el Backoffice.

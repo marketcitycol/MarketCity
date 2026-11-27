@@ -211,7 +211,9 @@ class OrderService
             app(MetaConversions::class)->purchase($order);
             Mailer::send($order->email, new PaymentConfirmedMail($order));
             foreach ($order->sellerOrders()->with('store.user')->get() as $so) {
-                Mailer::send($so->store->notificationEmail(), new SellerNewOrderMail($so));
+                if ($so->store->wantsNewOrderEmail()) {
+                    Mailer::send($so->store->notificationEmail(), new SellerNewOrderMail($so));
+                }
             }
         }
     }

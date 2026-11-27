@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\Marketing\MessagingPermissions;
+use App\Services\Orders\Cart;
 use App\Services\Orders\OrderService;
 use App\Services\Payments\BankTransferGateway;
 use App\Services\Payments\PaymentRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -60,7 +64,63 @@ class OrderController extends Controller
         return view('shop.thanks', [
             'order' => $order->load('sellerOrders.store', 'sellerOrders.items'),
             'transfer' => $order->awaitingTransfer() ? BankTransferGateway::accountDetails() : null,
+            'offerAccount' => $this->canOfferAccount($request, $order) ? ! User::findByEmail($order->email) : null,
         ]);
+    }
+
+    /** «Crear cuenta con un toque» (#62): solo a quien hizo el pedido como invitado, en este mismo navegador. */
+    private function canOfferAccount(Request $request, Order $order): bool
+    {
+        return ! $request->user() && ! $order->user_id
+            && in_array($order->number, (array) $request->session()->get('my_orders', []), true);
+    }
+
+    /**
+     * Crea la cuenta con los datos del pedido y envía «crea tu contraseña» al correo. No inicia sesión:
+     * abrir el enlace del correo demuestra que el correo es de quien compró.
+     */
+    public function createAccount(Request $request, Order $order)
+    {
+        $this->authorizeView($request, $order);
+        abort_unless($this->canOfferAccount($request, $order), 404);
+        $back = redirect()->route('orders.thanks', [$order, 't' => $order->access_token]);
+        if (User::findByEmail($order->email)) {
+            return $back->with('error', 'Ya hay una cuenta con ese correo. Ingresa para ver tus pedidos.');
+        }
+
+        $user = User::create([
+            'name' => $order->customerName(), 'email' => mb_strtolower(trim($order->email)), 'password' => Str::random(40),
+            'role' => User::ROLE_CUSTOMER, 'phone' => $order->phone,
+            'document_type' => $order->document_type, 'document_number' => $order->document_number,
+        ]);
+        Order::where('email', $order->email)->whereNull('user_id')->whereIn('number', (array) $request->session()->get('my_orders', []))
+            ->update(['user_id' => $user->id]);
+        AccountController::rememberAddress($user, $order);
+        try {
+            Password::sendResetLink(['email' => $user->email]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return $back->with('success', 'Creamos tu cuenta. Te enviamos un correo a '.$user->email.' para que elijas tu contraseña.');
+    }
+
+    /**
+     * Plan B del pago rechazado (#87): vuelve a armar el carrito con lo que quedó disponible
+     * y lleva al pago para elegir otro medio. El pedido rechazado no se toca.
+     */
+    public function retry(Request $request, Order $order, Cart $cart)
+    {
+        $this->authorizeView($request, $order);
+        abort_unless($order->payment_status === 'failed', 404);
+        $items = $order->items()->whereNotNull('product_id')->get()
+            ->groupBy('product_id')->map(fn ($rows) => (int) $rows->sum('quantity'))->all();
+        $cart->restore($items);
+        if ($cart->isEmpty()) {
+            return redirect()->route('shop')->with('error', 'Los productos de ese pedido ya no están disponibles.');
+        }
+
+        return redirect()->route('checkout')->with('success', 'Volvimos a armar tu carrito. Elige otro medio de pago.');
     }
 
     public function show(Request $request, Order $order)

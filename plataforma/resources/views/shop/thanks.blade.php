@@ -2,11 +2,19 @@
 
 @section('content')
 <div class="mx-auto max-w-2xl">
+    @php($wa = preg_replace('/\D/', '', (string) (\App\Services\Content\Plugins::config('whatsapp')['number'] ?? '')))
     @if ($order->payment_status === 'failed')
+        {{-- Plan B del pago rechazado (#87): sin «¡Gracias!», con otro medio de pago y ayuda por WhatsApp. --}}
         <div class="card p-8 text-center">
             <h1 class="text-2xl font-bold">El pago no se aprobó</h1>
-            <p class="mt-2 text-slate-600">Tu pedido {{ $order->number }} quedó cancelado y no se cobró nada. Puedes intentarlo de nuevo.</p>
-            <a href="{{ route('shop') }}" class="btn-primary mt-5">Volver a la tienda</a>
+            <p class="mt-2 text-slate-600">El pedido {{ $order->number }} quedó cancelado y <strong>no se cobró nada</strong>. No hace falta que pagues este pedido de nuevo: arma uno nuevo con otro medio.</p>
+            <div class="mt-5 flex flex-wrap justify-center gap-2">
+                <form method="post" action="{{ route('orders.retry', [$order, 't' => $order->access_token]) }}">@csrf<button class="btn-primary">Pagar con otro medio</button></form>
+                @if ($wa)
+                    <a class="btn-ghost" target="_blank" rel="noopener" data-track="whatsapp_click" href="https://wa.me/{{ $wa }}?text={{ rawurlencode('Hola MarketCity, mi pago del pedido '.$order->number.' no se aprobó. ¿Me ayudan?') }}">Pedir ayuda por WhatsApp</a>
+                @endif
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Si en tu banco aparece un cobro de este pedido, escríbenos con el número {{ $order->number }} y lo revisamos.</p>
         </div>
     @else
         <div class="card p-8 text-center">
@@ -22,7 +30,6 @@
 
         @if ($transfer)
             @php($deadline = \App\Services\Payments\BankTransferGateway::deadlineHours())
-            @php($wa = preg_replace('/\D/', '', (string) (\App\Services\Content\Plugins::config('whatsapp')['number'] ?? '')))
             <section class="card mt-4 p-5 text-sm" aria-labelledby="como-pagar">
                 <h2 id="como-pagar" class="text-lg font-semibold">Cómo pagar</h2>
                 <p class="mt-1 text-slate-600">Transfiere el valor exacto a esta cuenta y escribe el número del pedido en la referencia. Tienes {{ $deadline }} horas; después el pedido se cancela y las unidades vuelven al inventario.</p>
@@ -70,8 +77,20 @@
             @endforeach
             <a href="{{ route('orders.show', [$order, 't' => $order->access_token]) }}" class="btn-primary mt-5">Ver el estado del pedido</a>
         </div>
+
+        @if ($offerAccount === true)
+            {{-- «Crear cuenta con un toque» (#62): el correo de «crea tu contraseña» confirma que el correo es tuyo. --}}
+            <form method="post" action="{{ route('orders.account', [$order, 't' => $order->access_token]) }}" class="card mt-4 flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
+                @csrf
+                <div><p class="font-semibold">Sigue tus pedidos desde Mi cuenta</p><p class="text-slate-600">Creamos la cuenta con {{ $order->email }} y te enviamos un correo para elegir la contraseña.</p></div>
+                <button class="btn-primary">Crear mi cuenta</button>
+            </form>
+        @elseif ($offerAccount === false)
+            <p class="card mt-4 p-5 text-sm">Ya tienes una cuenta con {{ $order->email }}. <a href="{{ route('login') }}" class="font-semibold text-brand-600 hover:underline">Ingresa</a> para ver este pedido en Mi cuenta.</p>
+        @endif
     @endif
 </div>
+<script>try { sessionStorage.removeItem('mc_ck_v1'); } catch (e) {}</script>
 {{-- La compra se mide solo con el pago confirmado (#85); si llega después, se envía desde el servidor. --}}
 @if ($order->payment_status === 'paid')
 @include('partials.track', ['event' => 'purchase', 'params' => [

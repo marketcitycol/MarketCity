@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Seller;
+use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\CampaignController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\CatalogController;
@@ -73,8 +74,29 @@ Route::get('/restablecer-contrasena/{token}', [PasswordController::class, 'reset
 Route::post('/restablecer-contrasena', [PasswordController::class, 'reset'])->middleware(['guest', 'throttle:10,1'])->name('password.update');
 Route::post('/mi-cuenta/verificar-correo', [EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10'])->name('verification.send');
 Route::get('/verificar-correo/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
-Route::get('/mi-cuenta', [AuthController::class, 'account'])->middleware('auth')->name('account');
 Route::put('/mi-cuenta/contrasena', [PasswordController::class, 'update'])->middleware(['auth', 'throttle:5,1'])->name('password.change');
+Route::post('/pedido/{order}/crear-cuenta', [OrderController::class, 'createAccount'])->middleware('throttle:5,10')->name('orders.account');
+Route::post('/pedido/{order}/pagar-con-otro-medio', [OrderController::class, 'retry'])->middleware('throttle:10,1')->name('orders.retry');
+
+// --- Mi cuenta (#48, #49, #79) ---
+Route::prefix('mi-cuenta')->middleware('auth')->controller(AccountController::class)->group(function () {
+    Route::get('/', 'index')->name('account');
+    Route::get('/pedidos', 'orders')->name('account.orders');
+    Route::get('/direcciones', 'addresses')->name('account.addresses');
+    Route::post('/direcciones', 'storeAddress')->middleware('throttle:20,1')->name('account.addresses.store');
+    Route::put('/direcciones/{address}', 'updateAddress')->name('account.addresses.update');
+    Route::post('/direcciones/{address}/principal', 'defaultAddress')->name('account.addresses.default');
+    Route::delete('/direcciones/{address}', 'destroyAddress')->name('account.addresses.destroy');
+    Route::get('/datos', 'details')->name('account.details');
+    Route::put('/datos', 'updateDetails')->name('account.details.update');
+    Route::get('/seguridad', 'security')->name('account.security');
+    Route::delete('/', 'destroy')->middleware('throttle:5,10')->name('account.destroy');
+    Route::get('/favoritos', 'favorites')->name('account.favorites');
+    Route::get('/notificaciones', 'notifications')->name('account.notifications');
+    Route::put('/notificaciones', 'updateNotifications')->name('account.notifications.update');
+    Route::get('/consultas', 'inquiries')->name('account.inquiries');
+});
+Route::post('/favoritos/{product}', [AccountController::class, 'toggleFavorite'])->middleware(['auth', 'throttle:60,1'])->name('favorites.toggle');
 
 // --- Seller Center ---
 Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:seller'])->group(function () {
@@ -89,6 +111,7 @@ Route::prefix('seller-center')->name('seller.')->middleware(['auth', 'role:selle
     Route::get('/datos-legales', [Seller\LegalController::class, 'show'])->name('legal');
     Route::put('/datos-legales', [Seller\LegalController::class, 'updateLegal'])->name('legal.update');
     Route::post('/cuenta-bancaria', [Seller\LegalController::class, 'requestBankChange'])->middleware('throttle:5,10')->name('legal.bank');
+    Route::get('/seguridad', [Seller\DashboardController::class, 'security'])->name('security');
 });
 
 // --- Backoffice ---
@@ -102,6 +125,7 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::get('/vendedores', [Admin\StoreController::class, 'index'])->name('stores');
     Route::get('/vendedores/{store}', [Admin\StoreController::class, 'edit'])->name('stores.edit');
     Route::put('/vendedores/{store}', [Admin\StoreController::class, 'update'])->name('stores.update');
+    Route::post('/vendedores/{store}/directorio', [Admin\StoreController::class, 'directory'])->name('stores.directory');
     Route::post('/vendedores/{store}/estado', [Admin\StoreController::class, 'status'])->name('stores.status');
     Route::post('/vendedores/{store}/cuenta/{account}/aprobar', [Admin\StoreLegalController::class, 'approve'])->name('stores.bank.approve');
     Route::post('/vendedores/{store}/cuenta/{account}/rechazar', [Admin\StoreLegalController::class, 'reject'])->name('stores.bank.reject');

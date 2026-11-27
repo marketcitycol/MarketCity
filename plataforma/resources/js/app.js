@@ -152,6 +152,14 @@ if (sheet) {
             window.gtag('js', new Date());
             window.gtag('config', ids.ga4);
         }
+        // Google Ads (#7): con GTM se configura dentro de GTM; sin GTM se carga con la misma gtag.
+        if (ids.ads && !ids.gtm) {
+            if (!ids.ga4) {
+                script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ids.ads)}`);
+                window.gtag('js', new Date());
+            }
+            window.gtag('config', ids.ads);
+        }
         if (ids.meta) {
             /* eslint-disable */
             !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
@@ -173,6 +181,9 @@ if (sheet) {
             window.dataLayer.push({ event: name, ecommerce: params });
         } else if (ids.ga4) {
             window.gtag('event', name, params);
+        }
+        if (name === 'purchase' && ids.ads_purchase && !ids.gtm) {
+            window.gtag('event', 'conversion', { send_to: ids.ads_purchase, value: params.value, currency: params.currency, transaction_id: params.transaction_id });
         }
         if (ids.meta && window.fbq && META[name]) {
             const items = params.items || [];
@@ -265,5 +276,38 @@ if (sheet) {
     ['email', 'phone'].forEach((n) => {
         const el = form.querySelector(`[name="${n}"]`);
         if (el) el.addEventListener('change', () => { if (anyChecked()) sync(); });
+    });
+})();
+
+// Pago claro (#87): el enlace de WhatsApp suma el medio de pago elegido al tocarlo (sin datos personales),
+// y los datos de envío de un invitado se recuerdan mientras la pestaña siga abierta.
+(function () {
+    const form = document.querySelector('form[data-checkout-form]');
+    if (!form) return;
+
+    const wa = document.querySelector('[data-checkout-whatsapp]');
+    if (wa) {
+        wa.addEventListener('click', () => {
+            const pm = form.querySelector('input[name="payment_method"]:checked');
+            const label = pm ? (pm.closest('label').querySelector('.font-medium') || {}).textContent : '';
+            const text = wa.dataset.text + (label ? `\nMedio de pago: ${label.trim()}` : '');
+            wa.href = `https://wa.me/${wa.dataset.checkoutWhatsapp}?text=${encodeURIComponent(text)}`;
+        });
+    }
+
+    // Solo campos de contacto y entrega; nunca el documento ni el medio de pago. Solo rellena campos vacíos.
+    if (!form.hasAttribute('data-remember-fields')) return;
+    const KEY = 'mc_ck_v1';
+    const FIELDS = ['first_name', 'last_name', 'email', 'phone', 'department', 'city', 'address', 'address_2'];
+    let saved = {};
+    try { saved = JSON.parse(sessionStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
+    FIELDS.forEach((n) => {
+        const el = form.querySelector(`[name="${n}"]`);
+        if (!el) return;
+        if (!el.value && typeof saved[n] === 'string') el.value = saved[n];
+        el.addEventListener('change', () => {
+            saved[n] = el.value;
+            try { sessionStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* sin almacenamiento */ }
+        });
     });
 })();

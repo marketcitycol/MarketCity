@@ -8,6 +8,16 @@
     <meta name="description" content="@yield('description', 'MarketCity: el marketplace de Colombia. Compra a muchos vendedores en un solo pedido y paga como prefieras.')">
     @if (config('marketcity.demo'))<meta name="robots" content="noindex, nofollow">@endif
     <link rel="canonical" href="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
+    {{-- Open Graph y tarjeta de X (#11): título, descripción, imagen y enlace al compartir. --}}
+    <meta property="og:site_name" content="MarketCity">
+    <meta property="og:locale" content="es_CO">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="{{ $pageTitle ?: 'MarketCity' }}">
+    <meta property="og:description" content="@yield('description', 'MarketCity: el marketplace de Colombia. Compra a muchos vendedores en un solo pedido y paga como prefieras.')">
+    <meta property="og:url" content="@hasSection('canonical')@yield('canonical')@else{{ url()->current() }}@endif">
+    <meta property="og:image" content="@hasSection('og_image')@yield('og_image')@else{{ url(\App\Services\Content\Plugins::config('hero')['image_url'] ?: '/marca/portada.webp') }}@endif">
+    <meta name="twitter:card" content="summary_large_image">
+    @if ($fbVerify = \App\Support\Analytics::metaDomainVerification())<meta name="facebook-domain-verification" content="{{ $fbVerify }}">@endif
     @if (\App\Support\Analytics::active())@include('plugins.analytics-head')@endif
     <link rel="icon" href="{{ asset(ltrim(\App\Services\Content\BrandAssets::ISOTIPO, '/')) }}" type="image/webp">
     <meta name="theme-color" content="#0b2a6f">

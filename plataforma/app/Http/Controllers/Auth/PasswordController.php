@@ -86,7 +86,13 @@ class PasswordController extends Controller
             Auth::guard()->login($user, true);
         }
 
-        return redirect()->route('account')->with('success', 'Cambiaste tu contraseña. Cerramos la sesión en los demás equipos.');
+        $to = match ($user->role) {
+            User::ROLE_SELLER => 'seller.security',
+            User::ROLE_ADMIN => 'admin.dashboard',
+            default => 'account.security',
+        };
+
+        return redirect()->route($to)->with('success', 'Cambiaste tu contraseña. Cerramos la sesión en los demás equipos.');
     }
 
     /** Borra las sesiones del usuario guardadas en la base (menos la actual, si se indica). */

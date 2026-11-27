@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +21,11 @@ class AuthController extends Controller
         $credentials['email'] = User::findByEmail($credentials['email'])?->email ?? $credentials['email'];
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withInput($request->only('email'))->with('error', 'El correo o la contraseña no coinciden.');
+            // #47: se ofrece crear la cuenta con ese correo. El mensaje es igual exista o no la cuenta,
+            // para no revelar qué correos están registrados.
+            $request->session()->put('register_email', mb_strtolower(trim($credentials['email'])));
+
+            return back()->withInput($request->only('email'))->with('login_failed', true)->with('error', 'El correo o la contraseña no coinciden.');
         }
 
         $request->session()->regenerate();
@@ -35,9 +38,9 @@ class AuthController extends Controller
         });
     }
 
-    public function registerForm()
+    public function registerForm(Request $request)
     {
-        return view('auth.register');
+        return view('auth.register', ['suggestedEmail' => $request->session()->pull('register_email')]);
     }
 
     public function register(Request $request)
@@ -64,19 +67,5 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
-    }
-
-    public function account(Request $request)
-    {
-        $user = $request->user();
-
-        return view('auth.account', [
-            'user' => $user,
-            // Los pedidos como invitado con el mismo correo solo se muestran si el correo está verificado;
-            // si no, cualquiera que se registre con un correo ajeno vería esos pedidos (MC-NFR-012).
-            'orders' => Order::where('user_id', $user->id)
-                ->when($user->email_verified_at, fn ($q) => $q->orWhere(fn ($g) => $g->whereNull('user_id')->where('email', $user->email)))
-                ->latest('id')->with('sellerOrders')->get(),
-        ]);
     }
 }

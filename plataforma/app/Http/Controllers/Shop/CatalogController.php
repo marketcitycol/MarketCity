@@ -12,6 +12,7 @@ use App\Services\Campaigns\EmailPriceService;
 use App\Services\Catalog\StoreDirectory;
 use App\Services\Content\BrandAssets;
 use App\Services\Orders\Cart;
+use App\Services\Payments\PaymentRegistry;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -23,7 +24,7 @@ class CatalogController extends Controller
             'offers' => Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take(10)->get(),
             'bestsellers' => Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take(10)->get(),
             'newest' => Product::visible()->with('store')->latest('id')->take(10)->get(),
-            'stores' => Store::where('status', 'active')->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('products_count')->get(),
+            'stores' => Store::where('status', 'active')->where('directory_hidden', false)->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('featured')->orderByDesc('products_count')->get(),
             'categories' => BrandAssets::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get()),
         ]);
     }
@@ -93,7 +94,7 @@ class CatalogController extends Controller
         ]);
     }
 
-    public function product(Request $request, Product $product, CampaignService $campaigns, EmailPriceService $emailPrices, Cart $cart)
+    public function product(Request $request, Product $product, CampaignService $campaigns, EmailPriceService $emailPrices, Cart $cart, PaymentRegistry $payments)
     {
         abort_unless($product->status === 'active' && $product->price >= Product::MIN_PRICE && $product->store->isActive(), 404);
         // Enlace del correo de precio con correo (?cupon=CODIGO): se aplica al carrito y lleva allá.
@@ -111,6 +112,9 @@ class CatalogController extends Controller
             'emailOffer' => $emailPrices->offerFor($product),
             'cutoff' => $campaign ? null : CampaignService::dispatchCutoff(),
             'maxQty' => $cart->maxFor($product),
+            'isFavorite' => (bool) $request->user()?->hasFavorite($product),
+            // «Lo que debes saber» (#14): solo los medios que esta tienda acepta hoy.
+            'paymentLabels' => collect($payments->forStores([$product->store]))->except('sandbox')->map->label()->values(),
             'related' => Product::visible()->with('store')->where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)->take(4)->get(),
         ]);

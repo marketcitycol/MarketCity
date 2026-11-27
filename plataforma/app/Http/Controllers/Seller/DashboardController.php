@@ -56,7 +56,14 @@ class DashboardController extends Controller
             'shipping_fee' => 'nullable|integer|min:0|max:1000000',
             'pickup_enabled' => 'boolean',
             'pickup_fee' => 'nullable|integer|min:0|max:1000000',
+            // Perfil de vendedor (#69): logística y avisos.
+            'dispatch_days' => 'required|integer|min:1|max:15',
+            'carriers' => 'nullable|string|max:150',
+            'notify_email' => 'nullable|email|max:120',
+            'notify_new_order' => 'boolean',
         ]);
+        $data['notify_new_order'] = $request->boolean('notify_new_order');
+        $data['notify_email'] = $data['notify_email'] ? mb_strtolower(trim($data['notify_email'])) : null;
         $data['free_shipping'] = $request->boolean('free_shipping');
         $data['pickup_enabled'] = $request->boolean('pickup_enabled');
         $data['shipping_fee'] = (int) ($data['shipping_fee'] ?? 0);
@@ -65,5 +72,11 @@ class DashboardController extends Controller
         $request->user()->store->update($data);
 
         return back()->with('success', 'Guardamos los datos de tu tienda.');
+    }
+
+    /** Seguridad del vendedor (#69): contraseña y cierre de sesiones en otros equipos. */
+    public function security(Request $request)
+    {
+        return view('seller.security', ['user' => $request->user()]);
     }
 }

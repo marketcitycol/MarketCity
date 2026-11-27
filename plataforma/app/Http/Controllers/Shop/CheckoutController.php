@@ -79,6 +79,7 @@ class CheckoutController extends Controller
         }
 
         session()->push('my_orders', $order->number);
+        AccountController::rememberAddress($request->user(), $order);
         // Se guarda lo que quedó marcado o desmarcado al pagar (lo desmarcado se retira).
         app(MessagingPermissions::class)->record($order->email, $order->phone, $channels, [
             'source' => 'checkout', 'ip' => $request->ip(), 'user_agent' => $request->userAgent(), 'order_id' => $order->id, 'user_id' => $request->user()?->id, 'session_only' => true,

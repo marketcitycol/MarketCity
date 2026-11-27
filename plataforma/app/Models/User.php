@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -51,6 +52,26 @@ class User extends Authenticatable
     public function store(): HasOne
     {
         return $this->hasOne(Store::class);
+    }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class)->orderByDesc('is_default')->latest('id');
+    }
+
+    public function defaultAddress(): ?Address
+    {
+        return $this->addresses()->first();
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class)->latest('id');
+    }
+
+    public function hasFavorite(Product $product): bool
+    {
+        return $this->favorites()->where('product_id', $product->id)->exists();
     }
 
     public function isAdmin(): bool

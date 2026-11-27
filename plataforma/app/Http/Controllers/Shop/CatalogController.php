@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Store;
 use App\Services\Campaigns\CampaignService;
 use App\Services\Campaigns\EmailPriceService;
 use App\Services\Catalog\StoreDirectory;
 use App\Services\Content\BrandAssets;
+use App\Services\Content\CoverageMap;
 use App\Services\Orders\Cart;
 use App\Services\Payments\PaymentRegistry;
 use App\Support\SearchQuery;
@@ -20,13 +22,41 @@ class CatalogController extends Controller
 {
     public function home()
     {
+        // Rotación del inicio (#45): cada sección trae un grupo más grande de su mismo criterio
+        // (el doble, máximo 8 más) y en cada visita muestra una selección al azar del tamaño de siempre,
+        // sin repetir un producto en dos secciones cuando hay otros disponibles.
+        $rotate = (bool) Setting::get('home_rotation', '1');
+        $pool = fn (int $size) => $rotate ? $size + min($size, 8) : $size;
+        $shown = [];
+        $pick = function ($products, int $size, bool $keepOrder = false) use ($rotate, &$shown) {
+            if ($rotate) {
+                $fresh = $products->reject(fn ($p) => isset($shown[$p->id]));
+                $chosen = $fresh->shuffle()->take($size);
+                if ($chosen->count() < $size) {
+                    $chosen = $chosen->concat($products->diff($chosen)->shuffle()->take($size - $chosen->count()));
+                }
+                $products = $keepOrder ? $products->filter(fn ($p) => $chosen->contains('id', $p->id))->values() : $chosen->values();
+            }
+            foreach ($products as $p) {
+                $shown[$p->id] = true;
+            }
+
+            return $products;
+        };
+
+        $offers = Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take($pool(10))->get();
+        $bestsellers = Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take($pool(10))->get();
+        $featured = Product::visible()->with('store')->where('featured', true)->latest('id')->take($pool(8))->get();
+        $newest = Product::visible()->with('store')->latest('id')->take($pool(10))->get();
+
         return view('shop.home', [
-            'featured' => Product::visible()->with('store')->where('featured', true)->latest('id')->take(8)->get(),
-            'offers' => Product::visible()->with('store')->whereColumn('regular_price', '>', 'price')->where('stock', '>', 0)->orderByDesc('sales_count')->take(10)->get(),
-            'bestsellers' => Product::visible()->with('store')->where('stock', '>', 0)->orderByDesc('sales_count')->latest('id')->take(10)->get(),
-            'newest' => Product::visible()->with('store')->latest('id')->take(10)->get(),
+            'offers' => $pick($offers, 10),
+            'bestsellers' => $pick($bestsellers, 10, keepOrder: true), // se muestra con su puesto (1, 2, 3…)
+            'featured' => $pick($featured, 8),
+            'newest' => $pick($newest, 10, keepOrder: true),
             'stores' => Store::where('status', 'active')->where('directory_hidden', false)->withCount(['products' => fn ($q) => $q->visible()])->orderByDesc('featured')->orderByDesc('products_count')->get(),
             'categories' => BrandAssets::sortCategories(Category::whereHas('products', fn ($q) => $q->visible())->get()),
+            'coverage' => CoverageMap::points(),
         ]);
     }
 

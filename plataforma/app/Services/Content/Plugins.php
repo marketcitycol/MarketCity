@@ -126,7 +126,7 @@ class Plugins
                     'description' => 'Marketplace colombiano para comprar productos, pagar fácil y conectar con tiendas aliadas.',
                     'social' => "tiktok | https://www.tiktok.com/@marketcity.coo\ninstagram | https://www.instagram.com/marketcity.coo/\nfacebook | https://www.facebook.com/marketcity.coo",
                     'buy' => "Tienda | /shop\nOfertas relámpago | /ofertas-relampago\nCarrito | /carrito\nMi cuenta | /mi-cuenta",
-                    'help' => "Rastrear pedido | /rastrear-pedido\nMis pedidos | /mi-cuenta\nPQRS, retracto y reversión | /pqrs\nCompra ahora, paga después | /contacto",
+                    'help' => "Rastrear pedido | /rastrear-pedido\nMis pedidos | /mi-cuenta\nPQRS, retracto y reversión | /pqrs\nCompra ahora, paga después | /compra-ahora-paga-despues",
                     'sell' => "Vende en MarketCity | /vender\nSeller Center | /seller-center",
                     'email' => 'somos@marketcity.co',
                     'whatsapp' => '573192134510',

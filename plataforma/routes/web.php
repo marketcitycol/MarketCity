@@ -11,6 +11,7 @@ use App\Http\Controllers\Shop\CampaignController;
 use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\CatalogController;
 use App\Http\Controllers\Shop\CheckoutController;
+use App\Http\Controllers\Shop\ContactController;
 use App\Http\Controllers\Shop\MessagesController;
 use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\PageController;
@@ -59,6 +60,9 @@ Route::post('/rastrear-pedido', [OrderController::class, 'track'])->middleware('
 
 Route::get('/pqrs', [PqrController::class, 'create'])->name('pqrs.create');
 Route::post('/pqrs', [PqrController::class, 'store'])->middleware('throttle:5,10')->name('pqrs.store');
+Route::get('/contacto', [ContactController::class, 'show'])->name('contact');
+Route::get('/compra-ahora-paga-despues', [PageController::class, 'bnpl'])->name('bnpl');
+Route::post('/contacto', [ContactController::class, 'store'])->middleware('throttle:5,10')->name('contact.store');
 Route::get('/pqrs/estado', [PqrController::class, 'status'])->name('pqrs.status');
 Route::post('/pqrs/consultar', [PqrController::class, 'lookup'])->middleware('throttle:10,1')->name('pqrs.lookup');
 
@@ -142,6 +146,8 @@ Route::prefix('backoffice')->name('admin.')->middleware(['auth', 'role:admin'])-
     Route::post('/productos/{product}/estado', [Admin\StoreController::class, 'productStatus'])->name('products.status');
     Route::get('/liquidaciones', [Admin\SettlementController::class, 'index'])->name('settlements');
     Route::get('/preguntas', [Admin\QuestionController::class, 'index'])->name('questions');
+    Route::get('/contacto', [Admin\ContactController::class, 'index'])->name('contact');
+    Route::post('/contacto/{message}', [Admin\ContactController::class, 'handle'])->name('contact.handle');
     Route::post('/preguntas/{question}/visibilidad', [Admin\QuestionController::class, 'toggle'])->name('questions.toggle');
     Route::post('/liquidaciones/{sellerOrder}', [Admin\SettlementController::class, 'settle'])->name('settlements.settle');
     Route::get('/importar', [AdminLegacy\CatalogImportController::class, 'show'])->name('import');

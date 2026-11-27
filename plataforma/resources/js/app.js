@@ -328,3 +328,51 @@ if (sheet) {
         });
     });
 })();
+
+// Mapa de cobertura (#33): Leaflet + OpenStreetMap, sin claves. Se descarga solo cuando la sección
+// se acerca a la pantalla. Los puntos son ciudades con totales agregados (nunca datos de clientes).
+const coverage = document.querySelector('[data-coverage-map]');
+if (coverage) {
+    const draw = async () => {
+        const [{ default: L }] = await Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]);
+        const points = JSON.parse(coverage.dataset.points || '[]');
+        const map = L.map(coverage, { scrollWheelZoom: false, zoomSnap: 0.25, attributionControl: true }).setView([4.6, -74.2], 5);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 12, minZoom: 4,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+        }).addTo(map);
+        const max = Math.max(1, ...points.map((p) => p[4]));
+        const bounds = [];
+        points.forEach(([city, dept, lat, lng, n]) => {
+            const r = n ? 5 + Math.round(9 * Math.sqrt(n / max)) : 4;
+            L.circleMarker([lat, lng], { radius: r, color: '#f4e2ac', weight: 1, fillColor: '#d9b871', fillOpacity: 0.85, className: 'mc-dot' })
+                .bindTooltip(`<b>${city}</b>, ${dept}<br>${n ? `${n.toLocaleString('es-CO')} pedidos` : 'Ya llegamos aquí'}`, { direction: 'top', className: 'mc-tip' })
+                .addTo(map);
+            bounds.push([lat, lng]);
+        });
+        if (bounds.length > 1) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 6 });
+        coverage.classList.add('is-on');
+    };
+    const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) { io.disconnect(); draw().catch(() => coverage.remove()); }
+    }, { rootMargin: '300px' });
+    io.observe(coverage);
+}
+
+// Simulador de cuotas de «Compra ahora, paga después» (#59): valor ÷ cuotas, solo de referencia.
+const sim = document.querySelector('[data-bnpl-sim]');
+if (sim) {
+    const cop = (n) => '$ ' + Math.round(n).toLocaleString('es-CO');
+    const value = sim.querySelector('[data-sim-value]');
+    const count = sim.querySelector('[data-sim-n]');
+    const update = () => {
+        const v = parseInt(value.value.replace(/\D/g, ''), 10) || 0;
+        const n = parseInt(count.value, 10) || 1;
+        value.value = v ? v.toLocaleString('es-CO') : '';
+        sim.querySelector('[data-sim-total]').textContent = cop(v);
+        sim.querySelector('[data-sim-count]').textContent = n;
+        sim.querySelector('[data-sim-quota]').textContent = cop(Math.ceil(v / n));
+    };
+    value.addEventListener('input', update);
+    count.addEventListener('change', update);
+}

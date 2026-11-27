@@ -70,3 +70,15 @@
     .table-std th { @apply border-b border-slate-200 px-3 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase; }
     .table-std td { @apply border-b border-slate-100 px-3 py-2.5 align-top; }
 }
+
+/* Mapa de cobertura (#33): mapa base oscuro y puntos dorados. */
+.mc-coverage .leaflet-container, .mc-coverage.leaflet-container { background: #081232; font-family: inherit; }
+.mc-coverage .leaflet-tile-pane { filter: grayscale(1) invert(1) brightness(.72) contrast(1.2) sepia(.25) hue-rotate(180deg); }
+.mc-coverage .mc-dot { filter: drop-shadow(0 0 6px rgba(217, 184, 113, .8)); animation: mc-pulse 2.6s ease-in-out infinite; }
+@keyframes mc-pulse { 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .mc-coverage .mc-dot { animation: none; } }
+.mc-coverage .leaflet-tooltip.mc-tip { background: rgba(6, 18, 46, .94); color: #fff; border: 1px solid rgba(217, 184, 113, .6); border-radius: 10px; font-size: 12px; }
+.mc-coverage .leaflet-tooltip-top.mc-tip::before { border-top-color: rgba(217, 184, 113, .6); }
+.mc-coverage .leaflet-control-attribution { background: rgba(6, 18, 46, .7); color: #aab; font-size: 10px; }
+.mc-coverage .leaflet-control-attribution a { color: #cdd; }
+.mc-coverage .leaflet-control-zoom a { background: rgba(6, 18, 46, .9); color: #fff; border-color: rgba(217, 184, 113, .35); }

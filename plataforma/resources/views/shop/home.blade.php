@@ -181,6 +181,9 @@
         @endforeach
         <li class="inline-flex h-8 items-center rounded-full px-2 text-xs font-semibold text-white/60">y más</li>
     </ul>
+    {{-- Mapa de cobertura (#33): solo ciudades y totales agregados, nunca datos de clientes. Se carga al acercarse. --}}
+    <div class="mc-coverage mt-5 h-[340px] overflow-hidden rounded-2xl border border-[#d9b871]/30 bg-[#081232] md:h-[420px]" data-coverage-map data-points='@json($coverage)' role="img" aria-label="Mapa de Colombia con las ciudades a las que hemos enviado pedidos"></div>
+    <p class="mt-2 text-[11px] text-white/50">Cada punto es una ciudad a la que ya llegaron pedidos. Mostramos el número solo desde {{ \App\Services\Content\CoverageMap::MIN_TO_SHOW }} pedidos.</p>
 </section>
 
 {{-- Envíos seguros --}}

@@ -8,6 +8,7 @@ use App\Models\CampaignProduct;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreBankAccount;
 use App\Models\User;
 use App\Services\Campaigns\CampaignService;
 use App\Support\SearchQuery;
@@ -38,6 +39,12 @@ class CouponsRefundsSearchTest extends TestCase
         $p->update(['price' => $price, 'regular_price' => null, 'stock' => 20]);
 
         return $p->fresh();
+    }
+
+    private function approvedAccount(Product $p): void
+    {
+        StoreBankAccount::create(['store_id' => $p->store_id, 'bank' => 'Bancolombia', 'account_type' => 'Ahorros', 'account_number' => '1234567890',
+            'holder_name' => 'Tienda SAS', 'holder_document_type' => 'NIT', 'holder_document_number' => '900123456', 'status' => 'approved']);
     }
 
     private function pay(Order $order): void
@@ -235,6 +242,82 @@ class CouponsRefundsSearchTest extends TestCase
         ])->assertSessionHas('success', fn ($m) => str_contains($m, 'próxima liquidación'));
         $this->assertSame($net, $so->fresh()->seller_net);
         $this->assertTrue($order->refunds()->first()->pending_deduction);
+    }
+
+    public function test_pending_deduction_is_subtracted_from_next_settlements(): void
+    {
+        Mail::fake();
+        $p = $this->product(100000);
+        $this->approvedAccount($p);
+        $admin = User::where('role', 'admin')->first();
+        $this->post('/carrito', ['product_id' => $p->id]);
+        $this->post('/checkout', $this->checkoutData());
+        $first = Order::latest('id')->first();
+        $this->pay($first);
+        $so1 = $first->sellerOrders()->first();
+        $so1->update(['status' => 'entregado', 'settled_at' => now(), 'settlement_reference' => 'LQ-1']);
+        $this->actingAs($admin)->post("/backoffice/pedidos/{$first->number}/reembolso", [
+            'seller_order_id' => $so1->id, 'amount' => 100000, 'reason' => 'Retracto', 'charged_to' => 'tienda',
+        ]);
+        $debit = $first->refunds()->first()->seller_debit;
+        $this->assertGreaterThan(0, $debit);
+        $this->assertSame($debit, $so1->store->pendingDeduction());
+
+        // Venta nueva y pequeña de la misma tienda: no alcanza a cubrir todo el descuento.
+        auth()->logout();
+        $p->update(['price' => 30000]);
+        $this->post('/carrito', ['product_id' => $p->id]);
+        $this->post('/checkout', $this->checkoutData(['email' => 'luis@example.com']));
+        $second = Order::latest('id')->first();
+        $this->pay($second);
+        $so2 = $second->sellerOrders()->first();
+        $net2 = (int) $so2->seller_net;
+        $this->assertLessThan($debit, $net2);
+
+        $this->actingAs($admin)->get('/backoffice/liquidaciones')->assertOk()->assertSee('de reembolsos ya liquidados');
+        $this->post("/backoffice/liquidaciones/{$so2->id}", ['reference' => 'LQ-2'])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'transferir $ 0'));
+        $this->assertSame($net2, $so2->fresh()->settlement_deduction);
+        $this->assertSame($debit - $net2, $so1->store->fresh()->pendingDeduction());
+        $this->assertNull($first->refunds()->first()->deducted_at);
+
+        // La siguiente liquidación termina de descontarlo y el resto se transfiere.
+        auth()->logout();
+        $p->update(['price' => 200000]);
+        $this->post('/carrito', ['product_id' => $p->id]);
+        $this->post('/checkout', $this->checkoutData(['email' => 'eva@example.com']));
+        $third = Order::latest('id')->first();
+        $this->pay($third);
+        $so3 = $third->sellerOrders()->first();
+        $this->actingAs($admin)->post("/backoffice/liquidaciones/{$so3->id}", ['reference' => 'LQ-3']);
+        $this->assertSame($debit - $net2, $so3->fresh()->settlement_deduction);
+        $this->assertSame(0, $so1->store->fresh()->pendingDeduction());
+        $this->assertNotNull($first->refunds()->first()->deducted_at);
+        $this->assertStringContainsString('descuentos por reembolsos', $third->events()->where('type', 'liquidacion')->first()->message);
+
+        $seller = $so1->store->user;
+        $this->actingAs($seller)->get('/seller-center/liquidaciones')->assertOk()->assertSee('de reembolsos)');
+    }
+
+    public function test_fully_refunded_order_charged_to_marketcity_is_still_settled_to_the_seller(): void
+    {
+        Mail::fake();
+        $p = $this->product(100000);
+        $this->approvedAccount($p);
+        $this->post('/carrito', ['product_id' => $p->id]);
+        $this->post('/checkout', $this->checkoutData());
+        $order = Order::latest('id')->first();
+        $this->pay($order);
+        $so = $order->sellerOrders()->first();
+        $so->update(['status' => 'entregado']);
+        $admin = User::where('role', 'admin')->first();
+        $this->actingAs($admin)->post("/backoffice/pedidos/{$order->number}/reembolso", [
+            'amount' => $order->total, 'reason' => 'Compensación', 'charged_to' => 'marketcity',
+        ]);
+        $this->assertSame('refunded', $order->fresh()->payment_status);
+        $this->get('/backoffice/liquidaciones')->assertSee($order->number);
+        $this->post("/backoffice/liquidaciones/{$so->id}", ['reference' => 'LQ-9'])->assertSessionHas('success');
+        $this->assertNotNull($so->fresh()->settled_at);
     }
 
     // --- Búsqueda con precios ---

@@ -3,6 +3,9 @@
 @section('content')
 <h1 class="text-2xl font-bold">Liquidaciones</h1>
 <p class="text-sm text-slate-500">MarketCity te paga el neto de cada venta {{ \App\Models\Setting::get('settlement_business_days', 10) }} días hábiles después de confirmado el pago (sin contar fines de semana ni festivos).</p>
+@if ($deduction > 0)
+<div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Tienes <strong>{{ cop($deduction) }}</strong> por descontar de tus próximas liquidaciones: son reembolsos a cargo de tu tienda de ventas que ya se te habían pagado.</div>
+@endif
 <div class="card mt-4 overflow-x-auto">
     @if ($rows->isEmpty())
         <p class="p-8 text-center text-sm text-slate-500">Aún no hay ventas pagadas.</p>
@@ -17,7 +20,7 @@
                 <td class="text-red-700">− {{ cop($so->commission_amount) }}</td>
                 <td class="font-semibold">{{ cop($so->seller_net) }}</td>
                 <td>{{ $so->settlement_due_on?->format('d/m/Y') }}</td>
-                <td>@if ($so->settled_at)<span class="badge bg-emerald-100 text-emerald-700">Pagado · {{ $so->settlement_reference }}</span>@else<span class="badge bg-amber-100 text-amber-800">Programado</span>@endif</td>
+                <td>@if ($so->settled_at)<span class="badge bg-emerald-100 text-emerald-700">Pagado · {{ $so->settlement_reference }}</span>@if ($so->settlement_deduction)<br><span class="text-xs text-red-700">Transferido {{ cop($so->seller_net - $so->settlement_deduction) }} (− {{ cop($so->settlement_deduction) }} de reembolsos)</span>@endif@else<span class="badge bg-amber-100 text-amber-800">Programado</span>@endif</td>
             </tr>
         @endforeach
         </tbody>

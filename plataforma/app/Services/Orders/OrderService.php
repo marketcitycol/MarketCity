@@ -12,6 +12,7 @@ use App\Models\MerchantEntity;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Refund;
 use App\Models\SellerOrder;
 use App\Models\Setting;
 use App\Models\User;
@@ -343,10 +344,43 @@ class OrderService
         }
     }
 
-    public function settle(SellerOrder $so, User $by, string $reference): void
+    /**
+     * Registra la transferencia al vendedor. Si la tienda tiene descuentos pendientes (reembolsos de
+     * ventas que ya se le habían pagado), se restan de este neto, del más antiguo al más nuevo; lo que
+     * no alcance queda para la siguiente liquidación.
+     */
+    public function settle(SellerOrder $so, User $by, string $reference): int
     {
-        $so->update(['settled_at' => now(), 'settlement_reference' => $reference]);
-        $so->order->log('liquidacion', "Liquidado a {$so->store->name}: ".cop($so->seller_net)." (ref. {$reference}).", $so, $by);
+        return DB::transaction(function () use ($so, $by, $reference) {
+            $so = SellerOrder::with('store', 'order')->lockForUpdate()->findOrFail($so->id);
+            if ($so->settled_at) {
+                throw new RuntimeException('Ya estaba liquidado.');
+            }
+            $available = (int) $so->seller_net;
+            $deducted = 0;
+            $applied = [];
+            foreach (Refund::undeductedFor($so->store_id)->lockForUpdate()->get() as $refund) {
+                if ($available <= 0) {
+                    break;
+                }
+                $take = min($available, $refund->deductionLeft());
+                $refund->deducted_amount += $take;
+                if ($refund->deductionLeft() === 0) {
+                    $refund->deducted_at = now();
+                }
+                $refund->save();
+                $available -= $take;
+                $deducted += $take;
+                $applied[] = cop($take).' del reembolso #'.$refund->id;
+            }
+
+            $so->update(['settled_at' => now(), 'settlement_reference' => $reference, 'settlement_deduction' => $deducted]);
+            $so->order->log('liquidacion', "Liquidado a {$so->store->name}: ".cop($so->seller_net)
+                .($deducted ? ' − descuentos por reembolsos '.cop($deducted).' ('.implode(', ', $applied).') = transferido '.cop($so->seller_net - $deducted) : '')
+                ." (ref. {$reference}).", $so, $by);
+
+            return $deducted;
+        });
     }
 
     private function nextNumber(): string

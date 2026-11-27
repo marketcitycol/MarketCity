@@ -146,6 +146,37 @@
     </div>
 </div>
 
+{{-- Preguntas al vendedor (en WCFM: «Consultas»): públicas una vez respondidas. --}}
+<section id="preguntas" class="mt-12 scroll-mt-24" aria-labelledby="preguntas-titulo">
+    <h2 id="preguntas-titulo" class="text-lg font-bold">Preguntas al vendedor</h2>
+    <div class="mt-4 grid gap-6 lg:grid-cols-[1fr_380px]">
+        <div>
+            @forelse ($questions as $q)
+                <div class="border-b border-slate-100 py-3 text-sm">
+                    <p class="font-medium text-slate-900">{{ $q->question }}</p>
+                    <p class="mt-1 whitespace-pre-line text-slate-600"><span class="font-semibold text-brand-700">{{ $product->store->name }}:</span> {{ $q->answer }}</p>
+                    <p class="mt-1 text-xs text-slate-400">{{ $q->publicName() }} · {{ fecha($q->answered_at, 'd/m/Y') }}</p>
+                </div>
+            @empty
+                <p class="text-sm text-slate-500">Nadie ha preguntado todavía. ¿Tienes una duda sobre medidas, compatibilidad o despacho? Pregúntale a la tienda.</p>
+            @endforelse
+        </div>
+        <form method="post" action="{{ route('product.questions.store', $product) }}" class="card space-y-3 p-4 text-sm">@csrf
+            <label class="label" for="question">Tu pregunta para {{ $product->store->name }}</label>
+            <textarea class="input min-h-24" id="question" name="question" required minlength="8" maxlength="500" placeholder="Ej.: ¿Es compatible con iPhone 15?">{{ old('question') }}</textarea>
+            @guest
+                <div class="grid gap-2 sm:grid-cols-2">
+                    <input class="input" name="name" value="{{ old('name') }}" placeholder="Tu nombre" required maxlength="80" autocomplete="given-name" aria-label="Tu nombre">
+                    <input class="input" type="email" name="email" value="{{ old('email') }}" placeholder="Tu correo" required maxlength="150" autocomplete="email" aria-label="Tu correo">
+                </div>
+            @endguest
+            <div class="hidden" aria-hidden="true"><label>No llenar <input name="website" tabindex="-1" autocomplete="off"></label></div>
+            <p class="text-xs text-slate-500">Te avisamos por correo cuando responda. La pregunta y la respuesta se publican sin tus datos de contacto; no incluyas teléfonos, correos ni enlaces.</p>
+            <button class="btn-primary w-full">Enviar pregunta</button>
+        </form>
+    </div>
+</section>
+
 @if ($related->isNotEmpty())
 <section class="mt-12">
     <h2 class="text-lg font-bold">También te puede interesar</h2>

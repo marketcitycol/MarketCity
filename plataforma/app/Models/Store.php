@@ -53,6 +53,12 @@ class Store extends Model
         return $this->hasMany(SellerOrder::class);
     }
 
+    /** Total que se restará de las próximas liquidaciones por reembolsos de ventas ya pagadas. */
+    public function pendingDeduction(): int
+    {
+        return (int) Refund::undeductedFor($this->id)->get()->sum(fn (Refund $r) => $r->deductionLeft());
+    }
+
     /** Medios de pago permitidos para esta tienda; null = todos los activos en la plataforma. */
     public function bankAccounts(): HasMany
     {

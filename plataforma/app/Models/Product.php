@@ -64,6 +64,11 @@ class Product extends Model
         return $this->stock > 0;
     }
 
+    public function questions(): HasMany
+    {
+        return $this->hasMany(ProductQuestion::class);
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('position')->orderBy('id');

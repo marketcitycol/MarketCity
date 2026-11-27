@@ -127,6 +127,7 @@ class CatalogController extends Controller
             'isFavorite' => (bool) $request->user()?->hasFavorite($product),
             // «Lo que debes saber» (#14): solo los medios que esta tienda acepta hoy.
             'paymentLabels' => collect($payments->forStores([$product->store]))->except('sandbox')->map->label()->values(),
+            'questions' => $product->questions()->public()->latest('answered_at')->take(10)->get(),
             'related' => Product::visible()->with('store')->where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)->take(4)->get(),
         ]);
